@@ -1,0 +1,14 @@
+# Security scan results (never commit detailed findings)
+.scans/
+*-Scan-Results.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
