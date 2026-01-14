@@ -150,7 +150,7 @@ update_latex_template() {
     local commit_hash=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
     local commit_hash_full=$(git -C "$SECURITY_REPO_DIR" rev-parse HEAD 2>/dev/null || echo "unknown")
 
-    print_info "Preparing LaTeX template..."
+    print_info "Preparing LaTeX template..." >&2
 
     # Create working directory
     local work_dir=$(mktemp -d)
