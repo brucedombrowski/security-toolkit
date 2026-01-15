@@ -123,16 +123,26 @@ run_scans() {
         return 2
     fi
     
-    # Run scans with timeout and show progress
+    # Determine which timeout command to use
+    local timeout_cmd=""
+    if command -v gtimeout &> /dev/null; then
+        timeout_cmd="gtimeout 300"
+    elif command -v timeout &> /dev/null; then
+        timeout_cmd="timeout 300"
+    fi
+    
+    # Run scans with optional timeout
     local scan_output
     local exit_code=0
     
-    if ! scan_output=$(timeout 300 "$REPO_ROOT/scripts/run-all-scans.sh" "$REPO_ROOT" 2>&1); then
-        exit_code=$?
+    if [ -n "$timeout_cmd" ]; then
+        scan_output=$($timeout_cmd "$REPO_ROOT/scripts/run-all-scans.sh" "$REPO_ROOT" 2>&1) || exit_code=$?
         if [ $exit_code -eq 124 ]; then
             print_warning "Scans timed out (5 minutes). Use --skip-tests to bypass."
             return 1
         fi
+    else
+        scan_output=$("$REPO_ROOT/scripts/run-all-scans.sh" "$REPO_ROOT" 2>&1) || exit_code=$?
     fi
     
     # Show scan output
