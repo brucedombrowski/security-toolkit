@@ -104,7 +104,9 @@ redact_file() {
     sed -E 's/Commit:[^)]*\)/Commit: [REDACTED])/g' | \
     # Redact SHA256 checksums
     sed -E 's/SHA256:[[:space:]]*[a-f0-9]{64}/SHA256: [REDACTED]/g' | \
-    sed -E 's/[a-f0-9]{64}/[CHECKSUM_REDACTED]/g' > "$temp_redacted"
+    sed -E 's/[a-f0-9]{64}/[CHECKSUM_REDACTED]/g' | \
+    # Redact Homebrew package versions (format: "    package-name version")
+    sed -E 's/^(    [a-zA-Z0-9_@.-]+)[[:space:]]+[0-9]+(\.[0-9]+)*([._-][a-zA-Z0-9]+)?$/\1 [VERSION]/g' > "$temp_redacted"
 
     # Combine banner and redacted content
     generate_banner "$source_checksum" > "$output"
