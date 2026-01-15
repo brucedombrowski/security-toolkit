@@ -101,12 +101,31 @@ All scripts follow standard exit code conventions:
 - `0` = Pass (no issues found)
 - `1` = Fail (issues detected or scan error)
 
+## Scan Output
+
+Scan results are saved to `<target_project>/.scans/` for submittal purposes:
+
+```
+.scans/
+├── security-scan-report-2026-01-14.txt  # Consolidated report
+├── pii-scan-2026-01-14.txt              # PII pattern scan
+├── malware-scan-2026-01-14.txt          # ClamAV malware scan
+├── secrets-scan-2026-01-14.txt          # Secrets/credentials scan
+├── mac-address-scan-2026-01-14.txt      # MAC address scan
+└── host-security-scan-2026-01-14.txt    # Host security scan
+```
+
+Add `.scans/` to your project's `.gitignore`:
+
+```bash
+echo ".scans/" >> /path/to/project/.gitignore
+```
+
 ## Security Policy
 
-- Scripts output results to stdout only
-- No files are written to the target repository
 - Detailed vulnerability information is displayed for remediation
-- Integrate with `.scans/` directory pattern for local result caching (git-ignored)
+- Scan results are saved locally for audit/submittal purposes
+- Add `.scans/` to `.gitignore` to prevent committing scan artifacts
 
 ## NIST Control Mapping
 

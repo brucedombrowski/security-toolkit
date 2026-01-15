@@ -15,6 +15,10 @@
 #
 # Usage: ./run-all-scans.sh [target_directory]
 #        If no target specified, uses parent directory of script location
+#
+# Output:
+#   Results are saved to <target_directory>/.scans/ for submittal purposes
+#   Add .scans/ to your .gitignore
 
 set -e
 
@@ -28,17 +32,35 @@ else
 fi
 
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+DATE_STAMP=$(date "+%Y-%m-%d")
+
+# Create .scans directory for output
+SCANS_DIR="$TARGET_DIR/.scans"
+mkdir -p "$SCANS_DIR"
+
+# Consolidated report file
+REPORT_FILE="$SCANS_DIR/security-scan-report-$DATE_STAMP.txt"
 REPO_NAME=$(basename "$TARGET_DIR")
 
-echo "========================================================"
-echo "Security Verification Suite"
-echo "========================================================"
-echo "Timestamp: $TIMESTAMP"
-echo "Target: $TARGET_DIR"
-echo "Repository: $REPO_NAME"
-echo ""
-echo "========================================================"
-echo ""
+# Function to output to both console and file
+log() {
+    echo "$1"
+    echo "$1" >> "$REPORT_FILE"
+}
+
+# Start fresh report
+echo "" > "$REPORT_FILE"
+
+log "========================================================"
+log "Security Verification Suite"
+log "========================================================"
+log "Timestamp: $TIMESTAMP"
+log "Target: $TARGET_DIR"
+log "Repository: $REPO_NAME"
+log "Report: $REPORT_FILE"
+log ""
+log "========================================================"
+log ""
 
 # Track overall status
 OVERALL_STATUS="PASS"
@@ -50,65 +72,101 @@ run_scan() {
     local scan_name="$1"
     local script="$2"
     local control_ref="$3"
+    local output_file="$4"
 
-    echo "Running: $scan_name"
-    echo "  Control: $control_ref"
+    log "Running: $scan_name"
+    log "  Control: $control_ref"
 
     if [ -x "$script" ]; then
-        if "$script" "$TARGET_DIR" 2>&1; then
-            echo "  Status: PASS"
+        # Run scan and capture output to both console and individual file
+        local scan_output
+        local exit_code=0
+        scan_output=$("$script" "$TARGET_DIR" 2>&1) || exit_code=$?
+
+        # Display output to console and append to consolidated report
+        echo "$scan_output"
+        echo "$scan_output" >> "$REPORT_FILE"
+
+        # Save individual scan output
+        if [ -n "$output_file" ]; then
+            echo "$scan_output" > "$SCANS_DIR/$output_file"
+        fi
+
+        if [ $exit_code -eq 0 ]; then
+            log "  Status: PASS"
             PASS_COUNT=$((PASS_COUNT + 1))
         else
             OVERALL_STATUS="FAIL"
             FAIL_COUNT=$((FAIL_COUNT + 1))
-            echo "  Status: FAIL"
+            log "  Status: FAIL"
         fi
     else
-        echo "  Status: SKIPPED (script not found or not executable)"
+        log "  Status: SKIPPED (script not found or not executable)"
     fi
-    echo ""
-    echo "--------------------------------------------------------"
-    echo ""
+    log ""
+    log "--------------------------------------------------------"
+    log ""
 }
 
 # Run all scans with NIST control references
 run_scan "PII Pattern Scan" \
     "$SCRIPT_DIR/check-pii.sh" \
-    "NIST 800-53: SI-12 (Information Management)"
+    "NIST 800-53: SI-12 (Information Management)" \
+    "pii-scan-$DATE_STAMP.txt"
 
 run_scan "Malware Scan (ClamAV)" \
     "$SCRIPT_DIR/check-malware.sh" \
-    "NIST 800-53: SI-3 (Malicious Code Protection)"
+    "NIST 800-53: SI-3 (Malicious Code Protection)" \
+    "malware-scan-$DATE_STAMP.txt"
 
 run_scan "Secrets/Credentials Scan" \
     "$SCRIPT_DIR/check-secrets.sh" \
-    "NIST 800-53: SA-11 (Developer Testing)"
+    "NIST 800-53: SA-11 (Developer Testing)" \
+    "secrets-scan-$DATE_STAMP.txt"
 
 run_scan "IEEE 802.3 MAC Address Scan" \
     "$SCRIPT_DIR/check-mac-addresses.sh" \
-    "NIST 800-53: SC-8 (Transmission Confidentiality)"
+    "NIST 800-53: SC-8 (Transmission Confidentiality)" \
+    "mac-address-scan-$DATE_STAMP.txt"
 
 run_scan "Host Security Configuration" \
     "$SCRIPT_DIR/check-host-security.sh" \
-    "NIST 800-53: CM-6 (Configuration Settings)"
+    "NIST 800-53: CM-6 (Configuration Settings)" \
+    "host-security-scan-$DATE_STAMP.txt"
 
-echo "========================================================"
-echo ""
-echo "SCAN SUMMARY"
-echo "============"
-echo "Passed: $PASS_COUNT"
-echo "Failed: $FAIL_COUNT"
-echo ""
+log "========================================================"
+log ""
+log "SCAN SUMMARY"
+log "============"
+log "Passed: $PASS_COUNT"
+log "Failed: $FAIL_COUNT"
+log ""
 
 if [ "$OVERALL_STATUS" = "PASS" ]; then
-    echo "OVERALL RESULT: PASS"
-    echo ""
-    echo "All security scans passed."
+    log "OVERALL RESULT: PASS"
+    log ""
+    log "All security scans passed."
+else
+    log "OVERALL RESULT: FAIL"
+    log ""
+    log "$FAIL_COUNT scan(s) require attention."
+    log "Review the output above for details."
+fi
+
+log ""
+log "========================================================"
+log "SCAN ARTIFACTS"
+log "========================================================"
+log ""
+log "Results saved to: $SCANS_DIR/"
+log ""
+ls -1 "$SCANS_DIR"/*.txt 2>/dev/null | while read f; do
+    log "  $(basename "$f")"
+done
+log ""
+
+if [ "$OVERALL_STATUS" = "PASS" ]; then
     exit 0
 else
-    echo "OVERALL RESULT: FAIL"
-    echo ""
-    echo "$FAIL_COUNT scan(s) require attention."
-    echo "Review the output above for details."
     exit 1
 fi

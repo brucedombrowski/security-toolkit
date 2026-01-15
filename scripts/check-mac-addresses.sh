@@ -19,16 +19,19 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Allow target directory to be specified as argument
 if [ -n "$1" ]; then
     TARGET_DIR="$1"
 else
-    TARGET_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+    TARGET_DIR="$SECURITY_REPO_DIR"
 fi
 
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 REPO_NAME=$(basename "$TARGET_DIR")
+TOOLKIT_VERSION=$(git -C "$SECURITY_REPO_DIR" describe --tags --always 2>/dev/null || echo "unknown")
+TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 # MAC address patterns (IEEE 802.3)
 MAC_PATTERN_COLON="([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}"
@@ -41,6 +44,7 @@ TOTAL_FOUND=0
 echo "IEEE 802.3 MAC Address Verification Scan"
 echo "========================================="
 echo "Timestamp: $TIMESTAMP"
+echo "Toolkit: Security Verification Toolkit $TOOLKIT_VERSION ($TOOLKIT_COMMIT)"
 echo "Target: $TARGET_DIR"
 echo "Repository: $REPO_NAME"
 echo ""

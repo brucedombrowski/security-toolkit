@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-15
+
+### Added
+
+- **Scan Output Persistence**
+  - Scan results now saved to `<target>/.scans/` directory for submittal purposes
+  - Individual scan files: `pii-scan-YYYY-MM-DD.txt`, `malware-scan-YYYY-MM-DD.txt`, etc.
+  - Consolidated report: `security-scan-report-YYYY-MM-DD.txt`
+
+- **Toolkit Identification in Scan Output**
+  - All scan outputs now include toolkit version and commit hash
+  - GitHub source URL included for traceability
+  - Example: `Toolkit: Security Verification Toolkit v1.1.0 (abc1234)`
+
+- **Release Checksums**
+  - `checksums.txt` attached to GitHub releases for integrity verification
+  - Enables `sha256sum -c checksums.txt` verification workflow
+
+### Changed
+
+- Updated README with scan output documentation
+- Individual scan scripts now report toolkit version in headers
+
 ## [1.0.0] - 2026-01-14
 
 ### Added
@@ -45,4 +68,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 199 (Standards for Security Categorization)
 - FIPS 200 (Minimum Security Requirements)
 
+[1.1.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.1.0
 [1.0.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.0.0
