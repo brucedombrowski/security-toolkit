@@ -6,11 +6,20 @@
 # Output: OS version, kernel, network interfaces (with MAC addresses), installed packages
 #
 # SENSITIVE: This script collects MAC addresses and system inventory.
-#            Output should be handled according to your security policies.
+#            Output is classified as CONTROLLED UNCLASSIFIED INFORMATION (CUI)
+#            and handled according to NIST SP 800-171 and 32 CFR Part 2002
+#
+# CUI Protections:
+#   - File created with mode 600 (owner read/write only)
+#   - Process umask set to 0077 (restrictive permissions)
+#   - User warned about CUI classification and handling requirements
+#   - Secure deletion guidance provided
 #
 # Standards:
-#   - NIST SP 800-53: CM-8 (System Component Inventory)
-#   - NIST SP 800-53: CM-2 (Baseline Configuration)
+#   - NIST SP 800-53: CM-8 (System Component Inventory), AC-3 (Access Control)
+#   - NIST SP 800-171: CUI protection requirements
+#   - 32 CFR Part 2002: CUI handling standards
+#   - NIST SP 800-88: Secure deletion of digital media
 #
 # Exit codes:
 #   0 = Success
@@ -21,6 +30,10 @@
 #        Otherwise, output goes to stdout
 
 set -e
+
+# CRITICAL-004: Set restrictive umask before any file operations
+# This ensures all created files have mode 600 (owner only)
+umask 0077
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -44,8 +57,48 @@ output() {
 
 # Initialize output file if specified
 if [ -n "$OUTPUT_FILE" ]; then
-    echo "" > "$OUTPUT_FILE"
+    # CRITICAL-004: Create with restrictive permissions (mode 600)
+    # Using umask 0077 already set above, but explicit chmod for clarity and safety
+    > "$OUTPUT_FILE"
+    chmod 600 "$OUTPUT_FILE" 2>/dev/null || true
+    
+    # Verify permissions were set correctly (NIST SP 800-171 AC-3)
+    file_mode=$(stat -f "%OLp" "$OUTPUT_FILE" 2>/dev/null || stat -c "%a" "$OUTPUT_FILE" 2>/dev/null)
+    if [ "$file_mode" != "600" ]; then
+        echo "WARNING: File permissions may not be fully restricted (mode: $file_mode, expected 600)" >&2
+    fi
 fi
+
+# CRITICAL-004: Display CUI warning to user at runtime
+echo "" >&2
+echo "╔══════════════════════════════════════════════════════════════════════════╗" >&2
+echo "║ ⚠️  SECURITY WARNING: CONTROLLED UNCLASSIFIED INFORMATION (CUI)           ║" >&2
+echo "╚══════════════════════════════════════════════════════════════════════════╝" >&2
+echo "" >&2
+echo "Host inventory file contains CUI per NIST SP 800-171 and 32 CFR Part 2002:" >&2
+echo "" >&2
+echo "  Location: ${OUTPUT_FILE:-(stdout)}" >&2
+if [ -n "$OUTPUT_FILE" ]; then
+    echo "  Permissions: 600 (owner read/write only)" >&2
+fi
+echo "" >&2
+echo "This file includes sensitive system information:" >&2
+echo "  • MAC addresses (network topology identification)" >&2
+echo "  • Hardware serial numbers (device identity)" >&2
+echo "  • Installed software versions (attack surface analysis)" >&2
+echo "  • System configuration details (security control details)" >&2
+echo "" >&2
+echo "REQUIRED HANDLING:" >&2
+echo "  1. Keep file permission-restricted (600) - verify with: ls -l" >&2
+echo "  2. Never upload to public cloud storage or repositories" >&2
+echo "  3. Never commit to version control (even private)" >&2
+echo "  4. Store on encrypted media or encrypted filesystems" >&2
+echo "  5. Delete securely when no longer needed" >&2
+echo "" >&2
+if [ -n "$OUTPUT_FILE" ]; then
+    echo "For secure deletion instructions, see: scripts/secure-delete.sh" >&2
+fi
+echo "" >&2
 
 output "////////////////////////////////////////////////////////////////////////////////"
 output "//                                                                            //"
