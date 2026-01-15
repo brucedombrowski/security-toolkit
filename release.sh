@@ -132,17 +132,18 @@ run_scans() {
     fi
     
     # Run scans with optional timeout
+    # Always use non-interactive mode (-n) to avoid hanging on prompts
     local scan_output
     local exit_code=0
-    
+
     if [ -n "$timeout_cmd" ]; then
-        scan_output=$($timeout_cmd "$REPO_ROOT/scripts/run-all-scans.sh" "$REPO_ROOT" 2>&1) || exit_code=$?
+        scan_output=$($timeout_cmd "$REPO_ROOT/scripts/run-all-scans.sh" -n "$REPO_ROOT" 2>&1) || exit_code=$?
         if [ $exit_code -eq 124 ]; then
             print_warning "Scans timed out (5 minutes). Use --skip-tests to bypass."
             return 1
         fi
     else
-        scan_output=$("$REPO_ROOT/scripts/run-all-scans.sh" "$REPO_ROOT" 2>&1) || exit_code=$?
+        scan_output=$("$REPO_ROOT/scripts/run-all-scans.sh" -n "$REPO_ROOT" 2>&1) || exit_code=$?
     fi
     
     # Show scan output

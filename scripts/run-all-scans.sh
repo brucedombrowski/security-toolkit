@@ -446,12 +446,15 @@ if [ -n "$PDFLATEX" ] && [ -x "$PDFLATEX" ] && [ -f "$TEMPLATE_FILE" ]; then
                                                   -e 's/_/\\_/g' \
                                                   -e 's/\$/\\$/g' \
                                                   -e 's/#/\\#/g')
-                    content_snippet=$(echo "$content_snippet" | sed -e 's/&/\\&/g' \
+                    # Escape LaTeX special characters in content snippet
+                    # Note: backslash must be first, and we use a different approach
+                    content_snippet=$(echo "$content_snippet" | sed -e 's/\\/BACKSLASH_PLACEHOLDER/g' \
+                                                                    -e 's/&/\\&/g' \
                                                                     -e 's/%/\\%/g' \
                                                                     -e 's/_/\\_/g' \
                                                                     -e 's/\$/\\$/g' \
                                                                     -e 's/#/\\#/g' \
-                                                                    -e 's/\\/\\textbackslash{}/g')
+                                                                    -e 's/BACKSLASH_PLACEHOLDER/\\textbackslash{}/g')
                     echo "$ENTRY_NUM & \\texttt{$content_snippet} & $reason \\\\" >> "$ENTRIES_FILE"
                 fi
             fi

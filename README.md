@@ -28,11 +28,37 @@ This toolkit provides automated security verification scripts aligned with feder
 
 ## Usage
 
+### Release Workflow (Recommended)
+
+The recommended workflow for releasing the toolkit:
+
+1. **Run `release.sh`** - Executes non-interactive scans and prepares release
+   ```bash
+   ./release.sh                    # Generate test release (0.0.0-test.TIMESTAMP)
+   ./release.sh 1.12.0             # Prepare specific version release
+   ./release.sh --skip-tests       # Skip scans (not recommended)
+   ```
+
+2. **Review output** - If scans report findings, review and address them
+
+3. **Run interactive scans** - If findings need review, run scans interactively
+   ```bash
+   ./scripts/run-all-scans.sh      # Interactive mode (default)
+   ```
+
+4. **Review artifacts** - Verify generated files in `.scans/`:
+   - `scan-attestation-*.pdf` - PDF attestation document
+   - `checksums.md` - SHA256 checksums for verification
+   - Individual scan logs
+
 ### Scan a specific project
 
 ```bash
-# Run all scans on a target directory
+# Run all scans on a target directory (interactive mode)
 ./scripts/run-all-scans.sh /path/to/project
+
+# Run in non-interactive mode (for CI/CD)
+./scripts/run-all-scans.sh -n /path/to/project
 
 # Run individual scans
 ./scripts/check-pii.sh /path/to/project
