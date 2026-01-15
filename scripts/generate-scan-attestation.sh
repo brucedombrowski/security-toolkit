@@ -102,20 +102,52 @@ SECRETS_SCAN_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/secrets-scan-$FILE_TIMESTAMP.t
 MAC_SCAN_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/mac-address-scan-$FILE_TIMESTAMP.txt" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
 HOST_SECURITY_SCAN_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/host-security-scan-$FILE_TIMESTAMP.txt" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
 REPORT_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/security-scan-report-$FILE_TIMESTAMP.txt" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
+CHECKSUMS_MD_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/checksums.md" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
 
-# Extract allowlist count and checksum
-ALLOWLIST_FILE="$TARGET_DIR/.pii-allowlist"
-ALLOWLIST_COUNT=0
-ALLOWLIST_CHECKSUM="N/A"
-if [ -f "$ALLOWLIST_FILE" ]; then
-    ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$ALLOWLIST_FILE" 2>/dev/null || echo "0")
-    ALLOWLIST_CHECKSUM=$(shasum -a 256 "$ALLOWLIST_FILE" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
+# Extract PII allowlist count and checksum
+PII_ALLOWLIST_FILE="$TARGET_DIR/.pii-allowlist"
+PII_ALLOWLIST_COUNT=0
+PII_ALLOWLIST_CHECKSUM="N/A"
+if [ -f "$PII_ALLOWLIST_FILE" ]; then
+    PII_ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$PII_ALLOWLIST_FILE" 2>/dev/null || echo "0")
+    PII_ALLOWLIST_CHECKSUM=$(shasum -a 256 "$PII_ALLOWLIST_FILE" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
     # Mark PII scan as EXCEPT (pass with exceptions) if there are reviewed exceptions
-    # This handles both PASS (all allowlisted) and FAIL (findings exist but may be allowlisted)
-    if [ "$ALLOWLIST_COUNT" -gt 0 ]; then
+    if [ "$PII_ALLOWLIST_COUNT" -gt 0 ]; then
         PII_RESULT="EXCEPT"
-        PII_FINDINGS="$ALLOWLIST_COUNT reviewed exceptions"
+        PII_FINDINGS="$PII_ALLOWLIST_COUNT reviewed exceptions"
     fi
+fi
+
+# Extract secrets allowlist count and checksum
+SECRETS_ALLOWLIST_FILE="$TARGET_DIR/.secrets-allowlist"
+SECRETS_ALLOWLIST_COUNT=0
+SECRETS_ALLOWLIST_CHECKSUM="N/A"
+if [ -f "$SECRETS_ALLOWLIST_FILE" ]; then
+    SECRETS_ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$SECRETS_ALLOWLIST_FILE" 2>/dev/null || echo "0")
+    SECRETS_ALLOWLIST_CHECKSUM=$(shasum -a 256 "$SECRETS_ALLOWLIST_FILE" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
+    # Mark secrets scan as EXCEPT if there are reviewed exceptions
+    if [ "$SECRETS_ALLOWLIST_COUNT" -gt 0 ]; then
+        SECRETS_RESULT="EXCEPT"
+        SECRETS_FINDINGS="$SECRETS_ALLOWLIST_COUNT reviewed exceptions"
+    fi
+fi
+
+# Recalculate pass/fail counts after applying EXCEPT status
+# EXCEPT counts as PASS for the summary (reviewed and accepted)
+PASS_COUNT=0
+FAIL_COUNT=0
+for result in "$PII_RESULT" "$MALWARE_RESULT" "$SECRETS_RESULT" "$MAC_RESULT" "$HOST_RESULT"; do
+    case "$result" in
+        PASS|EXCEPT) PASS_COUNT=$((PASS_COUNT + 1)) ;;
+        FAIL) FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+    esac
+done
+
+# Update overall status based on recalculated counts
+if [ "$FAIL_COUNT" -eq 0 ]; then
+    OVERALL_STATUS="PASS"
+else
+    OVERALL_STATUS="FAIL"
 fi
 
 # Copy template and substitute variables
@@ -159,22 +191,27 @@ sed -i.bak \
     -e "s/\\\\newcommand{\\\\OverallResult}{PASS}/\\\\newcommand{\\\\OverallResult}{$OVERALL_STATUS}/g" \
     -e "s/\\\\newcommand{\\\\PassCount}{5}/\\\\newcommand{\\\\PassCount}{$PASS_COUNT}/g" \
     -e "s/\\\\newcommand{\\\\FailCount}{0}/\\\\newcommand{\\\\FailCount}{$FAIL_COUNT}/g" \
-    -e "s/\\\\newcommand{\\\\AllowlistCount}{0}/\\\\newcommand{\\\\AllowlistCount}{$ALLOWLIST_COUNT}/g" \
-    -e "s/\\\\newcommand{\\\\AllowlistChecksum}{N\\/A}/\\\\newcommand{\\\\AllowlistChecksum}{$ALLOWLIST_CHECKSUM}/g" \
+    -e "s/\\\\newcommand{\\\\PIIAllowlistCount}{0}/\\\\newcommand{\\\\PIIAllowlistCount}{$PII_ALLOWLIST_COUNT}/g" \
+    -e "s/\\\\newcommand{\\\\PIIAllowlistChecksum}{N\\/A}/\\\\newcommand{\\\\PIIAllowlistChecksum}{$PII_ALLOWLIST_CHECKSUM}/g" \
+    -e "s/\\\\newcommand{\\\\SecretsAllowlistCount}{0}/\\\\newcommand{\\\\SecretsAllowlistCount}{$SECRETS_ALLOWLIST_COUNT}/g" \
+    -e "s/\\\\newcommand{\\\\SecretsAllowlistChecksum}{N\\/A}/\\\\newcommand{\\\\SecretsAllowlistChecksum}{$SECRETS_ALLOWLIST_CHECKSUM}/g" \
     -e "s/\\\\newcommand{\\\\PIIScanChecksum}{N\\/A}/\\\\newcommand{\\\\PIIScanChecksum}{$PII_SCAN_CHECKSUM}/g" \
     -e "s/\\\\newcommand{\\\\MalwareScanChecksum}{N\\/A}/\\\\newcommand{\\\\MalwareScanChecksum}{$MALWARE_SCAN_CHECKSUM}/g" \
     -e "s/\\\\newcommand{\\\\SecretsScanChecksum}{N\\/A}/\\\\newcommand{\\\\SecretsScanChecksum}{$SECRETS_SCAN_CHECKSUM}/g" \
     -e "s/\\\\newcommand{\\\\MACScanChecksum}{N\\/A}/\\\\newcommand{\\\\MACScanChecksum}{$MAC_SCAN_CHECKSUM}/g" \
     -e "s/\\\\newcommand{\\\\HostSecurityScanChecksum}{N\\/A}/\\\\newcommand{\\\\HostSecurityScanChecksum}{$HOST_SECURITY_SCAN_CHECKSUM}/g" \
     -e "s/\\\\newcommand{\\\\ReportChecksum}{N\\/A}/\\\\newcommand{\\\\ReportChecksum}{$REPORT_CHECKSUM}/g" \
+    -e "s/\\\\newcommand{\\\\ChecksumsMdChecksum}{N\\/A}/\\\\newcommand{\\\\ChecksumsMdChecksum}{$CHECKSUMS_MD_CHECKSUM}/g" \
     "$PDF_BUILD_DIR/scan_attestation.tex"
 
-# Handle AllowlistEntries separately due to potential special characters
-if [ "$ALLOWLIST_COUNT" -gt 0 ]; then
-    # Build LaTeX table rows from allowlist entries (enumerated)
-    ENTRIES_FILE="$PDF_BUILD_DIR/entries.tex"
-    : > "$ENTRIES_FILE"  # Clear/create file
-    entry_num=0
+# Function to build allowlist entries for LaTeX
+build_allowlist_entries() {
+    local allowlist_file="$1"
+    local entries_file="$2"
+    local var_name="$3"
+
+    : > "$entries_file"  # Clear/create file
+    local entry_num=0
     while IFS= read -r line; do
         if [ -n "$line" ]; then
             # Extract reason (format: HASH # REASON # CONTENT_SNIPPET)
@@ -189,15 +226,25 @@ if [ "$ALLOWLIST_COUNT" -gt 0 ]; then
                                               -e 's/&/\\&/g' \
                                               -e 's/%/\\%/g' \
                                               -e 's/#/\\#/g')
-                echo "$entry_num & $reason \\\\\\\\" >> "$ENTRIES_FILE"
+                echo "$entry_num & $reason \\\\\\\\" >> "$entries_file"
             fi
         fi
-    done < <(grep "^[a-f0-9]" "$ALLOWLIST_FILE" 2>/dev/null | head -20)
+    done < <(grep "^[a-f0-9]" "$allowlist_file" 2>/dev/null | head -20)
 
-    # Replace "None" with the entries using perl (handles multiline better than sed)
-    perl -i -p0e 'BEGIN { open(F,"'"$ENTRIES_FILE"'"); local $/; $e=<F>; close(F); }
-                  s/\\newcommand\{\\AllowlistEntries\}\{None\}/\\newcommand{\\AllowlistEntries}{$e}/s' \
+    # Replace "None" with the entries using perl
+    perl -i -p0e 'BEGIN { open(F,"'"$entries_file"'"); local $/; $e=<F>; close(F); }
+                  s/\\newcommand\{\\'"$var_name"'\}\{None\}/\\newcommand{'"$var_name"'}{$e}/s' \
         "$PDF_BUILD_DIR/scan_attestation.tex"
+}
+
+# Handle PII allowlist entries
+if [ "$PII_ALLOWLIST_COUNT" -gt 0 ]; then
+    build_allowlist_entries "$PII_ALLOWLIST_FILE" "$PDF_BUILD_DIR/pii_entries.tex" "PIIAllowlistEntries"
+fi
+
+# Handle Secrets allowlist entries
+if [ "$SECRETS_ALLOWLIST_COUNT" -gt 0 ]; then
+    build_allowlist_entries "$SECRETS_ALLOWLIST_FILE" "$PDF_BUILD_DIR/secrets_entries.tex" "SecretsAllowlistEntries"
 fi
 
 # Run pdflatex (twice for references)

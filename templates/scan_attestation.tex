@@ -47,10 +47,15 @@
 \newcommand{\PassCount}{5}
 \newcommand{\FailCount}{0}
 
-% Allowlist/Exceptions
-\newcommand{\AllowlistCount}{0}
-\newcommand{\AllowlistChecksum}{N/A}
-\newcommand{\AllowlistEntries}{None}
+% PII Allowlist/Exceptions
+\newcommand{\PIIAllowlistCount}{0}
+\newcommand{\PIIAllowlistChecksum}{N/A}
+\newcommand{\PIIAllowlistEntries}{None}
+
+% Secrets Allowlist/Exceptions
+\newcommand{\SecretsAllowlistCount}{0}
+\newcommand{\SecretsAllowlistChecksum}{N/A}
+\newcommand{\SecretsAllowlistEntries}{None}
 
 % Scan output checksums (first 16 chars of SHA256)
 \newcommand{\PIIScanChecksum}{N/A}
@@ -58,6 +63,7 @@
 \newcommand{\SecretsScanChecksum}{N/A}
 \newcommand{\MACScanChecksum}{N/A}
 \newcommand{\HostSecurityScanChecksum}{N/A}
+\newcommand{\ChecksumsMdChecksum}{N/A}
 \newcommand{\ReportChecksum}{N/A}
 
 % ============================================================================
@@ -212,19 +218,19 @@ Host Security & CM-6 & \resultcell{\HostSecurityResult} & \HostSecurityFindings 
 % ----------------------------------------------------------------------------
 \dmsection{Reviewed Exceptions}
 
-Items flagged by automated scans but reviewed and accepted as non-issues are documented in the PII allowlist file. Each exception includes a SHA256 hash for integrity verification and reviewer justification.
+Items flagged by automated scans but reviewed and accepted as non-issues are documented in allowlist files. Each exception includes a SHA256 hash for integrity verification and reviewer justification.
+
+\vspace{12pt}
+\textbf{6.1 PII Scan Exceptions}
 
 \vspace{6pt}
 \begin{tabular}{@{}ll@{}}
 \toprule
 \textbf{Allowlist File} & \texttt{.pii-allowlist} \\
-\textbf{SHA256 (first 16)} & \texttt{\AllowlistChecksum} \\
-\textbf{Total Exceptions} & \AllowlistCount \\
+\textbf{SHA256 (first 16)} & \texttt{\PIIAllowlistChecksum} \\
+\textbf{Total Exceptions} & \PIIAllowlistCount \\
 \bottomrule
 \end{tabular}
-
-\vspace{6pt}
-\textbf{Reviewed Justifications:}
 
 \vspace{6pt}
 {\small
@@ -232,13 +238,36 @@ Items flagged by automated scans but reviewed and accepted as non-issues are doc
 \toprule
 \textbf{\#} & \textbf{Justification} \\
 \midrule
-\AllowlistEntries
+\PIIAllowlistEntries
+\bottomrule
+\end{tabular}
+}
+
+\vspace{12pt}
+\textbf{6.2 Secrets Scan Exceptions}
+
+\vspace{6pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Allowlist File} & \texttt{.secrets-allowlist} \\
+\textbf{SHA256 (first 16)} & \texttt{\SecretsAllowlistChecksum} \\
+\textbf{Total Exceptions} & \SecretsAllowlistCount \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+{\small
+\begin{tabular}{@{}cp{4.5in}@{}}
+\toprule
+\textbf{\#} & \textbf{Justification} \\
+\midrule
+\SecretsAllowlistEntries
 \bottomrule
 \end{tabular}
 }
 
 \vspace{6pt}
-{\small\textbf{Note:} Full details including file paths and SHA256 hashes are in \texttt{.pii-allowlist}.}
+{\small\textbf{Note:} Full details including file paths and SHA256 hashes are in the respective allowlist files.}
 
 % ----------------------------------------------------------------------------
 \dmsection{Scan Output Checksums}
@@ -258,12 +287,14 @@ secrets-scan & \texttt{\SecretsScanChecksum} \\
 mac-address-scan & \texttt{\MACScanChecksum} \\
 host-security-scan & \texttt{\HostSecurityScanChecksum} \\
 security-scan-report & \texttt{\ReportChecksum} \\
+\midrule
+checksums.md & \texttt{\ChecksumsMdChecksum} \\
 \bottomrule
 \end{tabular}
 }
 
 \vspace{6pt}
-Full file names: \texttt{*-\ScanFileTimestamp.txt}. Complete checksums in \texttt{.scans/checksums.md}.
+Full file names: \texttt{*-\ScanFileTimestamp.txt}. The \texttt{checksums.md} file contains full SHA256 hashes for all scan outputs.
 
 % ----------------------------------------------------------------------------
 \dmsection{Attestation}

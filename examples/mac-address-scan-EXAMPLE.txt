@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    ff4a2b713311ea73...                                       #
+#  Source SHA256:    829a04721d380347...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    b1c95b5023710abb...                                       #
-#  Redacted:         2026-01-15T19:19:24Z                                       #
+#  Redacted:         2026-01-15T19:23:38Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,7 +19,7 @@
 IEEE 802.3 MAC Address Verification Scan
 =========================================
 Timestamp: 2026-01-15T[REDACTED]Z
-Toolkit: Security Verification Toolkit v0.0.0-test.20260115T191220Z-2-g9932243 (9932243)
+Toolkit: Security Verification Toolkit v0.0.0-test.20260115T191906Z-1-g23f054e (23f054e)
 Target: /Users/[REDACTED]
 Repository: Security
 
