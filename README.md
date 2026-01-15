@@ -8,26 +8,26 @@ This toolkit provides automated security verification scripts aligned with feder
 
 | Standard | Title |
 |----------|-------|
-| NIST SP 800-53 Rev 5 | Security and Privacy Controls |
-| NIST SP 800-171 | Protecting CUI in Nonfederal Systems |
 | FIPS 199 | Standards for Security Categorization |
 | FIPS 200 | Minimum Security Requirements |
+| NIST SP 800-53 Rev 5 | Security and Privacy Controls |
+| NIST SP 800-171 | Protecting CUI in Nonfederal Systems |
 
 ## Scripts
 
 | Script | NIST Control | Description |
 |--------|--------------|-------------|
-| `check-pii.sh` | SI-12 | Scan for PII patterns (SSN, phone, IP, credit card) |
-| `check-malware.sh` | SI-3 | ClamAV malware scanning |
-| `check-secrets.sh` | SA-11 | Detect hardcoded credentials and API keys |
-| `check-mac-addresses.sh` | SC-8 | IEEE 802.3 MAC address detection |
 | `check-host-security.sh` | CM-6 | Host OS security posture verification |
+| `check-mac-addresses.sh` | SC-8 | IEEE 802.3 MAC address detection |
+| `check-malware.sh` | SI-3 | ClamAV malware scanning |
+| `check-pii.sh` | SI-12 | Scan for PII patterns (SSN, phone, IP, credit card) |
+| `check-secrets.sh` | SA-11 | Detect hardcoded credentials and API keys |
 | `collect-host-inventory.sh` | CM-8 | System component inventory (CUI-marked) |
-| `run-all-scans.sh` | - | Run all scans with consolidated report |
 | `generate-compliance.sh` | - | Generate security compliance statement PDF |
-| `secure-delete.sh` | SP 800-88 | Securely delete files (NIST Clear method) |
 | `purge-git-history.sh` | SP 800-88 | Remove sensitive files from git history |
+| `run-all-scans.sh` | - | Run all scans with consolidated report |
 | `scan-vulnerabilities.sh` | RA-5, SI-2 | Comprehensive vulnerability scanning (Nmap/OpenVAS/Lynis) |
+| `secure-delete.sh` | SP 800-88 | Securely delete files (NIST Clear method) |
 
 ## Usage
 

@@ -145,11 +145,11 @@ The following NIST SP 800-53 controls have been verified through automated scann
 \toprule
 \textbf{Control} & \textbf{Family} & \textbf{Verification Method} \\
 \midrule
-SI-3 & System Integrity & ClamAV malware scanning \\
-SI-12 & System Integrity & PII pattern detection (SSN, phone, credit card) \\
+CM-6 & Configuration Management & Host security posture verification \\
 SA-11 & Services Acquisition & Secrets and credential scanning \\
 SC-8 & Communications Protection & MAC address detection \\
-CM-6 & Configuration Management & Host security posture verification \\
+SI-3 & System Integrity & ClamAV malware scanning \\
+SI-12 & System Integrity & PII pattern detection (SSN, phone, credit card) \\
 \bottomrule
 \end{tabular}
 
@@ -170,11 +170,11 @@ Automated security scans were executed against the \SoftwareName{} codebase:
 \toprule
 \textbf{Scan} & \textbf{NIST Control} & \textbf{Result} & \textbf{Findings} \\
 \midrule
-Malware Scan & SI-3 & PASS & No malware detected (ClamAV) \\
-PII Scan & SI-12 & PASS* & OID strings reviewed, no actual PII \\
+Host Security & CM-6 & PASS & Host baseline verified \\
 Secrets Scan & SA-11 & PASS & No hardcoded credentials \\
 MAC Address Scan & SC-8 & PASS & No MAC addresses detected \\
-Host Security & CM-6 & PASS & Host baseline verified \\
+Malware Scan & SI-3 & PASS & No malware detected (ClamAV) \\
+PII Scan & SI-12 & PASS* & OID strings reviewed, no actual PII \\
 \bottomrule
 \end{tabular}
 
@@ -191,12 +191,12 @@ Host Security & CM-6 & PASS & Host baseline verified \\
 \toprule
 \textbf{Component} & \textbf{Implementation} \\
 \midrule
+Cryptographic Library & BouncyCastle 8.0.2 (via iText7 adapter) \\
 Hash Algorithm & SHA-256 (FIPS 180-4 compliant) \\
+Key Storage & Windows Certificate Store (CurrentUser\textbackslash My) \\
 Signature Algorithms & RSA, ECDSA (via Windows CNG) \\
 Signature Format & CMS (Cryptographic Message Syntax, RFC 5652) \\
-Key Storage & Windows Certificate Store (CurrentUser\textbackslash My) \\
 Smart Card Support & PIV/CAC via Windows CAPI/CNG \\
-Cryptographic Library & BouncyCastle 8.0.2 (via iText7 adapter) \\
 \bottomrule
 \end{tabular}
 

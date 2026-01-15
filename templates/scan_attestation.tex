@@ -196,11 +196,11 @@ SI-12 & System \& Info Integrity & PII pattern detection \\
 \toprule
 \textbf{Scan} & \textbf{NIST Control} & \textbf{Result} & \textbf{Findings} \\
 \midrule
-PII Scan & SI-12 & \resultcell{\PIIScanResult} & \PIIScanFindings \\
-Malware Scan & SI-3 & \resultcell{\MalwareScanResult} & \MalwareScanFindings \\
+Host Security & CM-6 & \resultcell{\HostSecurityResult} & \HostSecurityFindings \\
 Secrets Scan & SA-11 & \resultcell{\SecretsScanResult} & \SecretsScanFindings \\
 MAC Address Scan & SC-8 & \resultcell{\MACScanResult} & \MACScanFindings \\
-Host Security & CM-6 & \resultcell{\HostSecurityResult} & \HostSecurityFindings \\
+Malware Scan & SI-3 & \resultcell{\MalwareScanResult} & \MalwareScanFindings \\
+PII Scan & SI-12 & \resultcell{\PIIScanResult} & \PIIScanFindings \\
 \bottomrule
 \end{tabular}
 
@@ -279,11 +279,11 @@ The following SHA256 checksums were generated for scan output files:
 \textbf{Scan Output File} & \textbf{SHA256 (first 16)} \\
 \midrule
 host-inventory & \texttt{\HostInventoryChecksum} \\
-pii-scan & \texttt{\PIIScanChecksum} \\
-malware-scan & \texttt{\MalwareScanChecksum} \\
-secrets-scan & \texttt{\SecretsScanChecksum} \\
-mac-address-scan & \texttt{\MACScanChecksum} \\
 host-security-scan & \texttt{\HostSecurityScanChecksum} \\
+mac-address-scan & \texttt{\MACScanChecksum} \\
+malware-scan & \texttt{\MalwareScanChecksum} \\
+pii-scan & \texttt{\PIIScanChecksum} \\
+secrets-scan & \texttt{\SecretsScanChecksum} \\
 security-scan-report & \texttt{\ReportChecksum} \\
 \bottomrule
 \end{tabular}

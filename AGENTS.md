@@ -178,17 +178,17 @@ The `scan-vulnerabilities.sh` script provides comprehensive vulnerability assess
 
 | Control | Family | Description | Implementation |
 |---------|--------|-------------|----------------|
-| RA-3 | Risk Assessment | Risk Assessment | All tools contribute to risk assessment |
-| RA-5 | Risk Assessment | Vulnerability Monitoring and Scanning | Nmap + OpenVAS network/vuln scanning |
 | CA-2 | Assessment | Control Assessments | Lynis system audit |
 | CA-7 | Assessment | Continuous Monitoring | Scheduled scan capability |
+| CM-6 | Configuration Mgmt | Configuration Settings | Lynis configuration audit |
+| CM-8 | Configuration Mgmt | System Component Inventory | Nmap service inventory |
+| RA-3 | Risk Assessment | Risk Assessment | All tools contribute to risk assessment |
+| RA-5 | Risk Assessment | Vulnerability Monitoring and Scanning | Nmap + OpenVAS network/vuln scanning |
+| SA-11 | Services Acquisition | Developer Testing | All tools for security testing |
+| SC-7 | Comms Protection | Boundary Protection | Nmap firewall/port analysis |
 | SI-2 | System Integrity | Flaw Remediation | OpenVAS CVE identification |
 | SI-4 | System Integrity | System Monitoring | Nmap service monitoring |
 | SI-7 | System Integrity | Software/Firmware Integrity | Lynis integrity checks |
-| CM-6 | Configuration Mgmt | Configuration Settings | Lynis configuration audit |
-| CM-8 | Configuration Mgmt | System Component Inventory | Nmap service inventory |
-| SC-7 | Comms Protection | Boundary Protection | Nmap firewall/port analysis |
-| SA-11 | Services Acquisition | Developer Testing | All tools for security testing |
 
 ### NIST SP 800-171 Rev 2 Control Mapping
 
