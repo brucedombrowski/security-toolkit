@@ -115,7 +115,8 @@ check_dependencies() {
 # Run security scans on toolkit itself
 run_scans() {
     print_info "Running security scans on toolkit..."
-    print_warning "This may take a few minutes. Press Ctrl+C to skip."
+    print_warning "ClamAV malware scan typically takes 2-5 minutes. No output shown until complete."
+    print_warning "Press Ctrl+C to cancel, or use --skip-tests to bypass."
     echo ""
     
     if [ ! -x "$REPO_ROOT/scripts/run-all-scans.sh" ]; then
