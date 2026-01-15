@@ -184,6 +184,11 @@ The signed PDF provides cryptographic proof that:
 
 This is especially important for compliance documentation submitted to federal agencies or contractors.
 
+**Recommended Tool:** [PDFSigner](https://github.com/brucedombrowski/PDFSigner) - A cross-platform utility for digitally signing PDF documents with X.509 certificates.
+
+> **Future:** PDFSigner will be integrated as an optional component of the Security toolkit to enable one-command signing and submission workflows.
+
+
 ## Integration with CI/CD
 
 ```yaml
