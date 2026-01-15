@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-01-15
+
+### Added
+
+- **Interactive PII Review Mode**
+  - New `-i` flag for `check-pii.sh` enables interactive review of findings
+  - Prompts user to Accept, Reject, or Skip each potential PII match
+  - Accepted findings stored in `.pii-allowlist` with reason and hash
+  - Allowlisted items automatically skipped in future scans
+  - Non-interactive mode suggests `-i` flag when findings detected
+
 ## [1.7.0] - 2026-01-15
 
 ### Added
@@ -159,6 +170,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 199 (Standards for Security Categorization)
 - FIPS 200 (Minimum Security Requirements)
 
+[1.8.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.8.0
 [1.7.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.7.0
 [1.6.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.6.0
 [1.5.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.5.0
