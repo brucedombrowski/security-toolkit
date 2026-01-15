@@ -70,7 +70,7 @@ output "  Contents include MAC addresses, serial numbers, and system inventory."
 output "  - Do not post to public repositories or websites"
 output "  - Limit distribution to authorized personnel"
 output "  - Store on encrypted media or systems"
-output "  - Destroy securely when no longer needed"
+output "  - Destroy with: scripts/secure-delete.sh <file> (NIST SP 800-88)"
 output ""
 
 # ============================================================================

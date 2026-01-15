@@ -204,20 +204,21 @@ sed -i.bak \
     -e "s/\\\\newcommand{\\\\ChecksumsMdChecksum}{N\\/A}/\\\\newcommand{\\\\ChecksumsMdChecksum}{$CHECKSUMS_MD_CHECKSUM}/g" \
     "$PDF_BUILD_DIR/scan_attestation.tex"
 
-# Function to build allowlist entries for LaTeX
+# Function to build allowlist entries for LaTeX (output to file for \input)
+# Note: Last row must NOT have trailing \\ before \bottomrule
 build_allowlist_entries() {
     local allowlist_file="$1"
     local entries_file="$2"
-    local var_name="$3"
 
     : > "$entries_file"  # Clear/create file
-    local entry_num=0
+
+    # Collect all entries first
+    local entries=()
     while IFS= read -r line; do
         if [ -n "$line" ]; then
             # Extract reason (format: HASH # REASON # CONTENT_SNIPPET)
             reason=$(echo "$line" | sed 's/^[a-f0-9]* # \([^#]*\) #.*/\1/')
             if [ -n "$reason" ]; then
-                entry_num=$((entry_num + 1))
                 # Escape LaTeX special characters: $ _ { } & % #
                 reason=$(echo "$reason" | sed -e 's/\$/\\$/g' \
                                               -e 's/_/\\_/g' \
@@ -226,25 +227,41 @@ build_allowlist_entries() {
                                               -e 's/&/\\&/g' \
                                               -e 's/%/\\%/g' \
                                               -e 's/#/\\#/g')
-                echo "$entry_num & $reason \\\\\\\\" >> "$entries_file"
+                entries+=("$reason")
             fi
         fi
     done < <(grep "^[a-f0-9]" "$allowlist_file" 2>/dev/null | head -20)
 
-    # Replace "None" with the entries using perl
-    perl -i -p0e 'BEGIN { open(F,"'"$entries_file"'"); local $/; $e=<F>; close(F); }
-                  s/\\newcommand\{\\'"$var_name"'\}\{None\}/\\newcommand{'"$var_name"'}{$e}/s' \
-        "$PDF_BUILD_DIR/scan_attestation.tex"
+    # Write entries with proper row separators
+    local total=${#entries[@]}
+    if [ "$total" -eq 0 ]; then
+        # No entries - use spanning cell
+        printf '\\multicolumn{2}{c}{None}' > "$entries_file"
+    else
+        for i in "${!entries[@]}"; do
+            local num=$((i + 1))
+            if [ "$num" -lt "$total" ]; then
+                printf '%d & %s \\\\\n' "$num" "${entries[$i]}" >> "$entries_file"
+            else
+                # Last entry - no trailing \\
+                printf '%d & %s' "$num" "${entries[$i]}" >> "$entries_file"
+            fi
+        done
+    fi
 }
 
-# Handle PII allowlist entries
+# Create PII allowlist entries file (always create, even if empty for \input)
 if [ "$PII_ALLOWLIST_COUNT" -gt 0 ]; then
-    build_allowlist_entries "$PII_ALLOWLIST_FILE" "$PDF_BUILD_DIR/pii_entries.tex" "PIIAllowlistEntries"
+    build_allowlist_entries "$PII_ALLOWLIST_FILE" "$PDF_BUILD_DIR/pii_entries.tex"
+else
+    printf '\\multicolumn{2}{c}{None}' > "$PDF_BUILD_DIR/pii_entries.tex"
 fi
 
-# Handle Secrets allowlist entries
+# Create Secrets allowlist entries file
 if [ "$SECRETS_ALLOWLIST_COUNT" -gt 0 ]; then
-    build_allowlist_entries "$SECRETS_ALLOWLIST_FILE" "$PDF_BUILD_DIR/secrets_entries.tex" "SecretsAllowlistEntries"
+    build_allowlist_entries "$SECRETS_ALLOWLIST_FILE" "$PDF_BUILD_DIR/secrets_entries.tex"
+else
+    printf '\\multicolumn{2}{c}{None}' > "$PDF_BUILD_DIR/secrets_entries.tex"
 fi
 
 # Run pdflatex (twice for references)

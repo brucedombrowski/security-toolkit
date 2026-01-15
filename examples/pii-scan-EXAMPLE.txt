@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    0f30b40485869486...                                       #
+#  Source SHA256:    f5b0b3bb3de3a1cd...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    b1c95b5023710abb...                                       #
-#  Redacted:         2026-01-15T19:23:38Z                                       #
+#  Redacted:         2026-01-15T19:31:27Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,7 +19,7 @@
 PII Verification Scan
 =====================
 Timestamp: 2026-01-15T[REDACTED]Z
-Toolkit: Security Verification Toolkit v0.0.0-test.20260115T191906Z-1-g23f054e (23f054e)
+Toolkit: Security Verification Toolkit v0.0.0-test.20260115T192320Z-2-g8dd20f6 (8dd20f6)
 Target: /Users/[REDACTED]
 Repository: Security
 
@@ -37,9 +37,13 @@ Checking: Social Security Numbers
   Result: PASS (0 matches)
 Checking: Credit Card Numbers (16 digit)
 /Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
+/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
 /Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')"
 /Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')"
-  Result: REVIEW - 3 new match(es) found
+/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
+/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')"
+/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')"
+  Result: REVIEW - 7 new match(es) found
   (3 previously allowlisted)
 
 =====================

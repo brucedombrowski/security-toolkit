@@ -64,6 +64,9 @@ The recommended workflow for releasing the toolkit:
 ./scripts/check-pii.sh /path/to/project
 ./scripts/check-secrets.sh /path/to/project
 ./scripts/check-malware.sh /path/to/project
+
+# Securely delete scan artifacts (NIST SP 800-88)
+./scripts/secure-delete.sh -rf .scans/
 ```
 
 ### Integrate into CI/CD
@@ -198,7 +201,7 @@ Host inventory output contains:
 - Store on encrypted media or NIST 800-171 compliant systems
 - Limit access to authorized personnel
 - Do not post to public repositories
-- Destroy securely (NIST SP 800-88) when no longer needed
+- Destroy securely when no longer needed: `./scripts/secure-delete.sh -rf .scans/`
 
 ## License
 

@@ -50,12 +50,10 @@
 % PII Allowlist/Exceptions
 \newcommand{\PIIAllowlistCount}{0}
 \newcommand{\PIIAllowlistChecksum}{N/A}
-\newcommand{\PIIAllowlistEntries}{None}
 
 % Secrets Allowlist/Exceptions
 \newcommand{\SecretsAllowlistCount}{0}
 \newcommand{\SecretsAllowlistChecksum}{N/A}
-\newcommand{\SecretsAllowlistEntries}{None}
 
 % Scan output checksums (first 16 chars of SHA256)
 \newcommand{\PIIScanChecksum}{N/A}
@@ -181,12 +179,12 @@ The following NIST SP 800-53 Rev 5 controls were verified:
 \toprule
 \textbf{Control} & \textbf{Family} & \textbf{Verification Method} \\
 \midrule
-CM-8 & Configuration Management & Host inventory collection \\
-SI-3 & System Integrity & ClamAV malware scanning \\
-SI-12 & System Integrity & PII pattern detection \\
-SA-11 & Services Acquisition & Secrets and credential scanning \\
-SC-8 & Communications Protection & MAC address detection \\
 CM-6 & Configuration Management & Host security posture \\
+CM-8 & Configuration Management & Host inventory collection \\
+SA-11 & System \& Services Acquisition & Secrets and credential scanning \\
+SC-8 & System \& Comms Protection & MAC address detection \\
+SI-3 & System \& Info Integrity & ClamAV malware scanning \\
+SI-12 & System \& Info Integrity & PII pattern detection \\
 \bottomrule
 \end{tabular}
 
@@ -238,7 +236,7 @@ Items flagged by automated scans but reviewed and accepted as non-issues are doc
 \toprule
 \textbf{\#} & \textbf{Justification} \\
 \midrule
-\PIIAllowlistEntries
+\input{pii_entries.tex}
 \bottomrule
 \end{tabular}
 }
@@ -261,7 +259,7 @@ Items flagged by automated scans but reviewed and accepted as non-issues are doc
 \toprule
 \textbf{\#} & \textbf{Justification} \\
 \midrule
-\SecretsAllowlistEntries
+\input{secrets_entries.tex}
 \bottomrule
 \end{tabular}
 }
