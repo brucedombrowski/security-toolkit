@@ -204,9 +204,14 @@ truncate_package_lists() {
     mv "$temp_file" "$file"
 }
 
-# Process scan files
+# Process scan files (skip vulnerability scans - too sensitive even when redacted)
 for file in "$SOURCE_DIR"/*-scan-*.txt; do
     if [ -f "$file" ]; then
+        # Skip vulnerability scan files - they expose network topology
+        if echo "$file" | grep -q "vulnerability-scan"; then
+            echo "Skipping: $(basename "$file") (network topology - too sensitive)"
+            continue
+        fi
         # Strip full timestamp (e.g., 2026-01-15-T185310Z) from filename
         filename=$(basename "$file" | sed -E 's/-[0-9]{4}-[0-9]{2}-[0-9]{2}-T[0-9]{6}Z//' | sed 's/.txt/-EXAMPLE.txt/')
         redact_file "$file" "$OUTPUT_DIR/$filename"
