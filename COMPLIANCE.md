@@ -176,6 +176,15 @@ The `generate-compliance.sh` script returns:
     path: ./artifacts/security_compliance_statement.pdf
 ```
 
+
+## U.S. Export Control (EAR 740.13(e)) Statement
+
+The Security Verification Toolkit does not implement or distribute cryptographic functionality for data confidentiality (encryption). All cryptographic operations are limited to digital signature generation, verification, and hashing for integrity and authentication purposes only.
+
+As such, this toolkit is **not subject to U.S. Export Administration Regulations (EAR) encryption controls** under 15 CFR 740.13(e) (encryption commodities, software, and technology). No encryption for the purpose of data confidentiality is present, and the toolkit is not classified under ECCN 5D002.
+
+This statement is provided for compliance and export review purposes. For further details, see [15 CFR 740.13(e)](https://www.ecfr.gov/current/title-15/subtitle-B/chapter-VII/subchapter-C/part-740/section-740.13).
+
 ## Related Documents
 
 - [README.md](README.md) - Security toolkit overview
