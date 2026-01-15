@@ -226,6 +226,21 @@ if [ -f "$SOURCE_DIR/host-inventory-"*.txt ]; then
     echo "Created: $OUTPUT_DIR/host-inventory-EXAMPLE.txt"
 fi
 
+# Copy scan attestation PDF if present
+# Note: PDF attestation is UNCLASSIFIED - it contains:
+# - Scan results (PASS/FAIL, no sensitive data)
+# - Host inventory CHECKSUM (not the actual inventory)
+# - Target path (repo directory - public for this toolkit)
+# - NIST control mappings and verification chain
+# No CUI markings, no MAC addresses, no hostnames, no serial numbers.
+for pdf in "$SOURCE_DIR"/scan-attestation-*.pdf; do
+    if [ -f "$pdf" ]; then
+        cp "$pdf" "$OUTPUT_DIR/scan-attestation-EXAMPLE.pdf"
+        echo "Created: $OUTPUT_DIR/scan-attestation-EXAMPLE.pdf"
+        break  # Only copy the first/latest one
+    fi
+done
+
 # Generate README.md automatically (self-documenting)
 generate_readme() {
     local readme_file="$OUTPUT_DIR/README.md"
@@ -262,6 +277,17 @@ README_EOF
             echo "- \`$basename\` - $description" >> "$readme_file"
         fi
     done
+
+    # Add PDF attestation section if present
+    if [ -f "$OUTPUT_DIR/scan-attestation-EXAMPLE.pdf" ]; then
+        cat >> "$readme_file" <<'PDF_EOF'
+
+### PDF Attestation
+
+- `scan-attestation-EXAMPLE.pdf` - Security scan attestation document (NIST control mapping, results summary, verification chain)
+
+PDF_EOF
+    fi
 
     cat >> "$readme_file" <<'README_EOF'
 
