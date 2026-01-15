@@ -25,6 +25,11 @@
 \newcommand{\SecurityToolkitCommit}{abc1234}
 \newcommand{\SecurityToolkitURL}{https://github.com/brucedombrowski/Security}
 
+% Host inventory reference
+\newcommand{\HostInventoryChecksum}{0000000000000000000000000000000000000000000000000000000000000000}
+\newcommand{\HostInventoryFile}{host-inventory-2026-01-15.txt}
+\newcommand{\ScanDateStamp}{2026-01-15}
+
 % Scan results (PASS/FAIL)
 \newcommand{\PIIScanResult}{PASS}
 \newcommand{\PIIScanFindings}{No PII detected}
@@ -128,6 +133,23 @@ This document attests that automated security scans were executed against \textb
 \end{itemize}
 
 % ----------------------------------------------------------------------------
+\dmsection{Host Inventory Reference}
+
+A host inventory snapshot was collected at scan time to establish a verifiable system thumbprint. This enables integrity verification while keeping sensitive machine data (MAC addresses, serial numbers) separate from shareable scan results.
+
+\vspace{6pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Inventory File} & \texttt{\HostInventoryFile} \\
+\textbf{SHA256 Checksum} & \texttt{\small \HostInventoryChecksum} \\
+\textbf{NIST Control} & CM-8 (System Component Inventory) \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\textbf{Note:} The host inventory contains sensitive information. All scan outputs reference this checksum rather than embedding the actual data, allowing scan results to be shared without exposing machine-specific details.
+
+% ----------------------------------------------------------------------------
 \dmsection{NIST Control Mapping}
 
 The following NIST SP 800-53 Rev 5 controls were verified:
@@ -137,6 +159,7 @@ The following NIST SP 800-53 Rev 5 controls were verified:
 \toprule
 \textbf{Control} & \textbf{Family} & \textbf{Verification Method} \\
 \midrule
+CM-8 & Configuration Management & Host inventory collection \\
 SI-3 & System Integrity & ClamAV malware scanning \\
 SI-12 & System Integrity & PII pattern detection \\
 SA-11 & Services Acquisition & Secrets and credential scanning \\
@@ -166,6 +189,31 @@ Host Security & CM-6 & \resultcell{\HostSecurityResult} & \HostSecurityFindings 
 
 \vspace{6pt}
 \textbf{Overall Result:} \resultcell{\OverallResult}
+
+% ----------------------------------------------------------------------------
+\dmsection{Scan Output Checksums}
+
+The following SHA256 checksums were generated for scan output files:
+
+\vspace{6pt}
+{\small
+\begin{tabular}{@{}p{2.8in}l@{}}
+\toprule
+\textbf{File} & \textbf{SHA256 (first 16 chars)} \\
+\midrule
+\texttt{host-inventory-\ScanDateStamp.txt} & \texttt{\HostInventoryChecksum} \\
+\texttt{pii-scan-\ScanDateStamp.txt} & See checksums.md \\
+\texttt{malware-scan-\ScanDateStamp.txt} & See checksums.md \\
+\texttt{secrets-scan-\ScanDateStamp.txt} & See checksums.md \\
+\texttt{mac-address-scan-\ScanDateStamp.txt} & See checksums.md \\
+\texttt{host-security-scan-\ScanDateStamp.txt} & See checksums.md \\
+\texttt{security-scan-report-\ScanDateStamp.txt} & See checksums.md \\
+\bottomrule
+\end{tabular}
+}
+
+\vspace{6pt}
+Complete checksums are recorded in \texttt{.scans/checksums.md}.
 
 % ----------------------------------------------------------------------------
 \dmsection{Attestation}

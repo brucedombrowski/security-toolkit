@@ -309,14 +309,20 @@ if [ -n "$PDFLATEX" ] && [ -x "$PDFLATEX" ] && [ -f "$TEMPLATE_FILE" ]; then
     # Escape special characters in paths for sed
     ESCAPED_TARGET_PATH=$(echo "$TARGET_DIR" | sed 's/[&/\]/\\&/g')
 
+    # Truncate inventory checksum for display (first 16 chars)
+    INVENTORY_CHECKSUM_SHORT="${INVENTORY_CHECKSUM:0:16}..."
+
     sed -i.bak \
         -e "s/SCAN-YYYY-NNN/$UNIQUE_ID/g" \
         -e "s/January 15, 2026/$FORMATTED_DATE/g" \
         -e "s/2026-01-15 08:00:00/$TIMESTAMP/g" \
+        -e "s/2026-01-15/$DATE_STAMP/g" \
         -e "s/ProjectName/$REPO_NAME/g" \
         -e "s|/path/to/project|$ESCAPED_TARGET_PATH|g" \
         -e "s/v1.0.0/$TOOLKIT_VERSION/g" \
         -e "s/abc1234/$TOOLKIT_COMMIT/g" \
+        -e "s/0000000000000000000000000000000000000000000000000000000000000000/$INVENTORY_CHECKSUM_SHORT/g" \
+        -e "s/host-inventory-2026-01-15.txt/host-inventory-$DATE_STAMP.txt/g" \
         -e "s/\\\\newcommand{\\\\PIIScanResult}{PASS}/\\\\newcommand{\\\\PIIScanResult}{$PII_RESULT}/g" \
         -e "s/\\\\newcommand{\\\\PIIScanFindings}{No PII detected}/\\\\newcommand{\\\\PIIScanFindings}{$PII_FINDINGS}/g" \
         -e "s/\\\\newcommand{\\\\MalwareScanResult}{PASS}/\\\\newcommand{\\\\MalwareScanResult}{$MALWARE_RESULT}/g" \

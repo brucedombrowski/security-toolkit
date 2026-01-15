@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-01-15
+
+### Added
+
+- **Enhanced PDF Attestation**
+  - Host Inventory Reference section with SHA256 checksum
+  - Scan Output Checksums section listing all generated files
+  - CM-8 (System Component Inventory) added to NIST Control Mapping table
+  - Privacy note explaining inventory checksum reference design
+  - Date-stamped file references in checksums table
+
+### Changed
+
+- PDF attestation template now includes complete audit trail
+- `run-all-scans.sh` substitutes inventory checksum and date stamp into PDF
+
 ## [1.6.0] - 2026-01-15
 
 ### Added
@@ -143,6 +159,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 199 (Standards for Security Categorization)
 - FIPS 200 (Minimum Security Requirements)
 
+[1.7.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.7.0
 [1.6.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.6.0
 [1.5.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.5.0
 [1.4.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.4.0
