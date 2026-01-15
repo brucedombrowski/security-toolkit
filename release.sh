@@ -52,12 +52,24 @@ print_info() {
     echo -e "${BLUE}→ $1${NC}"
 }
 
+# Get latest version tag
+get_latest_version() {
+    git -C "$REPO_ROOT" describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0"
+}
+
+# Generate test version
+generate_test_version() {
+    local latest=$(get_latest_version)
+    local timestamp=$(date -u '+%Y%m%dT%H%M%SZ')
+    echo "0.0.0-test.$timestamp"
+}
+
 # Validate version format (semantic versioning)
 validate_version() {
     local version="$1"
-    if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+    if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
         print_error "Invalid version format: $version"
-        echo "Expected semantic versioning (e.g., 1.0.0, 1.0.0-beta)"
+        echo "Expected semantic versioning (e.g., 1.0.0, 1.0.0-beta, 0.0.0-test.20260115T164943Z)"
         return 1
     fi
     return 0
@@ -223,19 +235,15 @@ print_summary() {
 main() {
     print_header
     
-    if [ -z "$1" ]; then
-        echo "Usage: $0 <version> [--skip-tests]"
+    # If no version provided, generate a test release
+    local version="${1:-}"
+    
+    if [ -z "$version" ]; then
+        version=$(generate_test_version)
+        print_info "No version specified—generating test release: $version"
         echo ""
-        echo "Examples:"
-        echo "  $0 1.0.0"
-        echo "  $0 1.0.0-beta"
-        echo "  $0 1.0.0 --skip-tests"
-        echo ""
-        echo "Version format: semantic versioning (MAJOR.MINOR.PATCH[-prerelease])"
-        exit 2
     fi
     
-    local version="$1"
     local skip_tests="${2:-}"
     
     # Validate version
