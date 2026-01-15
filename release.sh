@@ -115,23 +115,37 @@ check_dependencies() {
 # Run security scans on toolkit itself
 run_scans() {
     print_info "Running security scans on toolkit..."
-    print_warning "Press Ctrl+C to skip scans"
+    print_warning "This may take a few minutes. Press Ctrl+C to skip."
+    echo ""
     
     if [ ! -x "$REPO_ROOT/scripts/run-all-scans.sh" ]; then
         print_error "run-all-scans.sh not found or not executable"
         return 2
     fi
     
-    if ! timeout 300 "$REPO_ROOT/scripts/run-all-scans.sh" "$REPO_ROOT" 2>&1 | tail -20; then
-        local exit_code=$?
+    # Run scans with timeout and show progress
+    local scan_output
+    local exit_code=0
+    
+    if ! scan_output=$(timeout 300 "$REPO_ROOT/scripts/run-all-scans.sh" "$REPO_ROOT" 2>&1); then
+        exit_code=$?
         if [ $exit_code -eq 124 ]; then
             print_warning "Scans timed out (5 minutes). Use --skip-tests to bypass."
             return 1
         fi
-        print_warning "Scans completed with findings (review above)"
-    else
-        print_success "All security scans passed"
     fi
+    
+    # Show scan output
+    echo "$scan_output"
+    echo ""
+    
+    if [ $exit_code -eq 0 ]; then
+        print_success "All security scans passed"
+    else
+        print_warning "Scans completed with findings (review above)"
+    fi
+    
+    return 0
 }
 
 # Generate compliance statement
