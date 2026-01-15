@@ -25,7 +25,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+# Use UTC for consistent timestamps across time zones
+TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 TOOLKIT_VERSION=$(git -C "$SECURITY_REPO_DIR" describe --tags --always 2>/dev/null || echo "unknown")
 TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
@@ -46,6 +47,16 @@ if [ -n "$OUTPUT_FILE" ]; then
     echo "" > "$OUTPUT_FILE"
 fi
 
+output "////////////////////////////////////////////////////////////////////////////////"
+output "//                                                                            //"
+output "//                 CONTROLLED UNCLASSIFIED INFORMATION (CUI)                  //"
+output "//                                                                            //"
+output "//  CUI Category: CTI (Controlled Technical Information)                      //"
+output "//  Dissemination: FEDCON - Federal Contractors                               //"
+output "//  Safeguarding: Per NIST SP 800-171                                         //"
+output "//                                                                            //"
+output "////////////////////////////////////////////////////////////////////////////////"
+output ""
 output "Host System Inventory"
 output "====================="
 output "Generated: $TIMESTAMP"
@@ -53,8 +64,13 @@ output "Hostname: $(hostname)"
 output "Toolkit: Security Verification Toolkit $TOOLKIT_VERSION ($TOOLKIT_COMMIT)"
 output "Source: https://github.com/brucedombrowski/Security"
 output ""
-output "NOTICE: This inventory contains sensitive information including MAC addresses."
-output "        Handle according to your organization's security policies."
+output "HANDLING NOTICE:"
+output "  This document contains Controlled Unclassified Information (CUI)."
+output "  Contents include MAC addresses, serial numbers, and system inventory."
+output "  - Do not post to public repositories or websites"
+output "  - Limit distribution to authorized personnel"
+output "  - Store on encrypted media or systems"
+output "  - Destroy securely when no longer needed"
 output ""
 
 # ============================================================================
@@ -270,6 +286,15 @@ fi
 output ""
 output "====================="
 output "Inventory collection complete."
+output ""
+output "////////////////////////////////////////////////////////////////////////////////"
+output "//                                                                            //"
+output "//                 CONTROLLED UNCLASSIFIED INFORMATION (CUI)                  //"
+output "//                                                                            //"
+output "//  Reference: 32 CFR Part 2002, NIST SP 800-171                              //"
+output "//  Unauthorized disclosure subject to administrative/civil penalties         //"
+output "//                                                                            //"
+output "////////////////////////////////////////////////////////////////////////////////"
 
 if [ -n "$OUTPUT_FILE" ]; then
     echo "Inventory saved to: $OUTPUT_FILE"

@@ -45,6 +45,10 @@
 \newcommand{\PassCount}{5}
 \newcommand{\FailCount}{0}
 
+% Allowlist/Exceptions
+\newcommand{\AllowlistCount}{0}
+\newcommand{\AllowlistEntries}{None}
+
 % ============================================================================
 % DOCUMENT CONFIGURATION
 % ============================================================================
@@ -189,6 +193,20 @@ Host Security & CM-6 & \resultcell{\HostSecurityResult} & \HostSecurityFindings 
 
 \vspace{6pt}
 \textbf{Overall Result:} \resultcell{\OverallResult}
+
+% ----------------------------------------------------------------------------
+\dmsection{Reviewed Exceptions}
+
+The following items were flagged by automated scans but reviewed and accepted as non-issues. Each exception requires documented justification.
+
+\vspace{6pt}
+\textbf{Total Exceptions:} \AllowlistCount
+
+\vspace{6pt}
+\AllowlistEntries
+
+\vspace{6pt}
+\textbf{Note:} Exceptions are stored in \texttt{.pii-allowlist} with SHA256 hashes for integrity verification. Each entry includes reviewer justification (e.g., ``X.509 OID for certificate filtering'').
 
 % ----------------------------------------------------------------------------
 \dmsection{Scan Output Checksums}

@@ -53,7 +53,8 @@ fi
 # Allowlist file location
 ALLOWLIST_FILE="$TARGET_DIR/.pii-allowlist"
 
-TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+# Use UTC for consistent timestamps across time zones
+TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 REPO_NAME=$(basename "$TARGET_DIR")
 TOOLKIT_VERSION=$(git -C "$SECURITY_REPO_DIR" describe --tags --always 2>/dev/null || echo "unknown")
 TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -138,9 +139,10 @@ prompt_review() {
     # Provide context-aware explanation based on content
     if echo "$content" | grep -qE "1\.3\.6\.1\.[0-9]"; then
         echo "  WHY THIS MATCHED:"
-        echo "    This looks like an X.509 Object Identifier (OID), not an IP address."
-        echo "    OIDs like 1.3.6.1.5.5.7.3.4 identify certificate purposes (EKU)."
-        echo "    These are standard identifiers defined by IANA/ISO, not network addresses."
+        echo "    This is an X.509 Object Identifier (OID), not an IP address."
+        echo "    OIDs identify certificate purposes (Extended Key Usage)."
+        echo "    Code uses these OIDs to filter certificates by purpose"
+        echo "    (e.g., selecting only signing or encryption certificates)."
         echo "    Example: 1.3.6.1.5.5.7.3.4 = Email Protection EKU"
         echo ""
     elif echo "$content" | grep -qE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" | grep -qvE "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$"; then

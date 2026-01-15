@@ -32,7 +32,8 @@ else
     TARGET_DIR="$SECURITY_REPO_DIR"
 fi
 
-TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+# Use UTC for consistent timestamps across time zones
+TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 REPO_NAME=$(basename "$TARGET_DIR")
 TOOLKIT_VERSION=$(git -C "$SECURITY_REPO_DIR" describe --tags --always 2>/dev/null || echo "unknown")
 TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")

@@ -21,7 +21,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+# Use UTC for consistent timestamps across time zones
+TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 TOOLKIT_VERSION=$(git -C "$SECURITY_REPO_DIR" describe --tags --always 2>/dev/null || echo "unknown")
 TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 

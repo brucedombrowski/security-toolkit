@@ -22,6 +22,7 @@ This toolkit provides automated security verification scripts aligned with feder
 | `check-secrets.sh` | SA-11 | Detect hardcoded credentials and API keys |
 | `check-mac-addresses.sh` | SC-8 | IEEE 802.3 MAC address detection |
 | `check-host-security.sh` | CM-6 | Host OS security posture verification |
+| `collect-host-inventory.sh` | CM-8 | System component inventory (CUI-marked) |
 | `run-all-scans.sh` | - | Run all scans with consolidated report |
 | `generate-compliance.sh` | - | Generate security compliance statement PDF |
 
@@ -121,6 +122,18 @@ Add `.scans/` to your project's `.gitignore`:
 echo ".scans/" >> /path/to/project/.gitignore
 ```
 
+## Scan Philosophy
+
+**"You are only as good as your last scan."**
+
+Scan results are point-in-time attestations. Each run of `run-all-scans.sh` overwrites previous results because:
+
+- Any code change invalidates prior scans
+- The only relevant attestation is the current one
+- Stale scan results provide false assurance
+
+If you need to preserve scan results for a specific release or submittal, copy the `.scans/` directory contents before re-running. The timestamped PDF attestation (`scan-attestation-YYYY-MM-DDTHHMMSSZ.pdf`) provides a unique artifact for each scan run.
+
 ## Security Policy
 
 - Detailed vulnerability information is displayed for remediation
@@ -136,6 +149,28 @@ echo ".scans/" >> /path/to/project/.gitignore
 | SA-11 | System and Services Acquisition | Developer Testing and Evaluation | `check-secrets.sh` |
 | SC-8 | System and Communications Protection | Transmission Confidentiality and Integrity | `check-mac-addresses.sh` |
 | CM-6 | Configuration Management | Configuration Settings | `check-host-security.sh` |
+| CM-8 | Configuration Management | System Component Inventory | `collect-host-inventory.sh` |
+
+## CUI Handling
+
+The `collect-host-inventory.sh` script generates output marked as **Controlled Unclassified Information (CUI)** per:
+
+| Reference | Title |
+|-----------|-------|
+| 32 CFR Part 2002 | Controlled Unclassified Information |
+| NIST SP 800-171 | Protecting CUI in Nonfederal Systems |
+| CUI Registry | CTI (Controlled Technical Information) |
+
+Host inventory output contains:
+- MAC addresses (network infrastructure identifiers)
+- Serial numbers (asset tracking data)
+- Installed software versions (configuration data)
+
+**Handling requirements:**
+- Store on encrypted media or NIST 800-171 compliant systems
+- Limit access to authorized personnel
+- Do not post to public repositories
+- Destroy securely (NIST SP 800-88) when no longer needed
 
 ## License
 

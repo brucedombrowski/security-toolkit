@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-01-15
+
+### Added
+
+- **CUI Markings for Host Inventory**
+  - `collect-host-inventory.sh` output now includes CUI banner and footer
+  - CUI Category: CTI (Controlled Technical Information)
+  - References 32 CFR Part 2002 and NIST SP 800-171
+  - Handling notice with specific guidance for sensitive data
+
+- **CUI Handling Documentation**
+  - New CUI Handling section in README.md
+  - Documents CUI category, references, and handling requirements
+  - CM-8 (System Component Inventory) added to NIST Control Mapping
+
+- **Security Compliance Statement Template**
+  - New LaTeX template for security compliance PDF
+  - NIST control mapping for automated scans
+  - Cryptographic implementation documentation
+  - Certificate handling and security controls
+  - CUI handling section
+
+### Changed
+
+- All scan scripts now use UTC timestamps in ISO 8601 format
+- Format: `YYYY-MM-DDTHH:MM:SSZ` (e.g., `2026-01-15T14:30:00Z`)
+- Consistent timestamps across all output files
+
+## [1.9.0] - 2026-01-15
+
+### Added
+
+- **Reviewed Exceptions in PDF Attestation**
+  - New section showing allowlisted items with their justifications
+  - Total exception count displayed in attestation
+  - References `.pii-allowlist` file for audit trail
+
+### Changed
+
+- `run-all-scans.sh` now runs in interactive mode by default
+- Added `-n|--non-interactive` flag to skip interactive prompts
+- Interactive flag (`$INTERACTIVE_FLAG`) applied consistently to all supporting scans
+- Updated OID explanation to clarify certificate filtering usage
+
 ## [1.8.0] - 2026-01-15
 
 ### Added
@@ -170,6 +214,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 199 (Standards for Security Categorization)
 - FIPS 200 (Minimum Security Requirements)
 
+[1.10.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.10.0
+[1.9.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.9.0
 [1.8.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.8.0
 [1.7.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.7.0
 [1.6.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.6.0
