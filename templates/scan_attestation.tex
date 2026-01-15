@@ -297,6 +297,36 @@ checksums.md & \texttt{\ChecksumsMdChecksum} \\
 Full file names: \texttt{*-\ScanFileTimestamp.txt}. The \texttt{checksums.md} file contains full SHA256 hashes for all scan outputs.
 
 % ----------------------------------------------------------------------------
+\dmsection{Verification Chain}
+
+This document establishes a chain of trust for verifying scan integrity:
+
+\vspace{6pt}
+\textbf{Chain of Trust:}
+\begin{enumerate}[label=\arabic*., leftmargin=0.3in]
+    \item \textbf{Digital Signature} $\rightarrow$ This PDF is digitally signed, establishing authenticity
+    \item \textbf{checksums.md Hash} $\rightarrow$ This PDF includes the SHA256 hash of \texttt{checksums.md} (Section 7)
+    \item \textbf{Scan File Hashes} $\rightarrow$ \texttt{checksums.md} contains full SHA256 hashes of all scan output files
+    \item \textbf{File Verification} $\rightarrow$ Any scan file can be verified against \texttt{checksums.md}
+\end{enumerate}
+
+\vspace{6pt}
+\textbf{Verification Commands:}
+
+\vspace{3pt}
+{\small
+\begin{verbatim}
+# 1. Verify PDF signature (platform-dependent)
+# 2. Extract checksums.md hash from PDF Section 7
+# 3. Verify checksums.md integrity:
+shasum -a 256 .scans/checksums.md
+
+# 4. Verify all scan files against checksums.md:
+cd .scans && shasum -a 256 -c checksums.md
+\end{verbatim}
+}
+
+% ----------------------------------------------------------------------------
 \dmsection{Attestation}
 
 This document certifies that:
@@ -306,14 +336,8 @@ This document certifies that:
     \item Scan results are accurately represented in this document
     \item The Security Verification Toolkit version and commit hash are recorded for traceability
     \item Detailed scan logs are available in the \texttt{.scans/} directory
+    \item The verification chain above enables independent validation of all scan outputs
 \end{enumerate}
-
-\vspace{12pt}
-\textbf{Verification:} Scan output checksums are recorded in \texttt{.scans/checksums.md} and can be verified using:
-
-\begin{verbatim}
-cd .scans && shasum -a 256 -c checksums.md
-\end{verbatim}
 
 \end{enumerate}
 
