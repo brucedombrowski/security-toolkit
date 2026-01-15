@@ -76,6 +76,8 @@ See [COMPLIANCE.md](COMPLIANCE.md) for detailed documentation on the compliance 
 
 ## Prerequisites
 
+- **Bash** - Required to execute all security scripts (included by default on macOS/Linux)
+
 - **ClamAV** - Required for malware scanning
   ```bash
   # macOS
