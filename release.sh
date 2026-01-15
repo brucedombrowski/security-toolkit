@@ -164,8 +164,8 @@ run_scans() {
 create_examples() {
     print_info "Creating redacted example files..."
     
-    if [ ! -x "$REPO_ROOT/redact.sh" ]; then
-        print_warning "redact.sh not found, skipping example generation"
+    if [ ! -x "$REPO_ROOT/scripts/redact-examples.sh" ]; then
+        print_warning "scripts/redact-examples.sh not found, skipping example generation"
         return 0
     fi
     
@@ -175,7 +175,7 @@ create_examples() {
         return 0
     fi
     
-    if "$REPO_ROOT/redact.sh" "$REPO_ROOT/.scans" "$REPO_ROOT/examples"; then
+    if "$REPO_ROOT/scripts/redact-examples.sh" "$REPO_ROOT/.scans" "$REPO_ROOT/examples"; then
         print_success "Example files generated and redacted"
         
         # Add examples to staging

@@ -26,3 +26,6 @@ a0b424de03b26595cd460cd607050bfdb946c633f227a146efcef4526987535e # Historical co
 
 # LaTeX template placeholder (64 zeros replaced at runtime)
 4691e8cd3522711eb6f130253a29b6176491699dba45bad4529de57408cf0d80 # LaTeX template placeholder (replaced at runtime) # \newcommand{\HostInventoryChecksum}{0000...}
+ba778af45cad810fecfb80d884814bd54e85cecf19291158cf8e6fb8cbda0db2 # Example/placeholder data (not real PII) # /Users/brucedombrowski/Security/host-inventory-REDACTED-EXAMPLE.txt:54:    Audac
+cca98a47fbf909dddea3b6947300673d263a774bc56639bdb15d70db8cdbdc28 # Example/placeholder data (not real PII) # /Users/brucedombrowski/Security/scripts/redact-examples.sh:33:    # Redact IPv4 
+ee29a7cf778e78d2322cd448bf26f5a7223ec8c39c48c93407302547d177034e # Placeholder pattern (build-time substitution) # /Users/brucedombrowski/Security/scripts/generate-scan-attestation.sh:146:    -e 

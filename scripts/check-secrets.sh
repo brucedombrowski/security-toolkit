@@ -66,9 +66,15 @@ FOUND_ISSUES=0
 ACCEPTED_COUNT=0
 REJECTED_COUNT=0
 
-# Function to compute hash for a finding (used for allowlist)
+# Function to extract just the content from a finding (strips file:line: prefix)
+extract_content() {
+    echo "$1" | cut -d: -f3-
+}
+
+# Function to compute hash for a finding (uses content only, not file:line)
 hash_finding() {
-    echo -n "$1" | shasum -a 256 | awk '{print $1}'
+    local content=$(extract_content "$1")
+    echo -n "$content" | shasum -a 256 | awk '{print $1}'
 }
 
 # Function to check if a finding is allowlisted
