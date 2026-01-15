@@ -125,15 +125,7 @@ The template uses LaTeX variables for easy customization:
 
 ## NIST Control Mapping
 
-The compliance statement maps to the following NIST SP 800-53 controls:
-
-| Control | Family | Script | Description |
-|---------|--------|--------|-------------|
-| SI-3 | System Integrity | `check-malware.sh` | Malicious Code Protection |
-| SI-12 | System Integrity | `check-pii.sh` | Information Management |
-| SA-11 | Services Acquisition | `check-secrets.sh` | Developer Testing |
-| SC-8 | Communications Protection | `check-mac-addresses.sh` | Transmission Confidentiality |
-| CM-6 | Configuration Management | `check-host-security.sh` | Configuration Settings |
+See [README.md#nist-control-mapping](README.md#nist-control-mapping) for complete NIST SP 800-53 control mapping.
 
 ## Handling Scan Findings
 
