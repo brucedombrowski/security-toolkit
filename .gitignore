@@ -2,6 +2,14 @@
 .scans/
 *-Scan-Results.md
 
+# Vulnerability scan outputs (SENSITIVE - network topology, CVEs)
+nmap-*.txt
+nmap-*.xml
+lynis-*.txt
+lynis-*.dat
+openvas-*.xml
+vulnerability-scan-*.txt
+
 # OS files
 .DS_Store
 Thumbs.db

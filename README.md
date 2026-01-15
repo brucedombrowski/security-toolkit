@@ -235,17 +235,17 @@ If you need to preserve scan results for a specific release or submittal, copy t
 
 | Control | Family | Description | Script |
 |---------|--------|-------------|--------|
-| SI-3 | System and Information Integrity | Malicious Code Protection | `check-malware.sh` |
-| SI-12 | System and Information Integrity | Information Management and Retention | `check-pii.sh` |
-| SA-11 | System and Services Acquisition | Developer Testing and Evaluation | `check-secrets.sh` |
-| SC-8 | System and Communications Protection | Transmission Confidentiality and Integrity | `check-mac-addresses.sh` |
+| CA-2 | Assessment, Authorization | Control Assessments | `scan-vulnerabilities.sh` |
 | CM-6 | Configuration Management | Configuration Settings | `check-host-security.sh`, `scan-vulnerabilities.sh` |
 | CM-8 | Configuration Management | System Component Inventory | `collect-host-inventory.sh`, `scan-vulnerabilities.sh` |
-| RA-5 | Risk Assessment | Vulnerability Monitoring and Scanning | `scan-vulnerabilities.sh` |
-| SI-2 | System and Information Integrity | Flaw Remediation | `scan-vulnerabilities.sh` |
-| SI-4 | System and Information Integrity | System Monitoring | `scan-vulnerabilities.sh` |
-| CA-2 | Assessment, Authorization | Control Assessments | `scan-vulnerabilities.sh` |
 | MP-6 | Media Protection | Media Sanitization | `secure-delete.sh`, `purge-git-history.sh` |
+| RA-5 | Risk Assessment | Vulnerability Monitoring and Scanning | `scan-vulnerabilities.sh` |
+| SA-11 | System and Services Acquisition | Developer Testing and Evaluation | `check-secrets.sh` |
+| SC-8 | System and Communications Protection | Transmission Confidentiality and Integrity | `check-mac-addresses.sh` |
+| SI-2 | System and Information Integrity | Flaw Remediation | `scan-vulnerabilities.sh` |
+| SI-3 | System and Information Integrity | Malicious Code Protection | `check-malware.sh` |
+| SI-4 | System and Information Integrity | System Monitoring | `scan-vulnerabilities.sh` |
+| SI-12 | System and Information Integrity | Information Management and Retention | `check-pii.sh` |
 
 ## CUI Handling
 

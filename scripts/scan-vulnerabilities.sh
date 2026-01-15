@@ -118,35 +118,47 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # ============================================================================
-# NIST CONTROL DEFINITIONS
+# NIST CONTROL DEFINITIONS (bash 3.2 compatible - no associative arrays)
 # ============================================================================
 
-declare -A NIST_CONTROLS
-NIST_CONTROLS=(
-    ["RA-5"]="Vulnerability Monitoring and Scanning"
-    ["RA-3"]="Risk Assessment"
-    ["CA-2"]="Control Assessments"
-    ["CA-7"]="Continuous Monitoring"
-    ["SI-2"]="Flaw Remediation"
-    ["SI-4"]="System Monitoring"
-    ["SI-7"]="Software, Firmware, and Information Integrity"
-    ["CM-6"]="Configuration Settings"
-    ["CM-8"]="System Component Inventory"
-    ["SC-7"]="Boundary Protection"
-    ["SA-11"]="Developer Testing and Evaluation"
-)
+# Function to get NIST 800-53 control description
+get_nist_control() {
+    case "$1" in
+        "CA-2")  echo "Control Assessments" ;;
+        "CA-7")  echo "Continuous Monitoring" ;;
+        "CM-6")  echo "Configuration Settings" ;;
+        "CM-8")  echo "System Component Inventory" ;;
+        "RA-3")  echo "Risk Assessment" ;;
+        "RA-5")  echo "Vulnerability Monitoring and Scanning" ;;
+        "SA-11") echo "Developer Testing and Evaluation" ;;
+        "SC-7")  echo "Boundary Protection" ;;
+        "SI-2")  echo "Flaw Remediation" ;;
+        "SI-4")  echo "System Monitoring" ;;
+        "SI-7")  echo "Software, Firmware, and Information Integrity" ;;
+        *)       echo "Unknown control" ;;
+    esac
+}
 
-declare -A NIST_171_CONTROLS
-NIST_171_CONTROLS=(
-    ["3.11.1"]="Periodically assess the risk to organizational operations"
-    ["3.11.2"]="Scan for vulnerabilities in organizational systems periodically"
-    ["3.11.3"]="Remediate vulnerabilities in accordance with risk assessments"
-    ["3.12.1"]="Periodically assess security controls to determine effectiveness"
-    ["3.12.3"]="Monitor security controls on an ongoing basis"
-    ["3.14.1"]="Identify, report, and correct system flaws in a timely manner"
-    ["3.14.6"]="Monitor organizational systems to detect attacks"
-    ["3.14.7"]="Identify unauthorized use of organizational systems"
-)
+# NIST 800-53 controls list (alphabetized)
+NIST_CONTROLS_LIST="CA-2 CA-7 CM-6 CM-8 RA-3 RA-5 SA-11 SC-7 SI-2 SI-4 SI-7"
+
+# Function to get NIST 800-171 control description
+get_nist_171_control() {
+    case "$1" in
+        "3.11.1") echo "Periodically assess the risk to organizational operations" ;;
+        "3.11.2") echo "Scan for vulnerabilities in organizational systems periodically" ;;
+        "3.11.3") echo "Remediate vulnerabilities in accordance with risk assessments" ;;
+        "3.12.1") echo "Periodically assess security controls to determine effectiveness" ;;
+        "3.12.3") echo "Monitor security controls on an ongoing basis" ;;
+        "3.14.1") echo "Identify, report, and correct system flaws in a timely manner" ;;
+        "3.14.6") echo "Monitor organizational systems to detect attacks" ;;
+        "3.14.7") echo "Identify unauthorized use of organizational systems" ;;
+        *)        echo "Unknown control" ;;
+    esac
+}
+
+# NIST 800-171 controls list
+NIST_171_CONTROLS_LIST="3.11.1 3.11.2 3.11.3 3.12.1 3.12.3 3.14.1 3.14.6 3.14.7"
 
 # ============================================================================
 # FUNCTIONS
@@ -664,15 +676,15 @@ generate_compliance_report() {
 
     echo "NIST SP 800-53 Rev 5 Controls Assessed:" >> "$report_file"
     echo "----------------------------------------" >> "$report_file"
-    for control in "${!NIST_CONTROLS[@]}"; do
-        printf "  %-8s %s\n" "$control" "${NIST_CONTROLS[$control]}" >> "$report_file"
+    for control in $NIST_CONTROLS_LIST; do
+        printf "  %-8s %s\n" "$control" "$(get_nist_control "$control")" >> "$report_file"
     done
 
     echo "" >> "$report_file"
     echo "NIST SP 800-171 Rev 2 Controls Assessed:" >> "$report_file"
     echo "-----------------------------------------" >> "$report_file"
-    for control in "${!NIST_171_CONTROLS[@]}"; do
-        printf "  %-10s %s\n" "$control" "${NIST_171_CONTROLS[$control]}" >> "$report_file"
+    for control in $NIST_171_CONTROLS_LIST; do
+        printf "  %-10s %s\n" "$control" "$(get_nist_171_control "$control")" >> "$report_file"
     done
 
     echo "" >> "$report_file"
