@@ -78,31 +78,45 @@ redact_file() {
     fi
 }
 
-# Truncate long package lists in host inventory (keep headers + 3 examples)
+# Truncate long lists in host inventory (keep headers + 3 examples)
 truncate_package_lists() {
     local file="$1"
     local temp_file="${file}.tmp"
 
     awk '
-    BEGIN { in_list = 0; list_count = 0; printed_truncate = 0 }
+    BEGIN { in_list = 0; list_count = 0; printed_truncate = 0; list_indent = "    " }
 
-    # Start of a new list section
+    # Start of a new package/app list section (2-space indent headers)
     /^  Homebrew Packages:/ || /^  Homebrew Casks:/ || /^  Applications \(/ {
         # End previous list if needed
         if (in_list && list_count > 3 && !printed_truncate) {
-            print "    ... (list truncated for example)"
+            print list_indent "... (list truncated for example)"
         }
         in_list = 1
         list_count = 0
         printed_truncate = 0
+        list_indent = "    "
         print
         next
     }
 
-    # End of list (new section or blank line followed by non-indented)
-    /^[A-Za-z]/ || /^$/ {
+    # Start of network interfaces section (no indent)
+    /^Network Interfaces:/ {
         if (in_list && list_count > 3 && !printed_truncate) {
-            print "    ... (list truncated for example)"
+            print list_indent "... (list truncated for example)"
+        }
+        in_list = 1
+        list_count = 0
+        printed_truncate = 0
+        list_indent = "  "
+        print
+        next
+    }
+
+    # End of list (new top-level section)
+    /^[A-Za-z]/ {
+        if (in_list && list_count > 3 && !printed_truncate) {
+            print list_indent "... (list truncated for example)"
             printed_truncate = 1
         }
         in_list = 0
@@ -110,8 +124,25 @@ truncate_package_lists() {
         next
     }
 
+    # Network interface entry (2-space indent, interface name followed by colon)
+    in_list && list_indent == "  " && /^  [a-z0-9]+:$/ {
+        list_count++
+        if (list_count <= 3) {
+            print
+        }
+        next
+    }
+
+    # Network interface details (4-space indent under interface)
+    in_list && list_indent == "  " && /^    / {
+        if (list_count <= 3) {
+            print
+        }
+        next
+    }
+
     # Package entry (4 spaces indent)
-    in_list && /^    [a-zA-Z]/ {
+    in_list && list_indent == "    " && /^    [a-zA-Z]/ {
         list_count++
         if (list_count <= 3) {
             print
@@ -124,7 +155,7 @@ truncate_package_lists() {
 
     END {
         if (in_list && list_count > 3 && !printed_truncate) {
-            print "    ... (list truncated for example)"
+            print list_indent "... (list truncated for example)"
         }
     }
     ' "$file" > "$temp_file"
