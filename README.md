@@ -24,7 +24,9 @@ This toolkit provides automated security verification scripts aligned with feder
 | `check-secrets.sh` | SA-11 | Detect hardcoded credentials and API keys |
 | `collect-host-inventory.sh` | CM-8 | System component inventory (CUI-marked) |
 | `generate-compliance.sh` | - | Generate security compliance statement PDF |
+| `generate-scan-attestation.sh` | - | Generate PDF attestation from scan results |
 | `purge-git-history.sh` | SP 800-88 | Remove sensitive files from git history |
+| `redact-examples.sh` | - | Strip sensitive data for public examples |
 | `run-all-scans.sh` | - | Run all scans with consolidated report |
 | `scan-vulnerabilities.sh` | RA-5, SI-2 | Comprehensive vulnerability scanning (Nmap/OpenVAS/Lynis) |
 | `secure-delete.sh` | SP 800-88 | Securely delete files (NIST Clear method) |
