@@ -25,6 +25,8 @@ This toolkit provides automated security verification scripts aligned with feder
 | `collect-host-inventory.sh` | CM-8 | System component inventory (CUI-marked) |
 | `run-all-scans.sh` | - | Run all scans with consolidated report |
 | `generate-compliance.sh` | - | Generate security compliance statement PDF |
+| `secure-delete.sh` | SP 800-88 | Securely delete files (NIST Clear method) |
+| `purge-git-history.sh` | SP 800-88 | Remove sensitive files from git history |
 
 ## Usage
 
@@ -202,6 +204,38 @@ Host inventory output contains:
 - Limit access to authorized personnel
 - Do not post to public repositories
 - Destroy securely when no longer needed: `./scripts/secure-delete.sh -rf .scans/`
+
+### Removing CUI from Git History
+
+If CUI-marked files (like host inventory) are accidentally committed to a repository, removing them from the current commit is **not sufficient**. Git preserves the file in history, making it recoverable.
+
+**To completely remove sensitive files from git history:**
+
+```bash
+# 1. Preview affected commits (dry run)
+./scripts/purge-git-history.sh --dry-run 'path/to/sensitive-file.txt'
+
+# 2. Remove file from all commits
+./scripts/purge-git-history.sh 'path/to/sensitive-file.txt'
+
+# 3. Force push to remote (rewrites history)
+git push origin --force --all
+
+# 4. Clean up local repository
+rm -rf .git/refs/original/
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+
+# 5. Notify collaborators to re-clone
+```
+
+**Why this matters:**
+- `git rm` only removes from current state, not history
+- Anyone with repository access can checkout old commits
+- GitHub/GitLab retain commit history even after deletion
+- NIST SP 800-88 requires sanitization of all copies
+
+This applies the NIST SP 800-88 "Clear" sanitization method to version control systems.
 
 ## License
 

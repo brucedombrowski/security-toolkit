@@ -17,6 +17,11 @@ These examples show the structure and format of toolkit outputs without exposing
 - `secrets-scan-EXAMPLE.txt` - Secrets/credentials scan results
 - `security-scan-report-EXAMPLE.txt` - Consolidated scan report
 
+### PDF Attestation
+
+- `scan-attestation-EXAMPLE.pdf` - Security scan attestation document (NIST control mapping, results summary, verification chain)
+
+
 ## Redaction Rules
 
 All example files are processed with the following redaction patterns:
