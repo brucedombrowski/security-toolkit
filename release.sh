@@ -243,7 +243,7 @@ print_summary() {
     echo "Next steps:"
     echo "  1. Review the release on GitHub: https://github.com/brucedombrowski/Security/releases/tag/v$version"
     echo "  2. Verify example files in: examples/"
-    echo "  3. Check compliance statement: security_compliance_statement.pdf"
+    echo "  3. Review scan attestation PDF in: .scans/scan-attestation-*.pdf"
     echo ""
 }
 
