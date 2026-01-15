@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-01-15
+
+### Added
+
+- **Interactive Secrets Review Mode**
+  - New `-i` flag for `check-secrets.sh` enables interactive review of findings
+  - Allowlist support with `.secrets-allowlist` file
+  - Quick-accept shortcuts for common false positives:
+    - [E]xample - Example/placeholder data
+    - [D]ocumentation - Documentation or pattern explanations
+    - [I]nternal - Internal/controlled variable assignment (safe eval)
+    - [T]est - Test fixture or mock data
+  - Integrated into `run-all-scans.sh` interactive mode
+
+- **Quick-Accept Shortcuts for PII Scanner**
+  - [E]xample - Example/placeholder data (example.com, 192.0.2.x)
+  - [O]ID - X.509 Object Identifiers
+  - [V]ersion - Version number strings
+  - [L]ocalhost - Loopback addresses (127.0.0.1)
+  - [D]ocumentation - Documentation or comments
+
+### Fixed
+
+- PDF attestation generation now checks for output file instead of exit code
+- Allowlist entries properly escaped for LaTeX in PDF attestation
+- Multiline content replacement uses perl for reliability
+
 ## [1.10.0] - 2026-01-15
 
 ### Added
@@ -214,6 +241,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 199 (Standards for Security Categorization)
 - FIPS 200 (Minimum Security Requirements)
 
+[1.11.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.11.0
 [1.10.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.10.0
 [1.9.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.9.0
 [1.8.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.8.0

@@ -227,7 +227,7 @@ run_scan "Malware Scan (ClamAV)" \
     "MALWARE_RESULT" "MALWARE_FINDINGS"
 
 run_scan "Secrets/Credentials Scan" \
-    "$SCRIPT_DIR/check-secrets.sh" \
+    "$SCRIPT_DIR/check-secrets.sh $INTERACTIVE_FLAG" \
     "NIST 800-53: SA-11 (Developer Testing)" \
     "secrets-scan-$DATE_STAMP.txt" \
     "SECRETS_RESULT" "SECRETS_FINDINGS"

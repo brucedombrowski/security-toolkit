@@ -165,19 +165,55 @@ prompt_review() {
     fi
 
     echo "  OPTIONS:"
-    echo "    [A]ccept  - This is NOT PII. Add to allowlist (requires reason)."
+    echo "    [A]ccept  - This is NOT PII. Add to allowlist (custom reason)."
     echo "    [R]eject  - This IS PII or needs remediation. Flag as issue."
     echo "    [S]kip    - Unsure. Leave for later review."
     echo ""
+    echo "  QUICK ACCEPT (common false positives):"
+    echo "    [E]xample - Example/placeholder data (example.com, 192.0.2.x, etc.)"
+    echo "    [O]ID     - X.509 Object Identifier (certificate EKU, etc.)"
+    echo "    [V]ersion - Version number (e.g., 6.0.0.0)"
+    echo "    [L]ocalhost - Loopback address (127.0.0.1)"
+    echo "    [D]ocumentation - Documentation or comments"
+    echo ""
 
     while true; do
-        echo -n "  Your decision [A/R/S]: "
+        echo -n "  Your decision [A/R/S/E/O/V/L/D]: "
         read -r response < /dev/tty
         case "$response" in
+            [Ee]*)
+                add_to_allowlist "$finding" "Example/placeholder data (not real PII)"
+                echo "  → Added to allowlist: Example data"
+                ACCEPTED_COUNT=$((ACCEPTED_COUNT + 1))
+                return 0
+                ;;
+            [Oo]*)
+                add_to_allowlist "$finding" "X.509 Object Identifier (OID)"
+                echo "  → Added to allowlist: OID"
+                ACCEPTED_COUNT=$((ACCEPTED_COUNT + 1))
+                return 0
+                ;;
+            [Vv]*)
+                add_to_allowlist "$finding" "Version number string"
+                echo "  → Added to allowlist: Version number"
+                ACCEPTED_COUNT=$((ACCEPTED_COUNT + 1))
+                return 0
+                ;;
+            [Ll]*)
+                add_to_allowlist "$finding" "Localhost/loopback address (127.0.0.1)"
+                echo "  → Added to allowlist: Localhost"
+                ACCEPTED_COUNT=$((ACCEPTED_COUNT + 1))
+                return 0
+                ;;
+            [Dd]*)
+                add_to_allowlist "$finding" "Documentation or pattern explanation"
+                echo "  → Added to allowlist: Documentation"
+                ACCEPTED_COUNT=$((ACCEPTED_COUNT + 1))
+                return 0
+                ;;
             [Aa]*)
                 echo ""
                 echo "  Why is this acceptable? (This will be recorded in the allowlist)"
-                echo "  Examples: 'X.509 OID for EKU', 'version string', 'localhost filter'"
                 echo -n "  Reason: "
                 read -r reason < /dev/tty
                 if [ -z "$reason" ]; then
@@ -199,7 +235,7 @@ prompt_review() {
                 return 2  # Skipped - still needs review
                 ;;
             *)
-                echo "  Please enter A, R, or S"
+                echo "  Please enter A, R, S, E, O, V, L, or D"
                 ;;
         esac
     done
