@@ -259,25 +259,30 @@ run_scan "Host Security Configuration" \
 
 # Run vulnerability scan (quick mode, scans localhost)
 # Note: This scans the HOST system, not the codebase - uses different invocation
+# The script creates its own output files in .scans/ directory
 log "Running: Vulnerability Scan (Nmap/Lynis)"
 log "  Control: NIST 800-53: RA-5 (Vulnerability Scanning), SI-2 (Flaw Remediation)"
 log "  Host Inventory Reference: $INVENTORY_CHECKSUM"
 
 VULN_SCRIPT="$SCRIPT_DIR/scan-vulnerabilities.sh"
 if [ -x "$VULN_SCRIPT" ]; then
-    # Vulnerability scan targets localhost, not a directory
-    vuln_output=$("$VULN_SCRIPT" -q 2>&1) || vuln_exit=$?
-    vuln_exit=${vuln_exit:-0}
-    echo "$vuln_output"
-    echo "$vuln_output" >> "$REPORT_FILE"
+    # Vulnerability scan targets localhost and outputs to .scans/ directly
+    # Pass -d to specify our output directory
+    vuln_exit=0
+    "$VULN_SCRIPT" -q -d "$SCANS_DIR" 2>&1 | tee -a "$REPORT_FILE" || vuln_exit=$?
 
-    # Save with inventory reference header
-    {
-        echo "# Host Inventory Reference: $INVENTORY_CHECKSUM"
-        echo "# Scan Timestamp: $TIMESTAMP"
-        echo ""
-        echo "$vuln_output"
-    } > "$SCANS_DIR/vulnerability-scan-$FILE_TIMESTAMP.txt"
+    # Find the vulnerability scan report created by the script
+    VULN_SCAN_FILE=$(ls -t "$SCANS_DIR"/vulnerability-scan-*.txt 2>/dev/null | head -1)
+    if [ -n "$VULN_SCAN_FILE" ] && [ -f "$VULN_SCAN_FILE" ]; then
+        # Prepend inventory reference header
+        {
+            echo "# Host Inventory Reference: $INVENTORY_CHECKSUM"
+            echo "# Scan Timestamp: $TIMESTAMP"
+            echo ""
+            cat "$VULN_SCAN_FILE"
+        } > "$VULN_SCAN_FILE.tmp"
+        mv "$VULN_SCAN_FILE.tmp" "$VULN_SCAN_FILE"
+    fi
 
     if [ $vuln_exit -eq 0 ]; then
         log "  Status: PASS"

@@ -16,8 +16,6 @@ These examples show the structure and format of toolkit outputs without exposing
 - `pii-scan-EXAMPLE.txt` - PII pattern scan results
 - `secrets-scan-EXAMPLE.txt` - Secrets/credentials scan results
 - `security-scan-report-EXAMPLE.txt` - Consolidated scan report
-- `vulnerability-scan-2026-01-15T210806Z-EXAMPLE.txt` - Scan output
-- `vulnerability-scan-EXAMPLE.txt` - Scan output
 
 ### PDF Attestation
 

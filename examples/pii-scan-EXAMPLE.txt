@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    463e3bba82cc35cf...                                       #
+#  Source SHA256:    676e4ec81b38f3a9...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
-#  Script SHA256:    15d7fcde1bd1d406...                                       #
-#  Redacted:         2026-01-15T21:08:26Z                                       #
+#  Script SHA256:    0f603c2f71583e21...                                       #
+#  Redacted:         2026-01-15T21:14:53Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,7 +19,7 @@
 PII Verification Scan
 =====================
 Timestamp: 2026-01-15T[REDACTED]Z
-Toolkit: Security Verification Toolkit v0.0.0-test.20260115T210403Z-2-g26f251c (26f251c)
+Toolkit: Security Verification Toolkit v0.0.0-test.20260115T210749Z-2-g9f77f07 (9f77f07)
 Target: /Users/[REDACTED]
 Repository: Security
 
@@ -27,15 +27,15 @@ Checking: IPv4 Addresses
 /Users/[REDACTED] [REDACTED]/24
 /Users/[REDACTED] -q [REDACTED]
 /Users/[REDACTED] -n [REDACTED]
+/Users/[REDACTED]     Default: localhost (127.0.0.1)
+/Users/[REDACTED]     Default: localhost (127.0.0.1)
+/Users/[REDACTED] scan report for localhost (127.0.0.1)
 /Users/[REDACTED]    # Redact IPv4 addresses (space or colon before, preserves OIDs like [REDACTED])
 /Users/[REDACTED]     Default: localhost (127.0.0.1)
 /Users/[REDACTED]
 /Users/[REDACTED]  IP address, hostname, or CIDR range (default: [REDACTED])
-/Users/[REDACTED]  $0 [REDACTED]/24            # Scan network range
-/Users/[REDACTED]  $0 -n [REDACTED]               # Nmap only on specific host
-/Users/[REDACTED]  $0 -q [REDACTED]            # Quick scan of specific host
-  Result: REVIEW - 15 new match(es) found
-  ... and 5 more
+  Result: REVIEW - 18 new match(es) found
+  ... and 8 more
   (7 previously allowlisted)
 Checking: US Phone Numbers (dashed)
   Result: PASS (0 matches)
@@ -47,7 +47,9 @@ Checking: Social Security Numbers
   Result: PASS (0 matches)
 Checking: Credit Card Numbers (16 digit)
 /Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
-  Result: REVIEW - 1 new match(es) found
+/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
+/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
+  Result: REVIEW - 3 new match(es) found
   (3 previously allowlisted)
 
 =====================

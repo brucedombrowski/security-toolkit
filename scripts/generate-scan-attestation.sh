@@ -103,7 +103,9 @@ MALWARE_SCAN_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/malware-scan-$FILE_TIMESTAMP.t
 SECRETS_SCAN_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/secrets-scan-$FILE_TIMESTAMP.txt" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
 MAC_SCAN_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/mac-address-scan-$FILE_TIMESTAMP.txt" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
 HOST_SECURITY_SCAN_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/host-security-scan-$FILE_TIMESTAMP.txt" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
-VULN_SCAN_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/vulnerability-scan-$FILE_TIMESTAMP.txt" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
+# Vuln scan file may have different timestamp format - find most recent
+VULN_SCAN_FILE=$(ls -t "$SCANS_DIR"/vulnerability-scan-*.txt 2>/dev/null | head -1)
+VULN_SCAN_CHECKSUM=$(shasum -a 256 "$VULN_SCAN_FILE" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
 REPORT_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/security-scan-report-$FILE_TIMESTAMP.txt" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
 # Full checksums.md checksum for verification chain
 CHECKSUMS_MD_CHECKSUM_FULL=$(shasum -a 256 "$SCANS_DIR/checksums.md" 2>/dev/null | awk '{print $1}' || echo "N/A")

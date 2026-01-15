@@ -75,6 +75,7 @@
 #     -q, --quick          Quick scan (reduced thoroughness)
 #     -f, --full           Full comprehensive scan (default)
 #     -r, --report-only    Generate report from existing scan data
+#     -d, --output-dir DIR Output directory (default: .scans/)
 #     -h, --help           Show this help message
 #
 #   Target:
@@ -198,6 +199,7 @@ Options:
   -q, --quick          Quick scan (reduced thoroughness)
   -f, --full           Full comprehensive scan (default)
   -r, --report-only    Generate report from existing scan data
+  -d, --output-dir DIR Output directory (default: .scans/)
   -h, --help           Show this help message
 
 Target:
@@ -776,6 +778,10 @@ main() {
             -r|--report-only)
                 REPORT_ONLY=true
                 shift
+                ;;
+            -d|--output-dir)
+                OUTPUT_DIR="$2"
+                shift 2
                 ;;
             -h|--help)
                 print_usage
