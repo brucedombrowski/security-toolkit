@@ -725,6 +725,198 @@ elif [[ "$(uname)" == "Linux" ]]; then
 fi
 
 output ""
+output "Containers and Virtualization:"
+output "------------------------------"
+
+# Docker
+if command -v docker >/dev/null 2>&1; then
+    output "  Docker: $(docker --version 2>/dev/null | head -1)"
+else
+    output "  Docker: not installed"
+fi
+
+# Podman
+if command -v podman >/dev/null 2>&1; then
+    output "  Podman: $(podman --version 2>/dev/null)"
+else
+    output "  Podman: not installed"
+fi
+
+# Kubernetes (kubectl)
+if command -v kubectl >/dev/null 2>&1; then
+    output "  kubectl: $(kubectl version --client --short 2>/dev/null || kubectl version --client 2>/dev/null | head -1)"
+else
+    output "  kubectl: not installed"
+fi
+
+# Minikube
+if command -v minikube >/dev/null 2>&1; then
+    output "  Minikube: $(minikube version --short 2>/dev/null || minikube version 2>/dev/null | head -1)"
+else
+    output "  Minikube: not installed"
+fi
+
+# Helm
+if command -v helm >/dev/null 2>&1; then
+    output "  Helm: $(helm version --short 2>/dev/null)"
+else
+    output "  Helm: not installed"
+fi
+
+# Vagrant
+if command -v vagrant >/dev/null 2>&1; then
+    output "  Vagrant: $(vagrant --version 2>/dev/null)"
+else
+    output "  Vagrant: not installed"
+fi
+
+if [[ "$(uname)" == "Darwin" ]]; then
+    # VirtualBox
+    if [ -d "/Applications/VirtualBox.app" ]; then
+        vbox_ver=$(defaults read "/Applications/VirtualBox.app/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || echo "unknown")
+        output "  VirtualBox: $vbox_ver"
+    else
+        output "  VirtualBox: not installed"
+    fi
+
+    # VMware Fusion
+    if [ -d "/Applications/VMware Fusion.app" ]; then
+        vmware_ver=$(defaults read "/Applications/VMware Fusion.app/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || echo "unknown")
+        output "  VMware Fusion: $vmware_ver"
+    else
+        output "  VMware Fusion: not installed"
+    fi
+
+    # Parallels
+    if [ -d "/Applications/Parallels Desktop.app" ]; then
+        parallels_ver=$(defaults read "/Applications/Parallels Desktop.app/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || echo "unknown")
+        output "  Parallels Desktop: $parallels_ver"
+    else
+        output "  Parallels Desktop: not installed"
+    fi
+
+elif [[ "$(uname)" == "Linux" ]]; then
+    # VirtualBox
+    if command -v VBoxManage >/dev/null 2>&1; then
+        output "  VirtualBox: $(VBoxManage --version 2>/dev/null)"
+    else
+        output "  VirtualBox: not installed"
+    fi
+
+    # VMware Workstation
+    if command -v vmware >/dev/null 2>&1; then
+        output "  VMware Workstation: $(vmware --version 2>/dev/null | head -1)"
+    else
+        output "  VMware Workstation: not installed"
+    fi
+
+    # QEMU
+    if command -v qemu-system-x86_64 >/dev/null 2>&1; then
+        output "  QEMU: $(qemu-system-x86_64 --version 2>/dev/null | head -1)"
+    elif command -v qemu-img >/dev/null 2>&1; then
+        output "  QEMU: $(qemu-img --version 2>/dev/null | head -1)"
+    else
+        output "  QEMU: not installed"
+    fi
+
+    # libvirt/KVM
+    if command -v virsh >/dev/null 2>&1; then
+        output "  libvirt: $(virsh --version 2>/dev/null)"
+    else
+        output "  libvirt: not installed"
+    fi
+
+    # LXC/LXD
+    if command -v lxc >/dev/null 2>&1; then
+        output "  LXC/LXD: $(lxc --version 2>/dev/null)"
+    else
+        output "  LXC/LXD: not installed"
+    fi
+fi
+
+output ""
+output "Web Servers:"
+output "------------"
+
+# Apache
+if command -v httpd >/dev/null 2>&1; then
+    output "  Apache (httpd): $(httpd -v 2>/dev/null | head -1)"
+elif command -v apache2 >/dev/null 2>&1; then
+    output "  Apache: $(apache2 -v 2>/dev/null | head -1)"
+elif command -v apachectl >/dev/null 2>&1; then
+    output "  Apache: $(apachectl -v 2>/dev/null | head -1)"
+else
+    output "  Apache: not installed"
+fi
+
+# Nginx
+if command -v nginx >/dev/null 2>&1; then
+    output "  Nginx: $(nginx -v 2>&1)"
+else
+    output "  Nginx: not installed"
+fi
+
+# Caddy
+if command -v caddy >/dev/null 2>&1; then
+    output "  Caddy: $(caddy version 2>/dev/null)"
+else
+    output "  Caddy: not installed"
+fi
+
+# Lighttpd
+if command -v lighttpd >/dev/null 2>&1; then
+    output "  Lighttpd: $(lighttpd -v 2>/dev/null | head -1)"
+else
+    output "  Lighttpd: not installed"
+fi
+
+# Traefik
+if command -v traefik >/dev/null 2>&1; then
+    output "  Traefik: $(traefik version 2>/dev/null | head -1)"
+else
+    output "  Traefik: not installed"
+fi
+
+output ""
+output "Database Servers:"
+output "-----------------"
+
+# PostgreSQL
+if command -v psql >/dev/null 2>&1; then
+    output "  PostgreSQL: $(psql --version 2>/dev/null)"
+else
+    output "  PostgreSQL: not installed"
+fi
+
+# MySQL
+if command -v mysql >/dev/null 2>&1; then
+    output "  MySQL: $(mysql --version 2>/dev/null)"
+else
+    output "  MySQL: not installed"
+fi
+
+# SQLite
+if command -v sqlite3 >/dev/null 2>&1; then
+    output "  SQLite: $(sqlite3 --version 2>/dev/null)"
+else
+    output "  SQLite: not installed"
+fi
+
+# MongoDB
+if command -v mongod >/dev/null 2>&1; then
+    output "  MongoDB: $(mongod --version 2>/dev/null | head -1)"
+else
+    output "  MongoDB: not installed"
+fi
+
+# Redis
+if command -v redis-server >/dev/null 2>&1; then
+    output "  Redis: $(redis-server --version 2>/dev/null)"
+else
+    output "  Redis: not installed"
+fi
+
+output ""
 output "====================="
 output "Inventory collection complete."
 output ""
