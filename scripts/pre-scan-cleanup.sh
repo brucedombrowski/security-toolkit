@@ -286,8 +286,14 @@ if [[ "$(uname)" == "Darwin" ]]; then
         clean_directory /tmp "System Temp (/tmp)"
         clean_directory /private/var/tmp "System Temp (/var/tmp)"
 
-        # Trash
-        clean_directory ~/.Trash "Trash"
+        # Trash (use AppleScript to empty all volumes including external drives)
+        if [ "$DRY_RUN" -eq 1 ]; then
+            trash_count=$(ls -A ~/.Trash 2>/dev/null | wc -l | tr -d ' ')
+            [ "$QUIET" -eq 0 ] && echo "  [DRY RUN] Trash: $trash_count items (all volumes)"
+        else
+            osascript -e 'tell application "Finder" to empty trash' 2>/dev/null || true
+            [ "$QUIET" -eq 0 ] && echo "  [CLEANED] Trash: emptied (all volumes)"
+        fi
 
         # Thumbnail cache
         clean_directory ~/Library/Caches/com.apple.QuickLook.thumbnailcache "QuickLook Thumbnails"
