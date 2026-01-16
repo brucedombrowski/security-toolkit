@@ -124,7 +124,7 @@ update_kev_cache() {
     fi
 
     if [ "$need_update" -eq 1 ]; then
-        [ "$QUIET" -eq 0 ] && echo -e "${CYAN}Updating KEV catalog from CISA...${NC}"
+        [ "$QUIET" -eq 0 ] && echo -e "${CYAN}Updating KEV catalog from CISA...${NC}" || true
 
         if ! curl -s --connect-timeout 10 --max-time 30 "$KEV_JSON_URL" -o "${KEV_CACHE_FILE}.tmp"; then
             echo -e "${RED}Error: Failed to download KEV catalog${NC}"
@@ -151,9 +151,9 @@ update_kev_cache() {
             sha256sum "$KEV_CACHE_FILE" > "${KEV_CACHE_FILE}.sha256"
         fi
 
-        [ "$QUIET" -eq 0 ] && echo -e "${GREEN}KEV catalog updated successfully${NC}"
+        [ "$QUIET" -eq 0 ] && echo -e "${GREEN}KEV catalog updated successfully${NC}" || true
     else
-        [ "$QUIET" -eq 0 ] && echo -e "${CYAN}Using cached KEV catalog (< 24 hours old)${NC}"
+        [ "$QUIET" -eq 0 ] && echo -e "${CYAN}Using cached KEV catalog (< 24 hours old)${NC}" || true
     fi
 }
 
@@ -206,7 +206,7 @@ find_scan_file() {
 
 # Extract CVEs from scan file
 extract_cves() {
-    grep -oE 'CVE-[0-9]{4}-[0-9]{4,}' "$SCAN_FILE" 2>/dev/null | sort -u
+    grep -oE 'CVE-[0-9]{4}-[0-9]{4,}' "$SCAN_FILE" 2>/dev/null | sort -u || true
 }
 
 # Check single CVE against KEV
@@ -244,7 +244,11 @@ fi
 
 # Extract and check CVEs
 CVES=$(extract_cves)
-CVE_COUNT=$(echo "$CVES" | grep -c "CVE" 2>/dev/null || echo "0")
+if [ -z "$CVES" ]; then
+    CVE_COUNT=0
+else
+    CVE_COUNT=$(echo "$CVES" | wc -l | tr -d ' ')
+fi
 
 if [ "$CVE_COUNT" -eq 0 ]; then
     if [ "$QUIET" -eq 0 ]; then
@@ -257,8 +261,8 @@ if [ "$CVE_COUNT" -eq 0 ]; then
     exit 0
 fi
 
-[ "$QUIET" -eq 0 ] && echo "Found $CVE_COUNT unique CVE references in scan output"
-[ "$QUIET" -eq 0 ] && echo ""
+[ "$QUIET" -eq 0 ] && echo "Found $CVE_COUNT unique CVE references in scan output" || true
+[ "$QUIET" -eq 0 ] && echo "" || true
 
 # Check each CVE
 KEV_MATCHES=0
