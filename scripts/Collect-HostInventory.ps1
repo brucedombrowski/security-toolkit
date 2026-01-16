@@ -15,11 +15,19 @@
     and handled according to NIST SP 800-171 and 32 CFR Part 2002
 
 .PARAMETER OutputFile
-    Optional path to save inventory output. If not specified, outputs to console.
+    Optional path to save inventory output. If not specified, saves to user's Desktop
+    with filename: host-inventory-COMPUTERNAME-YYYY-MM-DD.txt
+
+.PARAMETER NoFile
+    If specified, outputs to console instead of saving to a file.
 
 .EXAMPLE
     .\Collect-HostInventory.ps1
-    Outputs inventory to console
+    Saves inventory to user's Desktop
+
+.EXAMPLE
+    .\Collect-HostInventory.ps1 -NoFile
+    Outputs inventory to console only
 
 .EXAMPLE
     .\Collect-HostInventory.ps1 -OutputFile "C:\Scans\inventory.txt"
@@ -40,11 +48,22 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$false)]
-    [string]$OutputFile
+    [string]$OutputFile,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$NoFile
 )
 
 # Use SilentlyContinue to prevent terminating errors
 $ErrorActionPreference = "SilentlyContinue"
+
+# Set default output file to user's Desktop if not specified and -NoFile not used
+if (-not $OutputFile -and -not $NoFile) {
+    $desktopPath = [Environment]::GetFolderPath("Desktop")
+    $datestamp = (Get-Date).ToString("yyyy-MM-dd")
+    $hostname = $env:COMPUTERNAME
+    $OutputFile = Join-Path $desktopPath "host-inventory-$hostname-$datestamp.txt"
+}
 
 # Check if running elevated
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
