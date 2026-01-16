@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0] - 2026-01-16
+
+### Added
+
+- **Expanded Host Inventory Categories**
+  - Programming Languages: Added Bash, Zsh, Lua, R, Swift, Kotlin, Scala, Groovy, TypeScript, Elixir, Haskell (GHC), Julia (13 new languages, 22 total)
+  - Productivity Software: Microsoft Office (Word, Excel, PowerPoint, Outlook, Teams), Apple iWork (Pages, Numbers, Keynote), LibreOffice, Slack, Cisco Webex, Discord, Skype
+  - Containers and Virtualization: Docker, Podman, kubectl, Minikube, Helm, Vagrant, VirtualBox, VMware Fusion/Workstation, Parallels Desktop, QEMU, libvirt, LXC/LXD
+  - Web Servers: Apache (httpd), Nginx, Caddy, Lighttpd, Traefik
+  - Database Servers: PostgreSQL, MySQL, SQLite, MongoDB, Redis
+
+### Changed
+
+- Updated redact script to handle all new inventory categories
+- Regenerated example files with expanded inventory
+
 ## [1.14.1] - 2026-01-16
 
 ### Fixed
@@ -347,6 +363,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 199 (Standards for Security Categorization)
 - FIPS 200 (Minimum Security Requirements)
 
+[1.15.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.15.0
 [1.14.1]: https://github.com/brucedombrowski/Security/releases/tag/v1.14.1
 [1.14.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.14.0
 [1.13.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.13.0
