@@ -97,8 +97,8 @@ disclose publicly if we haven't released a patch. We will coordinate the
 release to minimize impact.
 
 **Q: Will you provide a CVE?**
-A: Yes, we will request a CVE for critical and high-severity vulnerabilities
-through the appropriate channels (MITRE, NVD, etc.).
+A: For critical vulnerabilities with broad impact, we may request a CVE through
+GitHub's security advisory feature.
 
 **Q: What if I don't hear back?**
 A: If you don't receive acknowledgment within 48 hours, please resend your
