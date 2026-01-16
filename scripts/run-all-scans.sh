@@ -105,6 +105,35 @@ else
     TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
 fi
 
+# Check Docker daemon status (informational - some scans may benefit from Docker)
+check_docker_status() {
+    if command -v docker &>/dev/null; then
+        # Docker CLI is installed, check if daemon is running
+        if ! docker info &>/dev/null 2>&1; then
+            echo "WARNING: Docker is installed but the Docker daemon is not running."
+            echo "  Some advanced scanning features may require Docker."
+            echo "  To start Docker:"
+            echo "    - macOS: Open Docker Desktop application"
+            echo "    - Linux: sudo systemctl start docker"
+            echo ""
+
+            # Give user a chance to start Docker if running interactively
+            if [ "$INTERACTIVE" -eq 1 ] && [ -t 0 ]; then
+                read -p "Press Enter to continue without Docker, or start Docker and press Enter... " -r
+                echo ""
+                # Check again after user had a chance to start it
+                if docker info &>/dev/null 2>&1; then
+                    echo "Docker daemon is now running."
+                    echo ""
+                fi
+            fi
+        fi
+    fi
+}
+
+# Run Docker status check
+check_docker_status
+
 # Use UTC for consistent timestamps across time zones
 TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 DATE_STAMP=$(date -u "+%Y-%m-%d")
