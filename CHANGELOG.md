@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.1] - 2026-01-16
+
+### Fixed
+
+- grep `-H` flag added to always output filename in PII and secrets scan findings
+- Fixes file/line field swap in interactive review display
+
+### Added
+
+- `checksums-EXAMPLE.md` example file showing scan output checksums format
+
+### Changed
+
+- Regenerated example files with new host inventory categories (Programming Languages, Web Browsers, Backup and Restore, Remote Desktop/Control)
+
 ## [1.14.0] - 2026-01-16
 
 ### Added
@@ -332,6 +347,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 199 (Standards for Security Categorization)
 - FIPS 200 (Minimum Security Requirements)
 
+[1.14.1]: https://github.com/brucedombrowski/Security/releases/tag/v1.14.1
 [1.14.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.14.0
 [1.13.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.13.0
 [1.12.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.12.0
