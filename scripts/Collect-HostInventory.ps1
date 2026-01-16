@@ -522,77 +522,118 @@ Write-Output-Line ""
 Write-Output-Line "Web Browsers:"
 Write-Output-Line "-------------"
 
-# Chrome
-$chromePath = "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe"
-$chromePath86 = "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"
-if (Test-Path $chromePath) {
-    $chromeVersion = (Get-Item $chromePath).VersionInfo.ProductVersion
-    Write-Output-Line "  Chrome: $chromeVersion"
-} elseif (Test-Path $chromePath86) {
-    $chromeVersion = (Get-Item $chromePath86).VersionInfo.ProductVersion
+# Helper function to detect browser from multiple sources
+function Find-Browser {
+    param(
+        [string]$Name,
+        [string[]]$FilePaths,
+        [string]$RegistryPattern
+    )
+
+    # Try file paths first
+    foreach ($path in $FilePaths) {
+        if ($path -and (Test-Path $path -ErrorAction SilentlyContinue)) {
+            $version = (Get-Item $path -ErrorAction SilentlyContinue).VersionInfo.ProductVersion
+            if ($version) {
+                return $version
+            }
+        }
+    }
+
+    # Fall back to registry
+    if ($RegistryPattern) {
+        $regEntry = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+                                     "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+                                     "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue |
+                    Where-Object { $_.DisplayName -like $RegistryPattern } |
+                    Select-Object -First 1
+
+        if ($regEntry -and $regEntry.DisplayVersion) {
+            return $regEntry.DisplayVersion
+        }
+    }
+
+    return $null
+}
+
+# Chrome - check system, user profile, and registry
+$chromePaths = @(
+    "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe",
+    "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
+    "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
+)
+$chromeVersion = Find-Browser -Name "Chrome" -FilePaths $chromePaths -RegistryPattern "*Google Chrome*"
+if ($chromeVersion) {
     Write-Output-Line "  Chrome: $chromeVersion"
 } else {
     Write-Output-Line "  Chrome: not installed"
 }
 
-# Firefox - check multiple possible locations
-$firefoxFound = $false
+# Firefox - check system, user profile, and registry
 $firefoxPaths = @(
     "${env:ProgramFiles}\Mozilla Firefox\firefox.exe",
     "${env:ProgramFiles(x86)}\Mozilla Firefox\firefox.exe",
     "$env:LOCALAPPDATA\Mozilla Firefox\firefox.exe",
     "$env:APPDATA\Mozilla Firefox\firefox.exe"
 )
-
-foreach ($ffPath in $firefoxPaths) {
-    if ($ffPath -and (Test-Path $ffPath -ErrorAction SilentlyContinue)) {
-        $firefoxVersion = (Get-Item $ffPath -ErrorAction SilentlyContinue).VersionInfo.ProductVersion
-        if ($firefoxVersion) {
-            Write-Output-Line "  Firefox: $firefoxVersion"
-            $firefoxFound = $true
-            break
-        }
-    }
-}
-
-# Also check registry for Firefox installation
-if (-not $firefoxFound) {
-    $firefoxReg = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
-                                   "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
-                                   "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue |
-                  Where-Object { $_.DisplayName -like "*Firefox*" } |
-                  Select-Object -First 1
-
-    if ($firefoxReg -and $firefoxReg.DisplayVersion) {
-        Write-Output-Line "  Firefox: $($firefoxReg.DisplayVersion)"
-        $firefoxFound = $true
-    }
-}
-
-if (-not $firefoxFound) {
+$firefoxVersion = Find-Browser -Name "Firefox" -FilePaths $firefoxPaths -RegistryPattern "*Firefox*"
+if ($firefoxVersion) {
+    Write-Output-Line "  Firefox: $firefoxVersion"
+} else {
     Write-Output-Line "  Firefox: not installed"
 }
 
-# Microsoft Edge
-$edgePath = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"
-if (Test-Path $edgePath) {
-    $edgeVersion = (Get-Item $edgePath).VersionInfo.ProductVersion
+# Microsoft Edge - check system, user profile, and registry
+$edgePaths = @(
+    "${env:ProgramFiles}\Microsoft\Edge\Application\msedge.exe",
+    "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe",
+    "$env:LOCALAPPDATA\Microsoft\Edge\Application\msedge.exe"
+)
+$edgeVersion = Find-Browser -Name "Edge" -FilePaths $edgePaths -RegistryPattern "*Microsoft Edge*"
+if ($edgeVersion) {
     Write-Output-Line "  Edge: $edgeVersion"
 } else {
     Write-Output-Line "  Edge: not installed"
 }
 
-# Brave
-$bravePath = "${env:ProgramFiles}\BraveSoftware\Brave-Browser\Application\brave.exe"
-$bravePath86 = "${env:ProgramFiles(x86)}\BraveSoftware\Brave-Browser\Application\brave.exe"
-if (Test-Path $bravePath) {
-    $braveVersion = (Get-Item $bravePath).VersionInfo.ProductVersion
-    Write-Output-Line "  Brave: $braveVersion"
-} elseif (Test-Path $bravePath86) {
-    $braveVersion = (Get-Item $bravePath86).VersionInfo.ProductVersion
+# Brave - check system, user profile, and registry
+$bravePaths = @(
+    "${env:ProgramFiles}\BraveSoftware\Brave-Browser\Application\brave.exe",
+    "${env:ProgramFiles(x86)}\BraveSoftware\Brave-Browser\Application\brave.exe",
+    "$env:LOCALAPPDATA\BraveSoftware\Brave-Browser\Application\brave.exe"
+)
+$braveVersion = Find-Browser -Name "Brave" -FilePaths $bravePaths -RegistryPattern "*Brave*"
+if ($braveVersion) {
     Write-Output-Line "  Brave: $braveVersion"
 } else {
     Write-Output-Line "  Brave: not installed"
+}
+
+# Opera - check system, user profile, and registry
+$operaPaths = @(
+    "${env:ProgramFiles}\Opera\launcher.exe",
+    "${env:ProgramFiles(x86)}\Opera\launcher.exe",
+    "$env:LOCALAPPDATA\Programs\Opera\launcher.exe",
+    "$env:APPDATA\Opera Software\Opera Stable\opera.exe"
+)
+$operaVersion = Find-Browser -Name "Opera" -FilePaths $operaPaths -RegistryPattern "*Opera*"
+if ($operaVersion) {
+    Write-Output-Line "  Opera: $operaVersion"
+} else {
+    Write-Output-Line "  Opera: not installed"
+}
+
+# Vivaldi - check system, user profile, and registry
+$vivaldiPaths = @(
+    "${env:ProgramFiles}\Vivaldi\Application\vivaldi.exe",
+    "${env:ProgramFiles(x86)}\Vivaldi\Application\vivaldi.exe",
+    "$env:LOCALAPPDATA\Vivaldi\Application\vivaldi.exe"
+)
+$vivaldiVersion = Find-Browser -Name "Vivaldi" -FilePaths $vivaldiPaths -RegistryPattern "*Vivaldi*"
+if ($vivaldiVersion) {
+    Write-Output-Line "  Vivaldi: $vivaldiVersion"
+} else {
+    Write-Output-Line "  Vivaldi: not installed"
 }
 
 # Internet Explorer (legacy)
@@ -772,6 +813,110 @@ if ($discordVersion) { Write-Output-Line "  Discord: $discordVersion" } else { W
 # Skype
 $skypeVersion = Get-InstalledAppVersion "Skype"
 if ($skypeVersion) { Write-Output-Line "  Skype: $skypeVersion" } else { Write-Output-Line "  Skype: not installed" }
+
+Write-Output-Line ""
+
+# ============================================================================
+# DEVELOPMENT TOOLS / IDEs
+# ============================================================================
+
+Write-Output-Line "Development Tools / IDEs:"
+Write-Output-Line "-------------------------"
+
+# Visual Studio Code - check multiple locations and registry
+$vscodePaths = @(
+    "${env:ProgramFiles}\Microsoft VS Code\Code.exe",
+    "${env:ProgramFiles(x86)}\Microsoft VS Code\Code.exe",
+    "$env:LOCALAPPDATA\Programs\Microsoft VS Code\Code.exe",
+    "$env:APPDATA\Local\Programs\Microsoft VS Code\Code.exe"
+)
+$vscodeVersion = $null
+foreach ($vsPath in $vscodePaths) {
+    if ($vsPath -and (Test-Path $vsPath -ErrorAction SilentlyContinue)) {
+        $vscodeVersion = (Get-Item $vsPath -ErrorAction SilentlyContinue).VersionInfo.ProductVersion
+        if ($vscodeVersion) { break }
+    }
+}
+if (-not $vscodeVersion) {
+    $vscodeReg = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+                                  "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+                                  "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue |
+                 Where-Object { $_.DisplayName -like "*Visual Studio Code*" } |
+                 Select-Object -First 1
+    if ($vscodeReg) { $vscodeVersion = $vscodeReg.DisplayVersion }
+}
+if ($vscodeVersion) {
+    Write-Output-Line "  VS Code: $vscodeVersion"
+} else {
+    Write-Output-Line "  VS Code: not installed"
+}
+
+# Visual Studio (full IDE)
+$vsVersion = Get-InstalledAppVersion "Visual Studio"
+if ($vsVersion) { Write-Output-Line "  Visual Studio: $vsVersion" } else { Write-Output-Line "  Visual Studio: not installed" }
+
+# JetBrains IntelliJ IDEA
+$intellijVersion = Get-InstalledAppVersion "IntelliJ IDEA"
+if ($intellijVersion) { Write-Output-Line "  IntelliJ IDEA: $intellijVersion" } else { Write-Output-Line "  IntelliJ IDEA: not installed" }
+
+# JetBrains PyCharm
+$pycharmVersion = Get-InstalledAppVersion "PyCharm"
+if ($pycharmVersion) { Write-Output-Line "  PyCharm: $pycharmVersion" } else { Write-Output-Line "  PyCharm: not installed" }
+
+# JetBrains WebStorm
+$webstormVersion = Get-InstalledAppVersion "WebStorm"
+if ($webstormVersion) { Write-Output-Line "  WebStorm: $webstormVersion" } else { Write-Output-Line "  WebStorm: not installed" }
+
+# JetBrains Rider
+$riderVersion = Get-InstalledAppVersion "Rider"
+if ($riderVersion) { Write-Output-Line "  Rider: $riderVersion" } else { Write-Output-Line "  Rider: not installed" }
+
+# Eclipse
+$eclipseVersion = Get-InstalledAppVersion "Eclipse"
+if ($eclipseVersion) { Write-Output-Line "  Eclipse: $eclipseVersion" } else { Write-Output-Line "  Eclipse: not installed" }
+
+# Sublime Text
+$sublimePaths = @(
+    "${env:ProgramFiles}\Sublime Text\sublime_text.exe",
+    "${env:ProgramFiles}\Sublime Text 3\sublime_text.exe",
+    "$env:LOCALAPPDATA\Sublime Text\sublime_text.exe"
+)
+$sublimeVersion = $null
+foreach ($subPath in $sublimePaths) {
+    if ($subPath -and (Test-Path $subPath -ErrorAction SilentlyContinue)) {
+        $sublimeVersion = (Get-Item $subPath -ErrorAction SilentlyContinue).VersionInfo.ProductVersion
+        if ($sublimeVersion) { break }
+    }
+}
+if (-not $sublimeVersion) { $sublimeVersion = Get-InstalledAppVersion "Sublime Text" }
+if ($sublimeVersion) {
+    Write-Output-Line "  Sublime Text: $sublimeVersion"
+} else {
+    Write-Output-Line "  Sublime Text: not installed"
+}
+
+# Notepad++
+$nppPaths = @(
+    "${env:ProgramFiles}\Notepad++\notepad++.exe",
+    "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe"
+)
+$nppVersion = $null
+foreach ($nppPath in $nppPaths) {
+    if ($nppPath -and (Test-Path $nppPath -ErrorAction SilentlyContinue)) {
+        $nppVersion = (Get-Item $nppPath -ErrorAction SilentlyContinue).VersionInfo.ProductVersion
+        if ($nppVersion) { break }
+    }
+}
+if (-not $nppVersion) { $nppVersion = Get-InstalledAppVersion "Notepad++" }
+if ($nppVersion) {
+    Write-Output-Line "  Notepad++: $nppVersion"
+} else {
+    Write-Output-Line "  Notepad++: not installed"
+}
+
+# Atom (deprecated but may still be installed)
+$atomVersion = Get-InstalledAppVersion "Atom"
+if ($atomVersion) { Write-Output-Line "  Atom: $atomVersion (deprecated)" }
 
 Write-Output-Line ""
 
