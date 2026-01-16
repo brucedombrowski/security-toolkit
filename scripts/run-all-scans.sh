@@ -231,7 +231,7 @@ if [ -d "$SCANS_DIR" ]; then
         echo ""
         
         # Show file preview (first 20 files)
-        local file_count=$(find "$SCANS_DIR" -type f 2>/dev/null | wc -l)
+        file_count=$(find "$SCANS_DIR" -type f 2>/dev/null | wc -l)
         if [ "$file_count" -gt 0 ]; then
             echo "Files to be deleted (showing first 20):"
             find "$SCANS_DIR" -type f 2>/dev/null | head -20 | while read -r file; do

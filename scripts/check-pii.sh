@@ -378,7 +378,7 @@ run_check() {
         -not -name "check-*.sh" \
         -not -name ".pii-allowlist" \
         2>/dev/null | while read -r file; do
-        $TIMEOUT_CMD grep -n -E "$pattern" "$file" 2>/dev/null || true
+        $TIMEOUT_CMD grep -H -n -E "$pattern" "$file" 2>/dev/null || true
     done || true)
 
     local total_count=0
