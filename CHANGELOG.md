@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] - 2026-01-16
+
+### Added
+
+- **Progress Indicator Library**
+  - New `scripts/lib/progress.sh` shared library for progress display
+  - Animated spinner for indeterminate operations (Braille character animation)
+  - Progress bar with visual indicator, percentage, and ETA calculation
+  - Step progress for multi-step operations (`[1/6] Running scan...`)
+  - Elapsed time tracking and formatting
+  - TTY detection for non-interactive environments (falls back to milestone updates)
+  - NIST SP 800-53: AU-3 (Content of Audit Records) - user feedback during operations
+
+- **Progress in Scan Scripts**
+  - `run-all-scans.sh`: Step indicators for all 6 scans with elapsed time display
+  - `check-malware.sh`: Spinner during ClamAV scan operation
+
+- **Progress Library Unit Tests**
+  - New `tests/test-progress.sh` with 14 tests covering all progress functions
+  - Tests TTY detection, time formatting, function existence, and edge cases
+
+- **Enhanced .gitignore for Spillage Prevention**
+  - CUI (Controlled Unclassified Information) pattern exclusions
+  - PII (Personally Identifiable Information) pattern exclusions
+  - Host inventory file exclusions
+  - Secrets and credentials patterns (*.pem, *.key, .env, etc.)
+  - SSH and GPG key exclusions
+  - AWS credential exclusions
+  - Database dump exclusions
+  - Log file exclusions
+
 ## [1.13.0] - 2026-01-16
 
 ### Added
@@ -301,6 +332,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 199 (Standards for Security Categorization)
 - FIPS 200 (Minimum Security Requirements)
 
+[1.14.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.14.0
+[1.13.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.13.0
 [1.12.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.12.0
 [1.11.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.11.0
 [1.10.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.10.0

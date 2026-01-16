@@ -2,6 +2,20 @@
 .scans/
 *-Scan-Results.md
 
+# Controlled Unclassified Information (CUI) outputs
+CUI*.*
+*CUI*
+*-CUI-*
+
+# Personally Identifiable Information (PII) outputs
+PII*.*
+*PII*
+*-PII-*
+
+# Host inventory (contains sensitive system information)
+host-inventory*.txt
+*-inventory-*.txt
+
 # Allowlists (project-specific reviewed exceptions - should not be shared)
 .allowlists/
 
@@ -15,6 +29,51 @@ lynis-*.txt
 lynis-*.dat
 openvas-*.xml
 vulnerability-scan-*.txt
+
+# Secrets and credentials (CRITICAL - never commit)
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+.env
+.env.*
+*.secrets
+secrets.*
+credentials.*
+*.credential
+api_key*
+apikey*
+
+# SSH keys
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
+*.pub
+known_hosts
+authorized_keys
+
+# GPG keys
+*.gpg
+*.asc
+secring.*
+pubring.*
+
+# AWS credentials
+.aws/
+aws_access_key*
+aws_secret*
+
+# Database dumps (may contain sensitive data)
+*.sql
+*.dump
+*.bak
+
+# Log files (may contain sensitive data)
+*.log
+logs/
 
 # OS files
 .DS_Store

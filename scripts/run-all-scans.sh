@@ -29,6 +29,7 @@ SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 # Source shared libraries
 AUDIT_AVAILABLE=0
 TIMESTAMPS_AVAILABLE=0
+PROGRESS_AVAILABLE=0
 
 if [ -f "$SCRIPT_DIR/lib/audit-log.sh" ]; then
     source "$SCRIPT_DIR/lib/audit-log.sh"
@@ -38,6 +39,11 @@ fi
 if [ -f "$SCRIPT_DIR/lib/timestamps.sh" ]; then
     source "$SCRIPT_DIR/lib/timestamps.sh"
     TIMESTAMPS_AVAILABLE=1
+fi
+
+if [ -f "$SCRIPT_DIR/lib/progress.sh" ]; then
+    source "$SCRIPT_DIR/lib/progress.sh"
+    PROGRESS_AVAILABLE=1
 fi
 
 # Toolkit identification
@@ -414,30 +420,52 @@ run_scan() {
 }
 
 # Run all scans with NIST control references
+# Total scans: 6 (5 standard + 1 vulnerability)
+TOTAL_SCANS=6
+CURRENT_SCAN=0
+
+# Start overall progress tracking
+if [ "$PROGRESS_AVAILABLE" -eq 1 ]; then
+    progress_start
+    echo ""
+    echo "Running $TOTAL_SCANS security scans..."
+    echo ""
+fi
+
+CURRENT_SCAN=$((CURRENT_SCAN + 1))
+[ "$PROGRESS_AVAILABLE" -eq 1 ] && progress_step $CURRENT_SCAN $TOTAL_SCANS "PII Pattern Scan"
 run_scan "PII Pattern Scan" \
     "$SCRIPT_DIR/check-pii.sh $INTERACTIVE_FLAG" \
     "NIST 800-53: SI-12 (Information Management)" \
     "pii-scan-$FILE_TIMESTAMP.txt" \
     "PII_RESULT" "PII_FINDINGS"
 
+CURRENT_SCAN=$((CURRENT_SCAN + 1))
+[ "$PROGRESS_AVAILABLE" -eq 1 ] && progress_step $CURRENT_SCAN $TOTAL_SCANS "Malware Scan (ClamAV)"
 run_scan "Malware Scan (ClamAV)" \
     "$SCRIPT_DIR/check-malware.sh" \
     "NIST 800-53: SI-3 (Malicious Code Protection)" \
     "malware-scan-$FILE_TIMESTAMP.txt" \
     "MALWARE_RESULT" "MALWARE_FINDINGS"
 
+CURRENT_SCAN=$((CURRENT_SCAN + 1))
+[ "$PROGRESS_AVAILABLE" -eq 1 ] && progress_step $CURRENT_SCAN $TOTAL_SCANS "Secrets/Credentials Scan"
 run_scan "Secrets/Credentials Scan" \
     "$SCRIPT_DIR/check-secrets.sh $INTERACTIVE_FLAG" \
     "NIST 800-53: SA-11 (Developer Testing)" \
     "secrets-scan-$FILE_TIMESTAMP.txt" \
     "SECRETS_RESULT" "SECRETS_FINDINGS"
 
+CURRENT_SCAN=$((CURRENT_SCAN + 1))
+[ "$PROGRESS_AVAILABLE" -eq 1 ] && progress_step $CURRENT_SCAN $TOTAL_SCANS "MAC Address Scan"
 run_scan "IEEE 802.3 MAC Address Scan" \
     "$SCRIPT_DIR/check-mac-addresses.sh" \
     "NIST 800-53: SC-8 (Transmission Confidentiality)" \
     "mac-address-scan-$FILE_TIMESTAMP.txt" \
     "MAC_RESULT" "MAC_FINDINGS"
 
+CURRENT_SCAN=$((CURRENT_SCAN + 1))
+[ "$PROGRESS_AVAILABLE" -eq 1 ] && progress_step $CURRENT_SCAN $TOTAL_SCANS "Host Security Configuration"
 run_scan "Host Security Configuration" \
     "$SCRIPT_DIR/check-host-security.sh" \
     "NIST 800-53: CM-6 (Configuration Settings)" \
@@ -447,6 +475,8 @@ run_scan "Host Security Configuration" \
 # Run vulnerability scan (quick mode, scans localhost)
 # Note: This scans the HOST system, not the codebase - uses different invocation
 # The script creates its own output files in .scans/ directory
+CURRENT_SCAN=$((CURRENT_SCAN + 1))
+[ "$PROGRESS_AVAILABLE" -eq 1 ] && progress_step $CURRENT_SCAN $TOTAL_SCANS "Vulnerability Scan (Nmap/Lynis)"
 log "Running: Vulnerability Scan (Nmap/Lynis)"
 log "  Control: NIST 800-53: RA-5 (Vulnerability Scanning), SI-2 (Flaw Remediation)"
 log "  Host Inventory Reference: $INVENTORY_CHECKSUM"
@@ -492,12 +522,22 @@ log ""
 log "--------------------------------------------------------"
 log ""
 
+# Show elapsed time
+if [ "$PROGRESS_AVAILABLE" -eq 1 ]; then
+    echo ""
+    progress_end "All scans complete"
+fi
+
 log "========================================================"
 log ""
 log "SCAN SUMMARY"
 log "============"
 log "Passed: $PASS_COUNT"
 log "Failed: $FAIL_COUNT"
+if [ "$PROGRESS_AVAILABLE" -eq 1 ] && [ -n "$PROGRESS_START_TIME" ]; then
+    elapsed=$(($(date +%s) - PROGRESS_START_TIME))
+    log "Elapsed: $(format_elapsed $elapsed)"
+fi
 log ""
 
 if [ "$OVERALL_STATUS" = "PASS" ]; then
