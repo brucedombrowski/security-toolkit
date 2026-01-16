@@ -143,9 +143,32 @@ update_kev_cache() {
         fi
 
         mv "${KEV_CACHE_FILE}.tmp" "$KEV_CACHE_FILE"
+
+        # Generate SHA256 hash for integrity verification
+        if [[ "$(uname)" == "Darwin" ]]; then
+            shasum -a 256 "$KEV_CACHE_FILE" > "${KEV_CACHE_FILE}.sha256"
+        else
+            sha256sum "$KEV_CACHE_FILE" > "${KEV_CACHE_FILE}.sha256"
+        fi
+
         [ "$QUIET" -eq 0 ] && echo -e "${GREEN}KEV catalog updated successfully${NC}"
     else
         [ "$QUIET" -eq 0 ] && echo -e "${CYAN}Using cached KEV catalog (< 24 hours old)${NC}"
+    fi
+}
+
+# Get KEV catalog hash
+get_kev_hash() {
+    if [ -f "${KEV_CACHE_FILE}.sha256" ]; then
+        cat "${KEV_CACHE_FILE}.sha256" | awk '{print $1}'
+    elif [ -f "$KEV_CACHE_FILE" ]; then
+        if [[ "$(uname)" == "Darwin" ]]; then
+            shasum -a 256 "$KEV_CACHE_FILE" | awk '{print $1}'
+        else
+            sha256sum "$KEV_CACHE_FILE" | awk '{print $1}'
+        fi
+    else
+        echo "unavailable"
     fi
 }
 
@@ -201,6 +224,7 @@ find_scan_file
 KEV_VERSION=$(jq -r '.catalogVersion' "$KEV_CACHE_FILE")
 KEV_COUNT=$(jq -r '.count' "$KEV_CACHE_FILE")
 KEV_DATE=$(jq -r '.dateReleased' "$KEV_CACHE_FILE")
+KEV_HASH=$(get_kev_hash)
 
 if [ "$QUIET" -eq 0 ]; then
     echo ""
@@ -212,6 +236,7 @@ if [ "$QUIET" -eq 0 ]; then
     echo "KEV Catalog Version: $KEV_VERSION"
     echo "KEV Total Entries: $KEV_COUNT"
     echo "KEV Last Updated: $KEV_DATE"
+    echo "KEV Catalog SHA256: $KEV_HASH"
     echo "Check Timestamp: $TIMESTAMP"
     echo ""
     echo "-------------------------------------------------------------------------------"
