@@ -135,7 +135,12 @@ Write-Host ""
 Write-Host "Host inventory file contains CUI per NIST SP 800-171 and 32 CFR Part 2002:" -ForegroundColor Yellow
 Write-Host ""
 if ($OutputFile) {
-    Write-Host "  Location: $OutputFile" -ForegroundColor Cyan
+    Write-Host "Output will be saved to:" -ForegroundColor Cyan
+    Write-Host "  $OutputFile" -ForegroundColor White
+    Write-Host ""
+} else {
+    Write-Host "Output mode: Console only (-NoFile specified)" -ForegroundColor Cyan
+    Write-Host ""
 }
 Write-Host ""
 Write-Host "This file includes sensitive system information:" -ForegroundColor Yellow
@@ -829,8 +834,16 @@ if ($OutputFile) {
 
         Write-Host ""
         Write-Host "Inventory saved to: $OutputFile" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "Press any key to exit..." -ForegroundColor Cyan
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     } catch {
-        Write-Error "Failed to write output file: $_"
+        Write-Host ""
+        Write-Host "ERROR: Failed to write output file: $_" -ForegroundColor Red
+        Write-Host "Attempted path: $OutputFile" -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Press any key to exit..." -ForegroundColor Cyan
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         exit 1
     }
 }
