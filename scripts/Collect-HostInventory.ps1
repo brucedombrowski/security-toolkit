@@ -43,7 +43,11 @@ param(
     [string]$OutputFile
 )
 
-$ErrorActionPreference = "Continue"
+# Use SilentlyContinue to prevent terminating errors
+$ErrorActionPreference = "SilentlyContinue"
+
+# Check if running elevated
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 # Script metadata
 $TIMESTAMP = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
@@ -129,6 +133,13 @@ Write-Host "  4. Store on encrypted media or encrypted filesystems"
 Write-Host "  5. Delete securely when no longer needed (use cipher /w or SDelete)"
 Write-Host ""
 
+if (-not $isAdmin) {
+    Write-Host "NOTE: Running without Administrator privileges." -ForegroundColor Cyan
+    Write-Host "      Some features (Windows Defender, Hyper-V, IIS) will show 'requires elevation'." -ForegroundColor Cyan
+    Write-Host "      Run as Administrator for complete inventory." -ForegroundColor Cyan
+    Write-Host ""
+}
+
 # ============================================================================
 # BEGIN INVENTORY OUTPUT
 # ============================================================================
@@ -149,6 +160,7 @@ Write-Output-Line "Generated: $TIMESTAMP"
 Write-Output-Line "Hostname: $env:COMPUTERNAME"
 Write-Output-Line "Toolkit: Security Verification Toolkit v$TOOLKIT_VERSION (PowerShell)"
 Write-Output-Line "Source: $TOOLKIT_SOURCE"
+Write-Output-Line "Elevated: $(if ($isAdmin) { 'Yes' } else { 'No (some features unavailable)' })"
 Write-Output-Line ""
 Write-Output-Line "HANDLING NOTICE:"
 Write-Output-Line "  This document contains Controlled Unclassified Information (CUI)."
@@ -240,14 +252,22 @@ Write-Output-Line ""
 Write-Output-Line "Security Tools:"
 Write-Output-Line "---------------"
 
-# Windows Defender
-$defender = Get-MpComputerStatus -ErrorAction SilentlyContinue
-if ($defender) {
-    Write-Output-Line "  Windows Defender: Enabled (Engine: $($defender.AMEngineVersion))"
-    Write-Output-Line "    Antivirus Signature: $($defender.AntivirusSignatureVersion)"
-    Write-Output-Line "    Real-time Protection: $($defender.RealTimeProtectionEnabled)"
+# Windows Defender (requires elevation)
+if ($isAdmin) {
+    try {
+        $defender = Get-MpComputerStatus -ErrorAction Stop
+        if ($defender) {
+            Write-Output-Line "  Windows Defender: Enabled (Engine: $($defender.AMEngineVersion))"
+            Write-Output-Line "    Antivirus Signature: $($defender.AntivirusSignatureVersion)"
+            Write-Output-Line "    Real-time Protection: $($defender.RealTimeProtectionEnabled)"
+        } else {
+            Write-Output-Line "  Windows Defender: not available"
+        }
+    } catch {
+        Write-Output-Line "  Windows Defender: unable to query"
+    }
 } else {
-    Write-Output-Line "  Windows Defender: not available"
+    Write-Output-Line "  Windows Defender: requires elevation"
 }
 
 # ClamAV
@@ -453,12 +473,20 @@ Write-Output-Line ""
 Write-Output-Line "Backup and Restore Software:"
 Write-Output-Line "----------------------------"
 
-# Windows Backup
-$windowsBackup = Get-WindowsOptionalFeature -Online -FeatureName "WindowsServerBackup" -ErrorAction SilentlyContinue
-if ($windowsBackup -and $windowsBackup.State -eq "Enabled") {
-    Write-Output-Line "  Windows Server Backup: enabled"
+# Windows Backup (requires elevation)
+if ($isAdmin) {
+    try {
+        $windowsBackup = Get-WindowsOptionalFeature -Online -FeatureName "WindowsServerBackup" -ErrorAction Stop
+        if ($windowsBackup -and $windowsBackup.State -eq "Enabled") {
+            Write-Output-Line "  Windows Server Backup: enabled"
+        } else {
+            Write-Output-Line "  Windows Server Backup: not enabled"
+        }
+    } catch {
+        Write-Output-Line "  Windows Server Backup: unable to query"
+    }
 } else {
-    Write-Output-Line "  Windows Server Backup: not enabled"
+    Write-Output-Line "  Windows Server Backup: requires elevation"
 }
 
 # File History
@@ -648,12 +676,20 @@ if ($vboxVersion) { Write-Output-Line "  VirtualBox: $vboxVersion" } else { Writ
 $vmwareVersion = Get-InstalledAppVersion "VMware Workstation"
 if ($vmwareVersion) { Write-Output-Line "  VMware Workstation: $vmwareVersion" } else { Write-Output-Line "  VMware Workstation: not installed" }
 
-# Hyper-V
-$hyperv = Get-WindowsOptionalFeature -Online -FeatureName "Microsoft-Hyper-V" -ErrorAction SilentlyContinue
-if ($hyperv -and $hyperv.State -eq "Enabled") {
-    Write-Output-Line "  Hyper-V: enabled"
+# Hyper-V (requires elevation)
+if ($isAdmin) {
+    try {
+        $hyperv = Get-WindowsOptionalFeature -Online -FeatureName "Microsoft-Hyper-V" -ErrorAction Stop
+        if ($hyperv -and $hyperv.State -eq "Enabled") {
+            Write-Output-Line "  Hyper-V: enabled"
+        } else {
+            Write-Output-Line "  Hyper-V: not enabled"
+        }
+    } catch {
+        Write-Output-Line "  Hyper-V: unable to query"
+    }
 } else {
-    Write-Output-Line "  Hyper-V: not enabled"
+    Write-Output-Line "  Hyper-V: requires elevation"
 }
 
 # WSL
@@ -669,13 +705,27 @@ Write-Output-Line ""
 Write-Output-Line "Web Servers:"
 Write-Output-Line "------------"
 
-# IIS
-$iis = Get-WindowsOptionalFeature -Online -FeatureName "IIS-WebServer" -ErrorAction SilentlyContinue
-if ($iis -and $iis.State -eq "Enabled") {
-    $iisVersion = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\InetStp" -ErrorAction SilentlyContinue).VersionString
-    Write-Output-Line "  IIS: $iisVersion"
+# IIS (requires elevation for full check)
+if ($isAdmin) {
+    try {
+        $iis = Get-WindowsOptionalFeature -Online -FeatureName "IIS-WebServer" -ErrorAction Stop
+        if ($iis -and $iis.State -eq "Enabled") {
+            $iisVersion = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\InetStp" -ErrorAction SilentlyContinue).VersionString
+            Write-Output-Line "  IIS: $iisVersion"
+        } else {
+            Write-Output-Line "  IIS: not installed"
+        }
+    } catch {
+        Write-Output-Line "  IIS: unable to query"
+    }
 } else {
-    Write-Output-Line "  IIS: not installed"
+    # Can still check registry without elevation
+    $iisVersion = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\InetStp" -ErrorAction SilentlyContinue).VersionString
+    if ($iisVersion) {
+        Write-Output-Line "  IIS: $iisVersion"
+    } else {
+        Write-Output-Line "  IIS: not detected (run elevated for full check)"
+    }
 }
 
 # Apache
