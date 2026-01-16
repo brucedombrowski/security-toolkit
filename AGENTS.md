@@ -287,6 +287,107 @@ Potential additions to the toolkit:
    - **Real-time compliance status**: Enables continuous compliance monitoring and automated status updates to governance systems
    - **Requirements**: Sophisticated AI agent with organizational trust, certificate management capabilities, and blockchain integration
 
+## Security Model & Assumptions
+
+### Trust Boundaries
+
+This toolkit operates with the following trust model:
+
+| Boundary | Trust Level | Rationale |
+|----------|-------------|-----------|
+| Local filesystem | Trusted | Scripts operate on user-accessible files |
+| Target directory | Semi-trusted | May contain malicious files (why we scan) |
+| Network (localhost) | Trusted | Vulnerability scans target local machine |
+| Network (remote) | Untrusted | Remote scans require explicit authorization |
+| ClamAV databases | Trusted | Downloaded from official ClamAV mirrors |
+| External tools | Trusted | Nmap, Lynis installed via package managers |
+
+### Data Handling
+
+**Sensitive Data Categories:**
+
+| Category | Examples | Handling |
+|----------|----------|----------|
+| CUI (Controlled Unclassified Information) | Host inventory, MAC addresses, serial numbers | Mode 600, CUI banner, secure delete required |
+| PII (Personally Identifiable Information) | SSNs, phone numbers found in scans | Displayed for remediation, not persisted beyond scan logs |
+| Secrets | API keys, passwords found in scans | Displayed for remediation, never logged in plaintext |
+| Network Topology | Open ports, services, IP addresses | Vulnerability scans contain this; treat as sensitive |
+
+**Data Flow:**
+```
+Target Directory → Scan Scripts → .scans/ Directory → PDF Attestation
+                                       ↓
+                              (gitignored, mode 600)
+```
+
+### Privilege Requirements
+
+| Script | Requires sudo | Why |
+|--------|---------------|-----|
+| `run-all-scans.sh` | No | Orchestration only |
+| `check-pii.sh` | No | File content scanning |
+| `check-secrets.sh` | No | File content scanning |
+| `check-malware.sh` | No* | ClamAV runs unprivileged |
+| `check-mac-addresses.sh` | No | File content scanning |
+| `check-host-security.sh` | Partial | Some checks need root |
+| `scan-vulnerabilities.sh` | Recommended | Nmap/Lynis more thorough with root |
+| `collect-host-inventory.sh` | No | Uses system_profiler |
+| `harden-system.sh` | Yes (--apply) | Modifies system config |
+| `secure-delete.sh` | No | User file deletion |
+| `purge-git-history.sh` | No | Git operations only |
+
+*ClamAV database updates (`freshclam`) may require sudo on first run.
+
+### Known Limitations
+
+1. **False Positives**: Pattern-based scanning (PII, secrets) has inherent false positive rates
+   - Use `<target>/.pii-allowlist` and `<target>/.secrets-allowlist` to suppress known-good matches
+   - Allowlist files are created in the scanned project directory (not the toolkit)
+   - Each allowlist entry requires justification and includes SHA256 hash for integrity
+
+2. **False Negatives**: Scans cannot detect:
+   - Obfuscated malware (ClamAV limitation)
+   - Encrypted secrets
+   - Novel attack patterns
+   - Logic vulnerabilities
+
+3. **Platform-Specific**: Some checks are macOS or Linux specific
+   - `check-host-security.sh` has platform-specific code paths
+   - Lynis findings vary by platform (see `docs/lynis-macos-false-positives.md`)
+
+4. **Point-in-Time**: Scans reflect state at execution time
+   - Code changes invalidate prior attestations
+   - Re-scan after any modification
+
+5. **Network Scanning**: Requires authorization
+   - Only scan systems you own or have permission to test
+   - Remote scans may trigger security alerts
+
+### Threat Model
+
+**What This Toolkit Detects:**
+- Accidental PII/secret commits
+- Known malware signatures
+- Common misconfigurations
+- Network service exposures
+- Hardcoded credentials
+
+**What This Toolkit Does NOT Detect:**
+- Zero-day vulnerabilities
+- Sophisticated APT techniques
+- Social engineering vectors
+- Supply chain attacks
+- Business logic flaws
+
+### Security Guarantees
+
+1. **No Data Exfiltration**: Scripts do not transmit data externally
+2. **No Code Execution from Targets**: Scans read files, never execute them
+3. **Audit Trail**: All scan results are timestamped and checksummed
+4. **Fail-Safe Defaults**: Destructive operations require explicit confirmation
+
+---
+
 ## Dependencies
 
 - **Required**: grep (with -E extended regex), git (for version identification)

@@ -32,12 +32,57 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Help function
+show_help() {
+    cat << 'EOF'
+Usage: check-secrets.sh [OPTIONS] [TARGET_DIRECTORY]
+
+Scan files for hardcoded secrets, credentials, and security vulnerabilities.
+
+OPTIONS:
+  -h, --help         Show this help message and exit
+  -i, --interactive  Prompt to accept/reject each finding
+
+ARGUMENTS:
+  TARGET_DIRECTORY   Directory to scan (default: parent of script location)
+
+PATTERNS DETECTED:
+  - API keys              Generic API key patterns, Bearer tokens
+  - AWS credentials       Access keys, secret keys
+  - Private keys          RSA, SSH, PGP private key headers
+  - Database strings      Connection strings with embedded passwords
+  - Hardcoded passwords   password=, passwd=, pwd= assignments
+  - Cloud tokens          GitHub, Slack, Stripe, etc.
+  - Command injection     Dangerous shell patterns
+
+ALLOWLIST:
+  Accepted findings are stored in <target>/.secrets-allowlist
+  Each entry includes SHA256 hash and justification for audit trail.
+  Allowlisted items are automatically skipped in future scans.
+
+EXAMPLES:
+  ./check-secrets.sh                    # Scan parent directory
+  ./check-secrets.sh -i /path/to/code   # Interactive mode
+  ./check-secrets.sh .                  # Scan current directory
+
+EXIT CODES:
+  0  No secrets found (or all findings allowlisted)
+  1  Potential secrets detected
+
+NIST CONTROL: SA-11 (Developer Testing and Evaluation)
+EOF
+    exit 0
+}
+
 # Parse arguments
 INTERACTIVE=0
 TARGET_DIR=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
+        -h|--help)
+            show_help
+            ;;
         -i|--interactive)
             INTERACTIVE=1
             shift

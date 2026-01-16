@@ -29,12 +29,54 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Help function
+show_help() {
+    cat << 'EOF'
+Usage: check-pii.sh [OPTIONS] [TARGET_DIRECTORY]
+
+Scan files for potential Personally Identifiable Information (PII) patterns.
+
+OPTIONS:
+  -h, --help         Show this help message and exit
+  -i, --interactive  Prompt to accept/reject each finding
+
+ARGUMENTS:
+  TARGET_DIRECTORY   Directory to scan (default: parent of script location)
+
+PATTERNS DETECTED:
+  - IPv4 addresses       192.168.x.x, 10.x.x.x, etc.
+  - Phone numbers        US formats: (xxx) xxx-xxxx, xxx-xxx-xxxx
+  - Social Security      xxx-xx-xxxx format
+  - Credit cards         16-digit patterns (Visa, MC, Amex, Discover)
+
+ALLOWLIST:
+  Accepted findings are stored in <target>/.pii-allowlist
+  Each entry includes SHA256 hash and justification for audit trail.
+  Allowlisted items are automatically skipped in future scans.
+
+EXAMPLES:
+  ./check-pii.sh                    # Scan parent directory
+  ./check-pii.sh -i /path/to/code   # Interactive mode
+  ./check-pii.sh .                  # Scan current directory
+
+EXIT CODES:
+  0  No PII found (or all findings allowlisted)
+  1  Potential PII detected
+
+NIST CONTROL: SI-12 (Information Management and Retention)
+EOF
+    exit 0
+}
+
 # Parse arguments
 INTERACTIVE=0
 TARGET_DIR=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
+        -h|--help)
+            show_help
+            ;;
         -i|--interactive)
             INTERACTIVE=1
             shift

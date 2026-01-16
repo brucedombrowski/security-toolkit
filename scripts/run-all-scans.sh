@@ -35,9 +35,56 @@ INTERACTIVE=1
 INTERACTIVE_FLAG="-i"
 TARGET_DIR=""
 
+# Help function
+show_help() {
+    cat << 'EOF'
+Usage: run-all-scans.sh [OPTIONS] [TARGET_DIRECTORY]
+
+Run comprehensive security verification scans on a target directory.
+
+OPTIONS:
+  -h, --help              Show this help message and exit
+  -n, --non-interactive   Skip interactive prompts (for CI/CD)
+
+ARGUMENTS:
+  TARGET_DIRECTORY        Directory to scan (default: parent of script location)
+
+SCANS PERFORMED:
+  - PII Detection         SSN, phone, IP, credit card patterns (NIST SI-12)
+  - Malware Scanning      ClamAV virus/trojan detection (NIST SI-3)
+  - Secrets Detection     API keys, passwords, tokens (NIST SA-11)
+  - MAC Address Scan      IEEE 802.3 identifiers (NIST SC-8)
+  - Host Security         OS configuration audit (NIST CM-6)
+  - Vulnerability Scan    Nmap/Lynis assessment (NIST RA-5)
+
+OUTPUT:
+  Results saved to <TARGET>/.scans/ including:
+  - Individual scan logs
+  - Consolidated report
+  - PDF attestation (if pdflatex available)
+  - SHA256 checksums
+
+EXAMPLES:
+  ./run-all-scans.sh                      # Scan parent directory (interactive)
+  ./run-all-scans.sh /path/to/project     # Scan specific directory
+  ./run-all-scans.sh -n .                 # Non-interactive scan of current dir
+
+EXIT CODES:
+  0  All scans passed
+  1  One or more scans failed
+  2  Invalid target directory
+
+NIST CONTROLS: CA-2, CA-7, CM-6, CM-8, RA-5, SA-11, SC-8, SI-2, SI-3, SI-12
+EOF
+    exit 0
+}
+
 # Parse arguments
 while [ $# -gt 0 ]; do
     case "$1" in
+        -h|--help)
+            show_help
+            ;;
         -n|--non-interactive)
             INTERACTIVE=0
             INTERACTIVE_FLAG=""

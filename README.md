@@ -2,6 +2,22 @@
 
 IT security analysis and compliance documentation tools for software projects.
 
+## Quick Start
+
+1. **[Installation Guide](INSTALLATION.md)** - Platform-specific setup instructions
+2. **Run first scan:** `./scripts/run-all-scans.sh /your/project`
+3. **Review results** in `.scans/` directory
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [INSTALLATION.md](INSTALLATION.md) | Setup and prerequisites |
+| [AGENTS.md](AGENTS.md) | Toolkit architecture |
+| [COMPLIANCE.md](COMPLIANCE.md) | NIST control mapping |
+| [SECURITY.md](SECURITY.md) | Vulnerability reporting |
+| [docs/lynis-macos-false-positives.md](docs/lynis-macos-false-positives.md) | macOS-specific guidance |
+
 ## Overview
 
 This toolkit provides automated security verification scripts aligned with federal security standards:
