@@ -356,8 +356,8 @@ Target Directory → Scan Scripts → .scans/ Directory → PDF Attestation
 ### Known Limitations
 
 1. **False Positives**: Pattern-based scanning (PII, secrets) has inherent false positive rates
-   - Use `<target>/.pii-allowlist` and `<target>/.secrets-allowlist` to suppress known-good matches
-   - Allowlist files are created in the scanned project directory (not the toolkit)
+   - Use `<target>/.allowlists/pii-allowlist` and `<target>/.allowlists/secrets-allowlist` to suppress known-good matches
+   - Allowlist files are created in the `.allowlists/` subdirectory of the scanned project (gitignored by default)
    - Each allowlist entry requires justification and includes SHA256 hash for integrity
 
 2. **False Negatives**: Scans cannot detect:

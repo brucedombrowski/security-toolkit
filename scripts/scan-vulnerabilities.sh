@@ -95,8 +95,29 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-TIMESTAMP=$(date -u "+%Y-%m-%dT%H%M%SZ")
-DATE_STAMP=$(date -u "+%Y-%m-%d")
+
+# Source shared libraries
+AUDIT_AVAILABLE=0
+TIMESTAMPS_AVAILABLE=0
+
+if [ -f "$SCRIPT_DIR/lib/audit-log.sh" ]; then
+    source "$SCRIPT_DIR/lib/audit-log.sh"
+    AUDIT_AVAILABLE=1
+fi
+
+if [ -f "$SCRIPT_DIR/lib/timestamps.sh" ]; then
+    source "$SCRIPT_DIR/lib/timestamps.sh"
+    TIMESTAMPS_AVAILABLE=1
+fi
+
+# Use standardized timestamps (UTC for consistency across time zones)
+if [ "$TIMESTAMPS_AVAILABLE" -eq 1 ]; then
+    TIMESTAMP=$(get_filename_timestamp)
+    DATE_STAMP=$(get_date_stamp)
+else
+    TIMESTAMP=$(date -u "+%Y-%m-%dT%H%M%SZ")
+    DATE_STAMP=$(date -u "+%Y-%m-%d")
+fi
 HOSTNAME_SHORT=$(hostname -s 2>/dev/null || hostname)
 
 # Toolkit version for traceability
@@ -331,6 +352,11 @@ init_output() {
 
     mkdir -p "$OUTPUT_DIR"
     REPORT_FILE="$OUTPUT_DIR/vulnerability-scan-$TIMESTAMP.txt"
+
+    # Initialize audit logging
+    if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+        init_audit_log "$OUTPUT_DIR/.." "vulnerability-scan" || true
+    fi
 
     log_info "Output directory: $OUTPUT_DIR"
     log_info "Report file: $REPORT_FILE"
@@ -877,8 +903,16 @@ main() {
 
     if [ $overall_status -eq 0 ]; then
         log_success "All scans completed successfully"
+        # Finalize audit log with PASS status
+        if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+            finalize_audit_log "PASS" "scans=$scan_count passed=$pass_count"
+        fi
     else
         log_warning "Scans completed with findings - review report for details"
+        # Finalize audit log with FAIL status
+        if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+            finalize_audit_log "FAIL" "scans=$scan_count passed=$pass_count"
+        fi
     fi
 
     echo ""

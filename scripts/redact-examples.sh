@@ -96,8 +96,8 @@ redact_file() {
     sed -E 's/(Generated):[[:space:]]*.*$/\1: [REDACTED]/g' | \
     # Redact ClamAV version strings with dates
     sed -E 's/(ClamAV):[[:space:]]*.*$/\1: [REDACTED]/g' | \
-    # Redact version strings for security software
-    sed -E 's/(OpenSSL|SSH|GPG|Git|Python|Node\.js|Java|\.NET):[[:space:]]*.*$/\1: [REDACTED]/g' | \
+    # Redact version strings for security software, languages, browsers, backup, and remote control
+    sed -E 's/(OpenSSL|SSH|GPG|Git|Python|Node\.js|Java|\.NET|Ruby|Go|Rust|Perl|PHP|Chrome|Firefox|Safari|Edge|Brave|Chromium|Time Machine|Arq Backup|Carbon Copy Cloner|SuperDuper!|Backblaze|rsync|Borg Backup|Restic|Duplicity|Timeshift|Screen Sharing|Apple Remote Desktop|TeamViewer|AnyDesk|Zoom|Microsoft Remote Desktop|VNC Viewer|SSH Server|VNC Server|xrdp|RustDesk|Chrome\/Chromium):[[:space:]]*.*$/\1: [REDACTED]/g' | \
     # Redact application version numbers
     sed -E 's/:[[:space:]]*[0-9]+\.[0-9]+(\.[0-9]+)*([._-][0-9]+)?$/: [REDACTED]/g' | \
     # Redact Git commit hashes

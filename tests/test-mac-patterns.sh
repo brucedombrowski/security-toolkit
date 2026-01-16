@@ -15,7 +15,9 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-FIXTURES_DIR="$SCRIPT_DIR/fixtures"
+# Use temp directory for integration tests (not fixtures/ which is excluded by check-mac-addresses.sh)
+INTEGRATION_TEST_DIR=$(mktemp -d)
+trap "rm -rf $INTEGRATION_TEST_DIR" EXIT
 
 # Colors
 RED='\033[0;31m'
@@ -208,17 +210,16 @@ echo ""
 # -----------------------------------------------------------------------------
 echo "--- Integration Test ---"
 
-test_start "Run check-mac-addresses.sh on clean fixture"
-# Use .md extension since check-mac-addresses.sh includes *.md files
-CLEAN_FILE="$FIXTURES_DIR/clean-mac.md"
-mkdir -p "$FIXTURES_DIR"
+test_start "Run check-mac-addresses.sh on clean directory"
+# Use temp directory (not fixtures/ which is excluded by check-mac-addresses.sh)
+CLEAN_FILE="$INTEGRATION_TEST_DIR/clean-mac.md"
 cat > "$CLEAN_FILE" << 'EOF'
 This file contains no MAC addresses.
 Just regular text and timestamps like 12:30:45.
 And version numbers like 1.2.3.4
 EOF
 
-if "$REPO_DIR/scripts/check-mac-addresses.sh" "$FIXTURES_DIR" > /dev/null 2>&1; then
+if "$REPO_DIR/scripts/check-mac-addresses.sh" "$INTEGRATION_TEST_DIR" > /dev/null 2>&1; then
     test_pass
 else
     test_fail "exit 0" "exit 1"
@@ -226,21 +227,19 @@ fi
 
 test_start "Run check-mac-addresses.sh on file with MAC"
 # Use .md extension since check-mac-addresses.sh includes *.md files
-MAC_FILE="$FIXTURES_DIR/has-mac.md"
+MAC_FILE="$INTEGRATION_TEST_DIR/has-mac.md"
 cat > "$MAC_FILE" << 'EOF'
 Network Interface: eth0
 MAC Address: 00:11:22:33:44:55
 EOF
 
-if "$REPO_DIR/scripts/check-mac-addresses.sh" "$FIXTURES_DIR" > /dev/null 2>&1; then
+if "$REPO_DIR/scripts/check-mac-addresses.sh" "$INTEGRATION_TEST_DIR" > /dev/null 2>&1; then
     test_fail "exit 1" "exit 0 (missed MAC)"
 else
     test_pass
 fi
 
-# Cleanup
-rm -f "$CLEAN_FILE" "$MAC_FILE"
-rmdir "$FIXTURES_DIR" 2>/dev/null || true
+# Cleanup handled by trap (INTEGRATION_TEST_DIR is removed on exit)
 
 echo ""
 echo "=========================================="

@@ -146,7 +146,7 @@
 % ----------------------------------------------------------------------------
 \dmsection{Purpose}
 
-This document attests that automated security scans were executed against \textbf{\TargetName} using the Security Verification Toolkit. The scans verify alignment with NIST SP 800-53 security controls.
+This document attests that automated security scans were executed against the subject host at the specified path using the Security Verification Toolkit. The scans verify alignment with NIST SP 800-53 security controls.
 
 % ----------------------------------------------------------------------------
 \dmsection{Scan Environment}
@@ -233,7 +233,7 @@ Items flagged by automated scans but reviewed and accepted as non-issues are doc
 \vspace{6pt}
 \begin{tabular}{@{}ll@{}}
 \toprule
-\textbf{Allowlist File} & \texttt{.pii-allowlist} \\
+\textbf{Allowlist File} & \texttt{.allowlists/pii-allowlist} \\
 \textbf{SHA256 (first 16)} & \texttt{\PIIAllowlistChecksum} \\
 \textbf{Total Exceptions} & \PIIAllowlistCount \\
 \bottomrule
@@ -256,7 +256,7 @@ Items flagged by automated scans but reviewed and accepted as non-issues are doc
 \vspace{6pt}
 \begin{tabular}{@{}ll@{}}
 \toprule
-\textbf{Allowlist File} & \texttt{.secrets-allowlist} \\
+\textbf{Allowlist File} & \texttt{.allowlists/secrets-allowlist} \\
 \textbf{SHA256 (first 16)} & \texttt{\SecretsAllowlistChecksum} \\
 \textbf{Total Exceptions} & \SecretsAllowlistCount \\
 \bottomrule
@@ -344,7 +344,7 @@ cd .scans && shasum -a 256 -c checksums.md
 This document certifies that:
 
 \begin{enumerate}[label=(\alph*)]
-    \item Automated security scans were executed against the target repository
+    \item Automated security scans were executed against the subject host at the specified path
     \item Scan results are accurately represented in this document
     \item The Security Verification Toolkit version and commit hash are recorded for traceability
     \item Detailed scan logs are available in the \texttt{.scans/} directory

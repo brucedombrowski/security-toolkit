@@ -23,7 +23,7 @@
 #        If no target specified, uses parent directory of script location
 #
 # Allowlist:
-#   Accepted findings are stored in <target>/.secrets-allowlist
+#   Accepted findings are stored in <target>/.allowlists/secrets-allowlist
 #   Format: SHA256 hash of "file:line:content" per line
 #   Allowlisted items are automatically skipped in future scans
 
@@ -31,6 +31,20 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Source shared libraries
+AUDIT_AVAILABLE=0
+TIMESTAMPS_AVAILABLE=0
+
+if [ -f "$SCRIPT_DIR/lib/audit-log.sh" ]; then
+    source "$SCRIPT_DIR/lib/audit-log.sh"
+    AUDIT_AVAILABLE=1
+fi
+
+if [ -f "$SCRIPT_DIR/lib/timestamps.sh" ]; then
+    source "$SCRIPT_DIR/lib/timestamps.sh"
+    TIMESTAMPS_AVAILABLE=1
+fi
 
 # Help function
 show_help() {
@@ -56,7 +70,7 @@ PATTERNS DETECTED:
   - Command injection     Dangerous shell patterns
 
 ALLOWLIST:
-  Accepted findings are stored in <target>/.secrets-allowlist
+  Accepted findings are stored in <target>/.allowlists/secrets-allowlist
   Each entry includes SHA256 hash and justification for audit trail.
   Allowlisted items are automatically skipped in future scans.
 
@@ -98,11 +112,16 @@ if [ -z "$TARGET_DIR" ]; then
     TARGET_DIR="$SECURITY_REPO_DIR"
 fi
 
-# Allowlist file location
-ALLOWLIST_FILE="$TARGET_DIR/.secrets-allowlist"
+# Allowlist file location (in .allowlists/ directory, gitignored)
+ALLOWLIST_DIR="$TARGET_DIR/.allowlists"
+ALLOWLIST_FILE="$ALLOWLIST_DIR/secrets-allowlist"
 
-# Use UTC for consistent timestamps across time zones
-TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+# Use standardized timestamps (UTC for consistency across time zones)
+if [ "$TIMESTAMPS_AVAILABLE" -eq 1 ]; then
+    TIMESTAMP=$(get_iso_timestamp)
+else
+    TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+fi
 REPO_NAME=$(basename "$TARGET_DIR")
 TOOLKIT_VERSION=$(git -C "$SECURITY_REPO_DIR" describe --tags --always 2>/dev/null || echo "unknown")
 TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -110,6 +129,12 @@ TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null 
 FOUND_ISSUES=0
 ACCEPTED_COUNT=0
 REJECTED_COUNT=0
+TOTAL_FINDINGS=0
+
+# Initialize audit logging
+if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+    init_audit_log "$TARGET_DIR" "secrets-scan" || true
+fi
 
 # Function to extract just the content from a finding (strips file:line: prefix)
 extract_content() {
@@ -138,6 +163,11 @@ add_to_allowlist() {
     local reason="$2"
     local hash=$(hash_finding "$finding")
 
+    # Create allowlist directory if it doesn't exist
+    if [ ! -d "$ALLOWLIST_DIR" ]; then
+        mkdir -p "$ALLOWLIST_DIR"
+    fi
+
     # Create allowlist file with header if it doesn't exist
     if [ ! -f "$ALLOWLIST_FILE" ]; then
         {
@@ -151,6 +181,11 @@ add_to_allowlist() {
     # Add entry with hash, reason, and truncated finding for reference
     local truncated=$(echo "$finding" | cut -c1-80)
     echo "$hash # $reason # $truncated" >> "$ALLOWLIST_FILE"
+
+    # Audit log the config change
+    if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+        audit_log_config_change "allowlist" "add" "hash=$hash reason=$reason"
+    fi
 }
 
 # Function to prompt user for interactive review
@@ -333,10 +368,21 @@ run_check() {
             # Check if already allowlisted
             if is_allowlisted "$line"; then
                 allowlisted_count=$((allowlisted_count + 1))
+                # Audit log allowlist match
+                if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+                    local hash=$(hash_finding "$line")
+                    audit_log_allowlist_match "$check_name" "$line" "$hash"
+                fi
                 continue
             fi
 
             new_count=$((new_count + 1))
+            TOTAL_FINDINGS=$((TOTAL_FINDINGS + 1))
+
+            # Audit log the finding
+            if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+                audit_log_finding "$check_name" "$line" "severity=$severity"
+            fi
 
             # Interactive mode: prompt for each finding
             if [ "$INTERACTIVE" -eq 1 ]; then
@@ -449,6 +495,10 @@ if [ $FOUND_ISSUES -eq 0 ]; then
     else
         echo "No secrets or vulnerabilities detected."
     fi
+    # Finalize audit log with PASS status
+    if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+        finalize_audit_log "PASS" "findings=$TOTAL_FINDINGS"
+    fi
 else
     echo "OVERALL RESULT: REVIEW REQUIRED"
     echo "Potential secrets/vulnerabilities detected. Manual review required."
@@ -456,6 +506,10 @@ else
         echo ""
         echo "Run with -i flag for interactive review:"
         echo "  $0 -i $TARGET_DIR"
+    fi
+    # Finalize audit log with FAIL status
+    if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+        finalize_audit_log "FAIL" "findings=$TOTAL_FINDINGS"
     fi
 fi
 

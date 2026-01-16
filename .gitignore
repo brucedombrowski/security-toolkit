@@ -2,6 +2,9 @@
 .scans/
 *-Scan-Results.md
 
+# Allowlists (project-specific reviewed exceptions - should not be shared)
+.allowlists/
+
 # Security assessments & remediation plans (internal use only)
 .assessments/
 

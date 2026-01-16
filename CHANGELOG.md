@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.0] - 2026-01-16
+
+### Added
+
+- **Pre-Scan Cleanup Script**
+  - New `pre-scan-cleanup.sh` using BleachBit for system cleanup before scans
+  - Reduces scan time by eliminating temporary files and caches
+  - Modes: `--dry-run` (preview), `--aggressive` (deep clean), `--browsers`, `--system`
+  - Cleans browser caches/cookies/history (Chrome, Firefox, Safari, Edge)
+  - Cleans system temp files, thumbnails, trash, package manager caches
+  - Aggressive mode clears shell history, logs, recent documents (with confirmation)
+  - Full audit logging integration
+  - NIST SP 800-53: SI-14 (Non-Persistence), NIST SP 800-88 (Media Sanitization)
+
+- **Enhanced Host Inventory Categories**
+  - Security Tools: ClamAV, OpenSSL, SSH, GPG, Git
+  - Programming Languages: Python, Node.js, Java, .NET, Ruby, Go, Rust, Perl, PHP
+  - Web Browsers: Chrome, Firefox, Safari, Edge, Brave
+  - Backup and Restore: Time Machine, Arq, Carbon Copy Cloner, Backblaze, rsync, Borg, Restic
+  - Remote Desktop / Control: Screen Sharing, TeamViewer, AnyDesk, Zoom, VNC, Microsoft Remote Desktop
+  - All items now show "not installed" when missing (comprehensive list)
+
+### Changed
+
+- **Allowlist Location Migration**
+  - Moved from repo root to `.allowlists/` directory (gitignored)
+  - PII allowlist: `.allowlists/pii-allowlist`
+  - Secrets allowlist: `.allowlists/secrets-allowlist`
+  - Updated all scripts, templates, and documentation
+
+- Updated redact script to handle new software categories
+
 ## [1.12.0] - 2026-01-15
 
 ### Added

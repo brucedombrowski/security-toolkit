@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    587e9f4bad54d75b...                                       #
+#  Source SHA256:    da99cc94c69f20a5...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    0f603c2f71583e21...                                       #
-#  Redacted:         2026-01-16T02:29:09Z                                       #
+#  Redacted:         2026-01-16T14:05:19Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -26,7 +26,7 @@ Report: /Users/[REDACTED]
 
 Collecting Host Inventory...
 -----------------------------
-  Host inventory collected: host-inventory-2026-01-16-T022743Z.txt
+  Host inventory collected: host-inventory-2026-01-16-T140357Z.txt
   Inventory SHA256: [REDACTED]
 
   All subsequent scans reference this inventory snapshot.
@@ -39,29 +39,66 @@ Running: PII Pattern Scan
 PII Verification Scan
 =====================
 Timestamp: 2026-01-16T[REDACTED]Z
-Toolkit: Security Verification Toolkit v0.0.0-test.20260115T211811Z-10-g2d56aa2 (2d56aa2)
+Toolkit: Security Verification Toolkit v1.9.0-5-g5209d7a (5209d7a)
 Target: /Users/[REDACTED]
 Repository: Security
 
 Checking: IPv4 Addresses
-  Result: PASS (0 matches)
+261:- Reality: Limited to [REDACTED], minimal output, no network scanning
+4:**Target System:** Bruces-MacBook-Pro (localhost / [REDACTED])
+223:# Should show [REDACTED], not * or [REDACTED]
+54:  - [L]ocalhost - Loopback addresses (127.0.0.1)
+197:test_start "Reject version number (1.2.3.4.5.6)"
+198:if echo "1.2.3.4.5.6" | grep -qE "$MAC_PATTERN_CISCO"; then
+218:And version numbers like [REDACTED]
+64:test_start "Detect standard IPv4 (192.168.1.1)"
+65:if echo "192.168.1.1" | grep -qE "$IPV4_PATTERN"; then
+71:test_start "Detect private IP (10.0.0.1)"
+  Result: REVIEW - 46 new match(es) found
+  ... and 36 more
 Checking: US Phone Numbers (dashed)
-  Result: PASS (0 matches)
+113:test_start "Detect 555-123-4567"
+114:if echo "555-123-4567" | grep -qE "$PHONE_PATTERN"; then
+  Result: REVIEW - 2 new match(es) found
 Checking: US Phone Numbers (dotted)
-  Result: PASS (0 matches)
+120:test_start "Detect 555.123.4567"
+121:if echo "555.123.4567" | grep -qE "$PHONE_PATTERN"; then
+  Result: REVIEW - 2 new match(es) found
 Checking: US Phone Numbers (parenthetical)
-  Result: PASS (0 matches)
+106:test_start "Detect (555) 123-4567"
+107:if echo "(555) 123-4567" | grep -qE "$PHONE_PATTERN"; then
+250:Phone: (555) 123-4567
+  Result: REVIEW - 3 new match(es) found
 Checking: Social Security Numbers
-  Result: PASS (0 matches)
+141:test_start "Detect valid SSN format (123-45-6789)"
+142:if echo "123-45-6789" | grep -qE "$SSN_PATTERN"; then
+148:test_start "Detect SSN in text (SSN: 123-45-6789)"
+149:if echo "SSN: 123-45-6789" | grep -qE "$SSN_PATTERN"; then
+251:SSN: 123-45-6789
+  Result: REVIEW - 5 new match(es) found
 Checking: Credit Card Numbers (16 digit)
-  Result: PASS (0 matches)
+82:if echo '{"apiKey": "test_key_123456789012345678"}' | grep -qiE 'apikey.*[:=]'; then
+169:test_start "Detect Visa format (4111-1111-1111-1111)"
+170:if echo "4111-1111-1111-1111" | grep -qE "$CREDIT_CARD_PATTERN"; then
+176:test_start "Detect MC format (5500 0000 0000 0004)"
+177:if echo "5500 0000 0000 0004" | grep -qE "$CREDIT_CARD_PATTERN"; then
+183:test_start "Detect continuous digits (4111111111111111)"
+184:if echo "4111111111111111" | grep -qE "$CREDIT_CARD_PATTERN"; then
+21:      "Bash(FINDING2='/Users/[REDACTED]        -e \"\"s/[CHECKSUM_REDACTED]/$INVENTORY_CHECKSUM_SHORT/g\"\" \\\\')",
+39:      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
+253:    -e "s/[CHECKSUM_REDACTED]/$INVENTORY_CHECKSUM_SHORT_ESCAPED/g" \
+  Result: REVIEW - 11 new match(es) found
+  ... and 1 more
 
 =====================
 Allowlist: /Users/[REDACTED] (13 entries)
 
-OVERALL RESULT: PASS
-No PII patterns detected.
-  Status: PASS
+OVERALL RESULT: REVIEW REQUIRED
+Potential PII patterns detected. Manual review required.
+
+Run with -i flag for interactive review:
+  /Users/[REDACTED] -i /Users/[REDACTED]
+  Status: FAIL
 
 --------------------------------------------------------
 
@@ -74,16 +111,16 @@ Attempting to update ClamAV virus database...
 Malware Verification Scan
 =========================
 Timestamp: 2026-01-16T[REDACTED]Z
-Toolkit: Security Verification Toolkit v0.0.0-test.20260115T211811Z-10-g2d56aa2 (2d56aa2)
+Toolkit: Security Verification Toolkit v1.9.0-5-g5209d7a (5209d7a)
 Source: https://[REDACTED]/brucedombrowski/Security
-Scanner: ClamAV 1.5.1/27881/Thu Jan 15 [REDACTED] 2026
+Scanner: ClamAV 1.5.1/27882/Fri Jan 16 [REDACTED] 2026
 Target: /Users/[REDACTED]
 Repository: Security
 
 Virus Database Information:
   Database Location: /opt/homebrew/var/lib/clamav
   Main DB: Version 63, Built 16 Dec 2025 23:18 +0000 (3287027 signatures)
-  Daily DB: Version 27881, Built 15 Jan 2026 07:25 +0000 (354802 signatures) [incremental]
+  Daily DB: Version 27882, Built 16 Jan 2026 07:24 +0000 (354806 signatures) [incremental]
   Bytecode DB: Version 339, Built 11 Sep 2025 08:29 -0400 (80 signatures)
 
 Running ClamAV scan with verbose output and hash generation...
@@ -139,7 +176,20 @@ Scanning /Users/[REDACTED]
 /Users/[REDACTED] OK
 Scanning /Users/[REDACTED]
 /Users/[REDACTED] OK
+Scanning /Users/[REDACTED]
+/Users/[REDACTED] OK
 /Users/[REDACTED] Excluded
+Scanning /Users/[REDACTED]
+/Users/[REDACTED] OK
+Scanning /Users/[REDACTED]
+/Users/[REDACTED] OK
+Scanning /Users/[REDACTED]
+/Users/[REDACTED] OK
+Scanning /Users/[REDACTED]
+/Users/[REDACTED] OK
+/Users/[REDACTED] Excluded
+Scanning /Users/[REDACTED]
+/Users/[REDACTED] OK
 Scanning /Users/[REDACTED]
 /Users/[REDACTED] OK
 Scanning /Users/[REDACTED]
@@ -221,339 +271,369 @@ Scanning /Users/[REDACTED]
 /Users/[REDACTED] OK
 
 ----------- SCAN SUMMARY -----------
-Known viruses: 3627218
+Known viruses: 3627222
 Engine version: [REDACTED]
-Scanned directories: 10
-Scanned files: 64
+Scanned directories: 11
+Scanned files: 70
 Infected files: 0
-Data scanned: 1.31 MiB
-Data read: 657.61 KiB (ratio 2.05:1)
-Time: 5.746 sec (0 m 5 s)
+Data scanned: 1.44 MiB
+Data read: 724.58 KiB (ratio 2.04:1)
+Time: 5.789 sec (0 m 5 s)
 Start Date: [REDACTED] [REDACTED]
 End Date:   [REDACTED] [REDACTED]
 
 File Hash Manifest:
 -------------------
-  README.md
-    SHA256: [REDACTED]
-    MD5:    44763270756d50d1cf94accf7a3d9ad5
-    SHA1:   17990eb6685aaf3572d8563334f125d25a904844
-    Size:   11322 bytes
-  test-symlink-attacks.sh
-    SHA256: [REDACTED]
-    MD5:    530a8540aa8aee26fe769772c47b2bbb
-    SHA1:   02f43f2e242e0d6bb06bcc5465992fe18da4caf6
-    Size:   7260 bytes
-  run-all-tests.sh
-    SHA256: [REDACTED]
-    MD5:    b6fc2471919b99647a32833f13901ae8
-    SHA1:   baa74bba5506549cbd39787bdef3a24cb93a06b2
-    Size:   3387 bytes
-  host-security-scan-EXAMPLE.txt
-    SHA256: [REDACTED]
-    MD5:    8c95d0f6796b46baea460cc93732133c
-    SHA1:   8a9960631d50d436a2797dbda9680076c3a637b6
-    Size:   2246 bytes
-  ISSUE_CRITICAL_003_SYMLINK_ATTACKS.md
-    SHA256: [REDACTED]
-    MD5:    41c6d4d6b885a6ceee2e6ddb526996ad
-    SHA1:   cf3f48a024eaa0e8d87db4d1426b13d90029d34a
-    Size:   12071 bytes
-  SECURITY.md
-    SHA256: [REDACTED]
-    MD5:    9fbd8897059205719cae59906cc7902a
-    SHA1:   39b4b0e0ed53315c788eb5f20f4a2e451b9792ae
-    Size:   3697 bytes
-  release.sh
-    SHA256: [REDACTED]
-    MD5:    de2760ab74864f52ab4249c63e155aea
-    SHA1:   129d2c2394c927026562f26f5a9ba29fab0b1916
-    Size:   8851 bytes
-  secrets-scan-EXAMPLE.txt
-    SHA256: [REDACTED]
-    MD5:    94fe380907a7edf19ad1ecab8663619e
-    SHA1:   56bda770188838a8dee6fa4b8ed91f807127d623
-    Size:   2264 bytes
-  COMPLIANCE.md
-    SHA256: [REDACTED]
-    MD5:    911706a8123ad80177aa16f85dc3a2e3
-    SHA1:   f9e37633d269a5a9d28df1944a5d10efed25bfc0
-    Size:   7149 bytes
-  ISSUE_CRITICAL_005_GIT_PURGE_DRY_RUN.md
-    SHA256: [REDACTED]
-    MD5:    958a8029ae58f3f23051352ed03b2c8e
-    SHA1:   d90339c000d33fd910cfec797c57ad46230803bb
-    Size:   11223 bytes
-  ISSUE_CRITICAL_001_LATEX_INJECTION.md
-    SHA256: [REDACTED]
-    MD5:    e958116de09de0d75ffbff769ca285df
-    SHA1:   11b6d8bbd9c80191f8e35d1cae20b11824e6f74d
-    Size:   10439 bytes
-  check-malware.sh
-    SHA256: [REDACTED]
-    MD5:    244f260681c06c2f516eabdac8a32937
-    SHA1:   11bb385a4cdc72adcea4d8a6be48a6e628809cf9
-    Size:   12820 bytes
-  ISSUE_MODERATE_006_SILENT_DEPENDENCY_FAILURES.md
-    SHA256: [REDACTED]
-    MD5:    d2b7aeb2ffd4dca4d7f4f4b4c1b672e6
-    SHA1:   c93dd71f10b077fb840e10b10a483d0369608ba5
-    Size:   3748 bytes
-  .pii-allowlist
-    SHA256: [REDACTED]
-    MD5:    21bb9120cf7360b4e0599d1e6c14283d
-    SHA1:   36e68d4ea6e9e57ae7536641c958757bf4fd0fce
-    Size:   2742 bytes
-  collect-host-inventory.sh
-    SHA256: [REDACTED]
-    MD5:    2e41c2a57c156b424339160d857e3c7a
-    SHA1:   7a0f13d2bf14dd966de3d098e5c8e75ecad49a19
-    Size:   14411 bytes
-  ISSUE_MODERATE_012_INCONSISTENT_TIMESTAMPS.md
-    SHA256: [REDACTED]
-    MD5:    8c6011a4f30004c9da543652d311a476
-    SHA1:   dca36a242ae86bf39dc0796ee9cc09025e76bf34
-    Size:   8215 bytes
-  scan_attestation.tex
-    SHA256: [REDACTED]
-    MD5:    3603d6c70865f4a75b83e6709c977baa
-    SHA1:   1896409d81935c778eefc931630be393def79539
-    Size:   12787 bytes
   .DS_Store
     SHA256: [REDACTED]
-    MD5:    9a76174853102a1021c8e12b4023ba47
-    SHA1:   49abe6e1f0ac003b84789e264bcadb9998819afe
+    MD5:    5fe82e2830f8069694fd87c7bf69602a
+    SHA1:   cf665355f0ff137e9d3d54c6a7b48d9d1a9b78fa
     Size:   6148 bytes
-  ISSUE_MODERATE_009_MISSING_SECURITY_POLICY.md
-    SHA256: [REDACTED]
-    MD5:    1b1a7da98d32a2e5da362913459f2fca
-    SHA1:   14d44d2dd5e66e62aea85121ac459dddaaea6017
-    Size:   7627 bytes
-  scan-attestation-EXAMPLE.pdf
-    SHA256: [REDACTED]
-    MD5:    14a9bcd7171f8ff6739851729951d95f
-    SHA1:   0e0b189df487c5916e5c188945570726768eeed9
-    Size:   90281 bytes
-  AGENTS.md
-    SHA256: [REDACTED]
-    MD5:    f4a5f7ab21e67cbc2b2d6e7970e4c411
-    SHA1:   c034888fe42685f4a0f8d2723325b4da28b88598
-    Size:   16330 bytes
-  false-positives-macos.md
-    SHA256: [REDACTED]
-    MD5:    62b6419913420e15ce9b6d63cb0d38dc
-    SHA1:   2eebc7844b659d234dba8deaac0291282da77f7a
-    Size:   6956 bytes
-  settings.json
-    SHA256: [REDACTED]
-    MD5:    7f4394d4c7e67549340312d60cd11986
-    SHA1:   983741cbdef6f2ec706aa07efa49c22985c1aba0
-    Size:   78 bytes
-  test-secrets-patterns.sh
-    SHA256: [REDACTED]
-    MD5:    31362bc666199ea53343585b03e00494
-    SHA1:   3bb7b202e40d6b22ffb38d1262365afa48825212
-    Size:   8256 bytes
-  run-all-scans.sh
-    SHA256: [REDACTED]
-    MD5:    e4047437fc6a033492191e7a84ace7af
-    SHA1:   7b3b6022e7b0f5391acb0a9469f242a23feb5a5b
-    Size:   18073 bytes
-  generate-compliance.sh
-    SHA256: [REDACTED]
-    MD5:    d15cc7660b6d0609a142e7506f027c19
-    SHA1:   b5983cf9c1791c4f69bc475ffa5653ead318387d
-    Size:   7705 bytes
-  check-secrets.sh
-    SHA256: [REDACTED]
-    MD5:    8415f599e6fae47f660169e7ff927cf0
-    SHA1:   f19cd34371f1659f6681960d454d2e9524b92aa3
-    Size:   15411 bytes
-  generate-scan-attestation.sh
-    SHA256: [REDACTED]
-    MD5:    5077a488e9564f0f3cb0cfb67c595d1b
-    SHA1:   21429aeb3659eed8e1c7c91d3bdc11ba142fc2c3
-    Size:   18513 bytes
-  INSTALLATION.md
-    SHA256: [REDACTED]
-    MD5:    435ce66769d05459d07a1b8b1b6edfdf
-    SHA1:   a47c8f1795362c8e1d523dc3ec178a951b122528
-    Size:   7370 bytes
-  SECURITY_ASSESSMENT.md
-    SHA256: [REDACTED]
-    MD5:    205313b483bf1994a147781bbf98b69a
-    SHA1:   46899b73668584c324c80edcbecb882f674fe7f0
-    Size:   22256 bytes
-  secure-delete.sh
-    SHA256: [REDACTED]
-    MD5:    75bc7da70027474b9b8991948cc888f5
-    SHA1:   846a60462ac55657748c4ffc90ffdc3884daff53
-    Size:   7160 bytes
-  test-pii-patterns.sh
-    SHA256: [REDACTED]
-    MD5:    7926ac38cd236905bcca0d21e921ac2d
-    SHA1:   758c42c929bcc4882e976d20ef8a050d8467831c
-    Size:   6900 bytes
-  test-cui-data-exposure.sh
-    SHA256: [REDACTED]
-    MD5:    5587b2f1e9b299cd48beb461947a46ed
-    SHA1:   26276f07666becb1775022ba5c6b9a42c36f7c16
-    Size:   5640 bytes
-  check-host-security.sh
-    SHA256: [REDACTED]
-    MD5:    7aa3bfc79913566419ccfe16a60caf95
-    SHA1:   ab6dbe9ebadabd9ec18b907ddf815bb4db895ad2
-    Size:   4755 bytes
-  .secrets-allowlist
-    SHA256: [REDACTED]
-    MD5:    fc4346df18c0c1d160e243f74ba7c2b5
-    SHA1:   c90ec8a74349cb414ca16d7a9a46df340955ac93
-    Size:   714 bytes
-  security-scan-report-EXAMPLE.txt
-    SHA256: [REDACTED]
-    MD5:    615ea93513b65ff1abc2c31be163a4f2
-    SHA1:   323d96d7499594e66421283f15b2d315b896654f
-    Size:   41368 bytes
-  host-inventory-EXAMPLE.txt
-    SHA256: [REDACTED]
-    MD5:    a9753695021c5182f9e26562b0307369
-    SHA1:   afa4a85f8fc3a7977c3715b01e1bd533bf55842c
-    Size:   4354 bytes
-  .gitignore
-    SHA256: [REDACTED]
-    MD5:    7d54d6939b5e2a17be1250a536d8c3e5
-    SHA1:   f7c42134646b3a82f3c71cb9070fad026a99f838
-    Size:   446 bytes
-  PHASE_1_IMPLEMENTATION_GUIDE.md
-    SHA256: [REDACTED]
-    MD5:    d603155a2b7081d2ba1e965d4cbc621a
-    SHA1:   8db6e576914818a5e0b3316839a37cdbff4adb0d
-    Size:   11889 bytes
-  ISSUE_MODERATE_013_MISSING_INSTALLATION_GUIDE.md
-    SHA256: [REDACTED]
-    MD5:    a8a688e4d6743714dbc797156948e982
-    SHA1:   5444528acc491e75b48b8b564c9376ec1d4afbfa
-    Size:   11440 bytes
-  security_compliance_statement.tex
-    SHA256: [REDACTED]
-    MD5:    50df02f9a06487e47e7d4ac9aed9d948
-    SHA1:   f64afe3ba7d17f7b2945119aa89cede913122e78
-    Size:   11223 bytes
-  README.md
-    SHA256: [REDACTED]
-    MD5:    066b7bbefce3c0654fbfdab0551847fd
-    SHA1:   368361b823703df13dd89169bd59651db6146459
-    Size:   1835 bytes
-  check-mac-addresses.sh
-    SHA256: [REDACTED]
-    MD5:    96a5fff5389be661584fe22cfeb2e213
-    SHA1:   799281ec949adcc68311648bc71024764b2199c3
-    Size:   3795 bytes
-  scan-vulnerabilities.sh
-    SHA256: [REDACTED]
-    MD5:    3419b061a6b3abf9ff99b9afff0d9992
-    SHA1:   767cfa52100670d8258a8ffd8610393023b1950d
-    Size:   30952 bytes
   redact-examples.sh
     SHA256: [REDACTED]
     MD5:    96953c7ce4806ddae2152d4fa0cd9aba
     SHA1:   1dc312d49bbc5f0fbd6eff357d7e4844fcb0105c
     Size:   12547 bytes
-  test-latex-injection.sh
+  collect-host-inventory.sh
     SHA256: [REDACTED]
-    MD5:    67ef68117212bb54e6c7668cf11643e4
-    SHA1:   083b1be46f15207e046bc88786a3f9d4bf1cd989
-    Size:   6119 bytes
-  ISSUE_CRITICAL_004_CUI_DATA_EXPOSURE.md
-    SHA256: [REDACTED]
-    MD5:    088e50ddb1dbd08aecdc621ea54f9c46
-    SHA1:   d810024b5898bd010041f42fead08304a21e4573
-    Size:   18704 bytes
-  mac-address-scan-EXAMPLE.txt
-    SHA256: [REDACTED]
-    MD5:    d3638a668b86828b1c60e0fc44898738
-    SHA1:   455dee41bb66aa71cf9d7642a631016d07483bc1
-    Size:   1783 bytes
-  check-pii.sh
-    SHA256: [REDACTED]
-    MD5:    79fbeb7deff7d7d709ea09f07c7dfb06
-    SHA1:   72b826e88ce50c9270c82b97a64ac670fe4f9609
-    Size:   16501 bytes
-  REMEDIATION_PLAN.md
-    SHA256: [REDACTED]
-    MD5:    a183731d8dadfd7bc57b0745af8023e6
-    SHA1:   0497f2bbc6d2ad836b996a246fea9c78af696849
-    Size:   11286 bytes
-  CHANGELOG.md
-    SHA256: [REDACTED]
-    MD5:    7724f80e5321111ae058446983895de0
-    SHA1:   e34f7c837230bafb7633165946836cbb34ab2fa7
-    Size:   11098 bytes
-  purge-git-history.sh
-    SHA256: [REDACTED]
-    MD5:    0f17f4fc4654315f5e9d19d1b254e7dd
-    SHA1:   5ed4a5aeaaf1cdadd49a4fa4b5b73b5c636bc3c4
-    Size:   11430 bytes
-  test-git-purge-dry-run.sh
-    SHA256: [REDACTED]
-    MD5:    4e600b5cfd5345821b369d621ff20f47
-    SHA1:   636fc74179b7345bd63bb9e1eeb3aaff4a72ecd2
-    Size:   6601 bytes
-  test-rm-rf-validation.sh
-    SHA256: [REDACTED]
-    MD5:    76b996b518a179eec94756d126232718
-    SHA1:   64f4ecfc38dd08df61ad3b866b8b03e2491748ac
-    Size:   7307 bytes
-  ISSUE_MODERATE_010_PLATFORM_CODE_WITHOUT_FALLBACK.md
-    SHA256: [REDACTED]
-    MD5:    15c51ea67f5b7044f0452a82344c1bca
-    SHA1:   cdb58f1df965af7055eb86aa69886736d102b3fe
-    Size:   5345 bytes
-  harden-system.sh
-    SHA256: [REDACTED]
-    MD5:    7e613725e5b7212b9adbc18d862d1dbe
-    SHA1:   ca6034d48c7f9ffb6e95fa3a03cc24db6731af8d
-    Size:   6607 bytes
-  pii-scan-EXAMPLE.txt
-    SHA256: [REDACTED]
-    MD5:    85958250d6c659a0644a933595410f73
-    SHA1:   e83c30d35a84cfc22a9f528e11d2857fe3ff0f15
-    Size:   3460 bytes
-  malware-scan-EXAMPLE.txt
-    SHA256: [REDACTED]
-    MD5:    84fbc47592e323393410fde6055d773c
-    SHA1:   80788f6eb52f372f2d49b105ea1f572419d81798
-    Size:   10486 bytes
-  [REDACTED].json
-    SHA256: [REDACTED]
-    MD5:    21f5c77c1dad0c5ca1292f028e8a876c
-    SHA1:   1ae0595149e23c5c88b860412af43274d2f34321
-    Size:   5383 bytes
-  ISSUE_CRITICAL_002_RM_RF_VALIDATION.md
-    SHA256: [REDACTED]
-    MD5:    eec21de2b6835f071dd1c43ed39c9f96
-    SHA1:   3204ce34ac7c8b104cbcd7aa7977946935ef690d
-    Size:   16822 bytes
+    MD5:    2e41c2a57c156b424339160d857e3c7a
+    SHA1:   7a0f13d2bf14dd966de3d098e5c8e75ecad49a19
+    Size:   14411 bytes
   LICENSE
     SHA256: [REDACTED]
     MD5:    68260813fc6e3c86b7bfa3271daaff45
     SHA1:   9f7da6567a3bce6ebe5a8d3e53e2a4b58235b90c
     Size:   1073 bytes
+  secure-delete.sh
+    SHA256: [REDACTED]
+    MD5:    75bc7da70027474b9b8991948cc888f5
+    SHA1:   846a60462ac55657748c4ffc90ffdc3884daff53
+    Size:   7160 bytes
+  mac-address-scan-EXAMPLE.txt
+    SHA256: [REDACTED]
+    MD5:    972470f4e106f966dc748487a352e6a5
+    SHA1:   6a405c2e1f664a58c1352271b56506e06b41d133
+    Size:   1784 bytes
+  README.md
+    SHA256: [REDACTED]
+    MD5:    066b7bbefce3c0654fbfdab0551847fd
+    SHA1:   368361b823703df13dd89169bd59651db6146459
+    Size:   1835 bytes
+  ISSUE_MODERATE_013_MISSING_INSTALLATION_GUIDE.md
+    SHA256: [REDACTED]
+    MD5:    a8a688e4d6743714dbc797156948e982
+    SHA1:   5444528acc491e75b48b8b564c9376ec1d4afbfa
+    Size:   11440 bytes
+  ISSUE_CRITICAL_005_GIT_PURGE_DRY_RUN.md
+    SHA256: [REDACTED]
+    MD5:    958a8029ae58f3f23051352ed03b2c8e
+    SHA1:   d90339c000d33fd910cfec797c57ad46230803bb
+    Size:   11223 bytes
+  harden-system.sh
+    SHA256: [REDACTED]
+    MD5:    7e613725e5b7212b9adbc18d862d1dbe
+    SHA1:   ca6034d48c7f9ffb6e95fa3a03cc24db6731af8d
+    Size:   6607 bytes
+  test-symlink-attacks.sh
+    SHA256: [REDACTED]
+    MD5:    530a8540aa8aee26fe769772c47b2bbb
+    SHA1:   02f43f2e242e0d6bb06bcc5465992fe18da4caf6
+    Size:   7260 bytes
+  INSTALLATION.md
+    SHA256: [REDACTED]
+    MD5:    435ce66769d05459d07a1b8b1b6edfdf
+    SHA1:   a47c8f1795362c8e1d523dc3ec178a951b122528
+    Size:   7370 bytes
+  .secrets-allowlist
+    SHA256: [REDACTED]
+    MD5:    fc4346df18c0c1d160e243f74ba7c2b5
+    SHA1:   c90ec8a74349cb414ca16d7a9a46df340955ac93
+    Size:   714 bytes
+  host-inventory-EXAMPLE.txt
+    SHA256: [REDACTED]
+    MD5:    1a707f9eee586c41dec8e02b47e1dc4a
+    SHA1:   0612eaaa959e32033d67dbe8d7f95930fa68d62b
+    Size:   4354 bytes
+  SECURITY_ASSESSMENT.md
+    SHA256: [REDACTED]
+    MD5:    205313b483bf1994a147781bbf98b69a
+    SHA1:   46899b73668584c324c80edcbecb882f674fe7f0
+    Size:   22256 bytes
+  scan-vulnerabilities.sh
+    SHA256: [REDACTED]
+    MD5:    3419b061a6b3abf9ff99b9afff0d9992
+    SHA1:   767cfa52100670d8258a8ffd8610393023b1950d
+    Size:   30952 bytes
+  README.md
+    SHA256: [REDACTED]
+    MD5:    eaba577ca31b27b39359849dd8c7c4bf
+    SHA1:   04c5170599f867ddefb9e4d40713127c5d9e69c5
+    Size:   11310 bytes
+  generate-scan-attestation.sh
+    SHA256: [REDACTED]
+    MD5:    5077a488e9564f0f3cb0cfb67c595d1b
+    SHA1:   21429aeb3659eed8e1c7c91d3bdc11ba142fc2c3
+    Size:   18513 bytes
+  secrets-scan-EXAMPLE.txt
+    SHA256: [REDACTED]
+    MD5:    cf9bded558be0803a084bb8d048ac342
+    SHA1:   30c0e96fda26efe5c76fe94aada24b8b15bff034
+    Size:   2261 bytes
+  AGENTS.md
+    SHA256: [REDACTED]
+    MD5:    ac7372f4c78613a616b243fd8235657e
+    SHA1:   37361a9da335aa7e93029f15e6144df4e25d5eea
+    Size:   17303 bytes
+  settings.json
+    SHA256: [REDACTED]
+    MD5:    7f4394d4c7e67549340312d60cd11986
+    SHA1:   983741cbdef6f2ec706aa07efa49c22985c1aba0
+    Size:   78 bytes
+  ISSUE_CRITICAL_003_SYMLINK_ATTACKS.md
+    SHA256: [REDACTED]
+    MD5:    41c6d4d6b885a6ceee2e6ddb526996ad
+    SHA1:   cf3f48a024eaa0e8d87db4d1426b13d90029d34a
+    Size:   12071 bytes
+  COMPLIANCE.md
+    SHA256: [REDACTED]
+    MD5:    911706a8123ad80177aa16f85dc3a2e3
+    SHA1:   f9e37633d269a5a9d28df1944a5d10efed25bfc0
+    Size:   7149 bytes
+  false-positives-macos.md
+    SHA256: [REDACTED]
+    MD5:    7f2558c14e012e8040df149f0b792431
+    SHA1:   b7c8ef28e8ec1d0cbdfdcbc0fef2e57fab6cb46c
+    Size:   9915 bytes
+  ISSUE_MODERATE_006_SILENT_DEPENDENCY_FAILURES.md
+    SHA256: [REDACTED]
+    MD5:    d2b7aeb2ffd4dca4d7f4f4b4c1b672e6
+    SHA1:   c93dd71f10b077fb840e10b10a483d0369608ba5
+    Size:   3748 bytes
+  test-git-purge-dry-run.sh
+    SHA256: [REDACTED]
+    MD5:    4e600b5cfd5345821b369d621ff20f47
+    SHA1:   636fc74179b7345bd63bb9e1eeb3aaff4a72ecd2
+    Size:   6601 bytes
+  ISSUE_CRITICAL_002_RM_RF_VALIDATION.md
+    SHA256: [REDACTED]
+    MD5:    eec21de2b6835f071dd1c43ed39c9f96
+    SHA1:   3204ce34ac7c8b104cbcd7aa7977946935ef690d
+    Size:   16822 bytes
+  audit-log.sh
+    SHA256: [REDACTED]
+    MD5:    771fd76ecea5c82a87d294b3b9f49eee
+    SHA1:   aaa5aa515d7ddeb158d650e45cc7be5f9840d7be
+    Size:   6481 bytes
+  purge-git-history.sh
+    SHA256: [REDACTED]
+    MD5:    0f17f4fc4654315f5e9d19d1b254e7dd
+    SHA1:   5ed4a5aeaaf1cdadd49a4fa4b5b73b5c636bc3c4
+    Size:   11430 bytes
+  ISSUE_CRITICAL_004_CUI_DATA_EXPOSURE.md
+    SHA256: [REDACTED]
+    MD5:    088e50ddb1dbd08aecdc621ea54f9c46
+    SHA1:   d810024b5898bd010041f42fead08304a21e4573
+    Size:   18704 bytes
+  .gitignore
+    SHA256: [REDACTED]
+    MD5:    7d54d6939b5e2a17be1250a536d8c3e5
+    SHA1:   f7c42134646b3a82f3c71cb9070fad026a99f838
+    Size:   446 bytes
+  test-audit-logging.sh
+    SHA256: [REDACTED]
+    MD5:    50e415069d549d6b2f66e4cb8c5beeea
+    SHA1:   a127866581a01a25b6220dab9be4eb9bf01a791d
+    Size:   12430 bytes
+  ISSUE_MODERATE_012_INCONSISTENT_TIMESTAMPS.md
+    SHA256: [REDACTED]
+    MD5:    8c6011a4f30004c9da543652d311a476
+    SHA1:   dca36a242ae86bf39dc0796ee9cc09025e76bf34
+    Size:   8215 bytes
+  ISSUE_MODERATE_010_PLATFORM_CODE_WITHOUT_FALLBACK.md
+    SHA256: [REDACTED]
+    MD5:    15c51ea67f5b7044f0452a82344c1bca
+    SHA1:   cdb58f1df965af7055eb86aa69886736d102b3fe
+    Size:   5345 bytes
+  run-all-scans.sh
+    SHA256: [REDACTED]
+    MD5:    42b61bae379e9731de8de40a14d6872a
+    SHA1:   9e3fb78abf8d1ee1605082190444446cd3e6f033
+    Size:   19242 bytes
+  [REDACTED].json
+    SHA256: [REDACTED]
+    MD5:    21f5c77c1dad0c5ca1292f028e8a876c
+    SHA1:   1ae0595149e23c5c88b860412af43274d2f34321
+    Size:   5383 bytes
+  test-mac-patterns.sh
+    SHA256: [REDACTED]
+    MD5:    8e36ea9fd747aa17925101bc2f473300
+    SHA1:   d2436450292ae12dfdebb53c2c87970e16681d3a
+    Size:   7133 bytes
+  pii-scan-EXAMPLE.txt
+    SHA256: [REDACTED]
+    MD5:    f26240dad014579c6d00dba5e131292d
+    SHA1:   ef2d6dbbf1048baad6464f9009fd26ba46b45042
+    Size:   1932 bytes
+  ISSUE_MODERATE_009_MISSING_SECURITY_POLICY.md
+    SHA256: [REDACTED]
+    MD5:    1b1a7da98d32a2e5da362913459f2fca
+    SHA1:   14d44d2dd5e66e62aea85121ac459dddaaea6017
+    Size:   7627 bytes
+  test-cui-data-exposure.sh
+    SHA256: [REDACTED]
+    MD5:    5587b2f1e9b299cd48beb461947a46ed
+    SHA1:   26276f07666becb1775022ba5c6b9a42c36f7c16
+    Size:   5640 bytes
+  security_compliance_statement.tex
+    SHA256: [REDACTED]
+    MD5:    50df02f9a06487e47e7d4ac9aed9d948
+    SHA1:   f64afe3ba7d17f7b2945119aa89cede913122e78
+    Size:   11223 bytes
+  check-pii.sh
+    SHA256: [REDACTED]
+    MD5:    0f26c8c3d91e3f8e10ed77b8db2d7400
+    SHA1:   43908435936392d13217e74a015ddb28817766ce
+    Size:   18292 bytes
+  check-mac-addresses.sh
+    SHA256: [REDACTED]
+    MD5:    96a5fff5389be661584fe22cfeb2e213
+    SHA1:   799281ec949adcc68311648bc71024764b2199c3
+    Size:   3795 bytes
+  security-assessment-report-2026-01-16.md
+    SHA256: [REDACTED]
+    MD5:    2daba4db962fdf9230708989cd3fecb4
+    SHA1:   b5a6c9734b7104481afcaf5a314b8888d632e552
+    Size:   10024 bytes
+  SECURITY.md
+    SHA256: [REDACTED]
+    MD5:    9d19bd5b5d49dc5b8b7a32c882a33eb8
+    SHA1:   ed8972a0270b0c3ad150e78b923dfda81fd2d3ef
+    Size:   3751 bytes
   FILE_STRUCTURE_ASSESSMENT.md
     SHA256: [REDACTED]
     MD5:    3dac24b54802891dfed11946ccf17405
     SHA1:   367fc0174aa5fc8681b801b259a9d41562305737
     Size:   8233 bytes
-  logo.png
+  generate-compliance.sh
     SHA256: [REDACTED]
-    MD5:    315dfafe5b28dccdf1164bbb1b9ab7a3
-    SHA1:   4b2cbe3a3f4ab9f8f00a9e90c563643ba2c269ef
-    Size:   3007 bytes
+    MD5:    d15cc7660b6d0609a142e7506f027c19
+    SHA1:   b5983cf9c1791c4f69bc475ffa5653ead318387d
+    Size:   7705 bytes
+  scan-attestation-EXAMPLE.pdf
+    SHA256: [REDACTED]
+    MD5:    a4540401734ac710d12cf391a4d4ed61
+    SHA1:   6aa2a8b39fd80b6aa77a1695913291af1bb43931
+    Size:   90278 bytes
+  test-rm-rf-validation.sh
+    SHA256: [REDACTED]
+    MD5:    76b996b518a179eec94756d126232718
+    SHA1:   64f4ecfc38dd08df61ad3b866b8b03e2491748ac
+    Size:   7307 bytes
+  CHANGELOG.md
+    SHA256: [REDACTED]
+    MD5:    7724f80e5321111ae058446983895de0
+    SHA1:   e34f7c837230bafb7633165946836cbb34ab2fa7
+    Size:   11098 bytes
+  PHASE_1_IMPLEMENTATION_GUIDE.md
+    SHA256: [REDACTED]
+    MD5:    d603155a2b7081d2ba1e965d4cbc621a
+    SHA1:   8db6e576914818a5e0b3316839a37cdbff4adb0d
+    Size:   11889 bytes
+  malware-scan-EXAMPLE.txt
+    SHA256: [REDACTED]
+    MD5:    362c4152f5f91c479597708390a9f409
+    SHA1:   87c1fb1d0b5457d51ddd8196ba2c21e4f9e2a4f7
+    Size:   16651 bytes
+  security-scan-report-EXAMPLE.txt
+    SHA256: [REDACTED]
+    MD5:    76759d658a5a7310cea1a8b38418bbe5
+    SHA1:   c1907a31af41751cf3d37b7253a0b5982904348e
+    Size:   45436 bytes
+  test-pii-patterns.sh
+    SHA256: [REDACTED]
+    MD5:    c91ad3eb49a2c29993d95f97532deb7b
+    SHA1:   54b914bbac35dd0380b40c3c2d9c469bc4b8a3d5
+    Size:   7153 bytes
+  test-secrets-patterns.sh
+    SHA256: [REDACTED]
+    MD5:    db3116730f36cbc5000084d5ebcc91be
+    SHA1:   95c2c71e101fa2a6e5c6f2a547911aa119747663
+    Size:   8401 bytes
+  scan_attestation.tex
+    SHA256: [REDACTED]
+    MD5:    3603d6c70865f4a75b83e6709c977baa
+    SHA1:   1896409d81935c778eefc931630be393def79539
+    Size:   12787 bytes
+  run-all-tests.sh
+    SHA256: [REDACTED]
+    MD5:    316932dbe6602199aa84216b0fe688fe
+    SHA1:   7878224e1e1713db4f890dfbadaf9fe552bde563
+    Size:   3651 bytes
+  check-host-security.sh
+    SHA256: [REDACTED]
+    MD5:    7aa3bfc79913566419ccfe16a60caf95
+    SHA1:   ab6dbe9ebadabd9ec18b907ddf815bb4db895ad2
+    Size:   4755 bytes
+  ISSUE_CRITICAL_001_LATEX_INJECTION.md
+    SHA256: [REDACTED]
+    MD5:    e958116de09de0d75ffbff769ca285df
+    SHA1:   11b6d8bbd9c80191f8e35d1cae20b11824e6f74d
+    Size:   10439 bytes
   ISSUE_MODERATE_011_CLAMAV_METADATA_PARSING.md
     SHA256: [REDACTED]
     MD5:    39296a0a5dd2a725253727a703dc34df
     SHA1:   341bf46c657683adf08aa569a5cc07aede9b7fa5
     Size:   7490 bytes
+  check-secrets.sh
+    SHA256: [REDACTED]
+    MD5:    c8bd97ac228a97b4b154f2817bb04f6e
+    SHA1:   98abf3c5939d3bccbab673110ab622cb58b45828
+    Size:   15754 bytes
+  test-secure-delete.sh
+    SHA256: [REDACTED]
+    MD5:    8ab1918aaccdb314a70aeedd31697342
+    SHA1:   e968e068e3aa3cdc2ac91ce7b56dad7632ab097c
+    Size:   6629 bytes
+  check-malware.sh
+    SHA256: [REDACTED]
+    MD5:    3cdc8c5fec43865a6999fb6540e21ff4
+    SHA1:   580b6bfa44dd7f40a6be06408b8d284e73f5e02c
+    Size:   14044 bytes
+  test-latex-injection.sh
+    SHA256: [REDACTED]
+    MD5:    67ef68117212bb54e6c7668cf11643e4
+    SHA1:   083b1be46f15207e046bc88786a3f9d4bf1cd989
+    Size:   6119 bytes
+  release.sh
+    SHA256: [REDACTED]
+    MD5:    de2760ab74864f52ab4249c63e155aea
+    SHA1:   129d2c2394c927026562f26f5a9ba29fab0b1916
+    Size:   8851 bytes
+  .pii-allowlist
+    SHA256: [REDACTED]
+    MD5:    21bb9120cf7360b4e0599d1e6c14283d
+    SHA1:   36e68d4ea6e9e57ae7536641c958757bf4fd0fce
+    Size:   2742 bytes
+  REMEDIATION_PLAN.md
+    SHA256: [REDACTED]
+    MD5:    94e14e0c15110af7a3dfc103967b79a8
+    SHA1:   25708a403c2bada5bc71447422d5819402cecad1
+    Size:   14168 bytes
+  test-run-all-scans.sh
+    SHA256: [REDACTED]
+    MD5:    f4616b8beecd317f588b6c91238fe509
+    SHA1:   4984adeadc24009210ee5837443d5506d96b07b3
+    Size:   5137 bytes
+  logo.png
+    SHA256: [REDACTED]
+    MD5:    315dfafe5b28dccdf1164bbb1b9ab7a3
+    SHA1:   4b2cbe3a3f4ab9f8f00a9e90c563643ba2c269ef
+    Size:   3007 bytes
+  host-security-scan-EXAMPLE.txt
+    SHA256: [REDACTED]
+    MD5:    17871d3d1ff061a4defd90707cd4eaf7
+    SHA1:   f56d06eb93bb9b50ce09934340d17bd550677c73
+    Size:   2247 bytes
 
 =========================
 
@@ -574,14 +654,23 @@ Running: Secrets/Credentials Scan
 Secrets/Vulnerability Verification Scan
 ========================================
 Timestamp: 2026-01-16T[REDACTED]Z
-Toolkit: Security Verification Toolkit v0.0.0-test.20260115T211811Z-10-g2d56aa2 (2d56aa2)
+Toolkit: Security Verification Toolkit v1.9.0-5-g5209d7a (5209d7a)
 Target: /Users/[REDACTED]
 Repository: Security
 
 Checking: AWS Access Keys [CRITICAL]
-  Result: PASS (0 matches)
+96:if echo "AKIAIOSFODNN7EXAMPLE" | grep -qE "$AWS_ACCESS_KEY"; then
+103:if echo 'aws_access_key_id = "AKIAIOSFODNN7EXAMPLE"' | grep -qE "$AWS_ACCESS_KEY"; then
+279:AWS_ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE"
+  Result: REVIEW - 3 match(es) found
 Checking: AWS Secret Keys [CRITICAL]
-  Result: PASS (0 matches)
+59:echo "========================================"
+61:echo "========================================"
+357:echo "========================================"
+359:echo "========================================"
+87:echo "========================================"
+  Result: REVIEW - 8 match(es) found
+  ... and 3 more
 Checking: Generic API Keys [HIGH]
   Result: PASS (0 matches)
 Checking: Private Keys [CRITICAL]
@@ -589,22 +678,33 @@ Checking: Private Keys [CRITICAL]
 Checking: Database Connection Strings [CRITICAL]
   Result: PASS (0 matches)
 Checking: Hardcoded Passwords [HIGH]
-  Result: PASS (0 matches)
+166:if echo 'password = "mysecretpassword"' | grep -qiE 'password.*[:=].*["\x27]'; then
+224:if echo 'password = "<your-password-here>"' | grep -qiE 'password.*[:=].*<.*>'; then
+  Result: REVIEW - 2 match(es) found
 Checking: Bearer Tokens [HIGH]
-  Result: PASS (0 matches)
+210:if echo "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U" | grep -qE "$BEARER_TOKEN"; then
+  Result: REVIEW - 1 match(es) found
 Checking: GitHub Tokens [CRITICAL]
-  Result: PASS (0 matches)
+195:if echo "ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij" | grep -qE "$GITHUB_TOKEN"; then
+203:if echo "ghs_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij" | grep -qE "$GITHUB_TOKEN"; then
+  Result: REVIEW - 2 match(es) found
 Checking: Slack Tokens [HIGH]
   Result: PASS (0 matches)
 Checking: Shell Command Injection [MEDIUM]
-  Result: PASS (0 matches)
+367:                eval "$result_var=PASS"
+375:                eval "$result_var=FAIL"
+379:                    eval "$findings_var=\"Issues detected\""
+  Result: REVIEW - 3 match(es) found
 
 ========================================
 Allowlist: /Users/[REDACTED] (3 entries)
 
-OVERALL RESULT: PASS
-No secrets or vulnerabilities detected.
-  Status: PASS
+OVERALL RESULT: REVIEW REQUIRED
+Potential secrets/vulnerabilities detected. Manual review required.
+
+Run with -i flag for interactive review:
+  /Users/[REDACTED] -i /Users/[REDACTED]
+  Status: FAIL
 
 --------------------------------------------------------
 
@@ -614,21 +714,43 @@ Running: IEEE 802.3 MAC Address Scan
 IEEE 802.3 MAC Address Verification Scan
 =========================================
 Timestamp: 2026-01-16T[REDACTED]Z
-Toolkit: Security Verification Toolkit v0.0.0-test.20260115T211811Z-10-g2d56aa2 (2d56aa2)
+Toolkit: Security Verification Toolkit v1.9.0-5-g5209d7a (5209d7a)
 Target: /Users/[REDACTED]
 Repository: Security
 
 Checking: Colon-Separated (XX:XX:XX:XX:XX:XX)
-  Result: PASS (0 matches)
+  Result: REVIEW - 9 MAC address(es) found
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
 Checking: Dash-Separated (XX-XX-XX-XX-XX-XX)
-  Result: PASS (0 matches)
+  Result: REVIEW - 6 MAC address(es) found
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
 Checking: Cisco Format (XXXX.XXXX.XXXX)
-  Result: PASS (0 matches)
+  Result: REVIEW - 6 MAC address(es) found
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
+/Users/[REDACTED]
 
 =========================================
-OVERALL RESULT: PASS
-No MAC addresses detected.
-  Status: PASS
+OVERALL RESULT: REVIEW REQUIRED
+21 MAC address(es) found.
+Manual review required to determine if they represent actual hardware identifiers.
+  Status: FAIL
 
 --------------------------------------------------------
 
@@ -639,7 +761,7 @@ Host OS Security Verification
 ==============================
 Timestamp: 2026-01-16T[REDACTED]Z
 Host: [REDACTED]
-Toolkit: Security Verification Toolkit v0.0.0-test.20260115T211811Z-10-g2d56aa2 (2d56aa2)
+Toolkit: Security Verification Toolkit v1.9.0-5-g5209d7a (5209d7a)
 Source: https://[REDACTED]/brucedombrowski/Security
 
 Running security configuration checks...
@@ -683,11 +805,11 @@ Running: Vulnerability Scan (Nmap/Lynis)
                     VULNERABILITY SCANNING REPORT
 ================================================================================
 
-  Scan Timestamp:  2026-01-16T022801Z
+  Scan Timestamp:  2026-01-16T140418Z
   Target:          [REDACTED]
   Scan Mode:       quick
   Hostname: [REDACTED]
-  Toolkit:         Security Verification Toolkit v0.0.0-test.20260115T211811Z-10-g2d56aa2 (2d56aa2)
+  Toolkit:         Security Verification Toolkit v1.9.0-5-g5209d7a (5209d7a)
   Source:          https://[REDACTED]/brucedombrowski/Security
 
 ================================================================================
@@ -724,32 +846,32 @@ Target: [REDACTED]
 [1;33m[WARN][0m Running unprivileged scan (TCP connect only)
 [1;33m[WARN][0m Localhost TCP connect scan may show 'Strange read error' - this is a known Nmap issue
 
-Starting Nmap 7.98 ( https://[REDACTED] ) at 2026-01-15 20:28 -0600
+Starting Nmap 7.98 ( https://[REDACTED] ) at 2026-01-16 08:04 -0600
 Nmap scan report for localhost (127.0.0.1)
-Host is up (0.000065s latency).
+Host is up (0.000030s latency).
 Not shown: 99 closed tcp ports (conn-refused)
 PORT     STATE SERVICE VERSION
 5000/tcp open  rtsp
 1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://[REDACTED]/cgi-bin/submit.cgi?new-service :
-SF-Port5000-TCP:V=7.98%I=7%D=1/15%Time=6969A237%P=arm-apple-darwin25.0.0%r
+SF-Port5000-TCP:V=7.98%I=7%D=1/16%Time=696A4568%P=arm-apple-darwin25.0.0%r
 SF:(GetRequest,91,"HTTP/1\.1\x20403\x20Forbidden\r\nContent-Length:\x200\r
 SF:\nServer:\x20AirTunes/920\.10\.1\r\nX-Apple-ProcessingTime:\x200\r\nX-A
-SF:pple-RequestReceivedTimestamp:\x201441785945\r\n\r\n")%r(RTSPRequest,91
+SF:pple-RequestReceivedTimestamp:\x201483562759\r\n\r\n")%r(RTSPRequest,91
 SF:,"RTSP/1\.0\x20403\x20Forbidden\r\nContent-Length:\x200\r\nServer:\x20A
 SF:irTunes/920\.10\.1\r\nX-Apple-ProcessingTime:\x200\r\nX-Apple-RequestRe
-SF:ceivedTimestamp:\x201441785965\r\n\r\n")%r(HTTPOptions,91,"HTTP/1\.1\x2
+SF:ceivedTimestamp:\x201483562779\r\n\r\n")%r(HTTPOptions,91,"HTTP/1\.1\x2
 SF:0403\x20Forbidden\r\nContent-Length:\x200\r\nServer:\x20AirTunes/920\.1
 SF:0\.1\r\nX-Apple-ProcessingTime:\x200\r\nX-Apple-RequestReceivedTimestam
-SF:p:\x201441790968\r\n\r\n")%r(FourOhFourRequest,91,"HTTP/1\.1\x20403\x20
+SF:p:\x201483567782\r\n\r\n")%r(FourOhFourRequest,91,"HTTP/1\.1\x20403\x20
 SF:Forbidden\r\nContent-Length:\x200\r\nServer:\x20AirTunes/920\.10\.1\r\n
 SF:X-Apple-ProcessingTime:\x200\r\nX-Apple-RequestReceivedTimestamp:\x2014
-SF:41790976\r\n\r\n")%r(SIPOptions,A3,"RTSP/1\.0\x20403\x20Forbidden\r\nCo
+SF:83567789\r\n\r\n")%r(SIPOptions,A3,"RTSP/1\.0\x20403\x20Forbidden\r\nCo
 SF:ntent-Length:\x200\r\nServer:\x20AirTunes/920\.10\.1\r\nCSeq:\x2042\x20
 SF:OPTIONS\r\nX-Apple-ProcessingTime:\x200\r\nX-Apple-RequestReceivedTimes
-SF:tamp:\x201441790979\r\n\r\n");
+SF:tamp:\x201483567792\r\n\r\n");
 
 Service detection performed. Please report any incorrect results at https://[REDACTED]/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 18.65 seconds
+Nmap done: 1 IP address (1 host up) scanned in 18.64 seconds
 [0;32m[PASS][0m Nmap scan completed
 
 Results saved to:
@@ -950,7 +1072,7 @@ FIPS 200 Requirements:
 [2C- Checking default gateway[33C [ DONE ]
 [2C- Getting listening ports (TCP/UDP)[24C [ DONE ]
 
-  [WARNING]: Test NETW-3012 had a long execution: 16 seconds
+  [WARNING]: Test NETW-3012 had a long execution: 11 seconds
 
 [2C- Checking waiting connections[29C [ OK ]
 [2C- Checking status DHCP client[30C [ NOT ACTIVE ]
@@ -1084,7 +1206,6 @@ FIPS 200 Requirements:
 
 [+] Containers
 ------------------------------------
-[8C- Docker status[38C [ ERROR ]
 [8C- Docker info output (warnings)[22C [ NONE ]
 
 [+] Security frameworks
@@ -1311,12 +1432,13 @@ NIST Compliance Status:
 
 SCAN SUMMARY
 ============
-Passed: 6
-Failed: 0
+Passed: 3
+Failed: 3
 
-OVERALL RESULT: PASS
+OVERALL RESULT: FAIL
 
-All security scans passed.
+3 scan(s) require attention.
+Review the output above for details.
 
 ========================================================
 SCAN ARTIFACTS
@@ -1327,16 +1449,16 @@ Results saved to: /Users/[REDACTED]
 Checksums: checksums.md
 
   clamav-log-2026-01-16.txt
-  host-inventory-2026-01-16-T022743Z.txt
-  host-security-scan-2026-01-16-T022743Z.txt
-  lynis-2026-01-16T022801Z.txt
-  mac-address-scan-2026-01-16-T022743Z.txt
-  malware-scan-2026-01-16-T022743Z.txt
-  nmap-2026-01-16T022801Z.txt
-  pii-scan-2026-01-16-T022743Z.txt
-  secrets-scan-2026-01-16-T022743Z.txt
-  security-scan-report-2026-01-16-T022743Z.txt
-  vulnerability-scan-2026-01-16T022801Z.txt
+  host-inventory-2026-01-16-T140357Z.txt
+  host-security-scan-2026-01-16-T140357Z.txt
+  lynis-2026-01-16T140418Z.txt
+  mac-address-scan-2026-01-16-T140357Z.txt
+  malware-scan-2026-01-16-T140357Z.txt
+  nmap-2026-01-16T140418Z.txt
+  pii-scan-2026-01-16-T140357Z.txt
+  secrets-scan-2026-01-16-T140357Z.txt
+  security-scan-report-2026-01-16-T140357Z.txt
+  vulnerability-scan-2026-01-16T140418Z.txt
 Generating PDF attestation...
-  scan-attestation-2026-01-16-T022743Z.pdf
+  scan-attestation-2026-01-16-T140357Z.pdf
 

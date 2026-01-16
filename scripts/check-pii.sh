@@ -20,7 +20,7 @@
 #        If no target specified, uses parent directory of script location
 #
 # Allowlist:
-#   Accepted findings are stored in <target>/.pii-allowlist
+#   Accepted findings are stored in <target>/.allowlists/pii-allowlist
 #   Format: SHA256 hash of "file:line:content" per line
 #   Allowlisted items are automatically skipped in future scans
 
@@ -58,7 +58,7 @@ PATTERNS DETECTED:
   - Credit cards         16-digit patterns (Visa, MC, Amex, Discover)
 
 ALLOWLIST:
-  Accepted findings are stored in <target>/.pii-allowlist
+  Accepted findings are stored in <target>/.allowlists/pii-allowlist
   Each entry includes SHA256 hash and justification for audit trail.
   Allowlisted items are automatically skipped in future scans.
 
@@ -100,8 +100,9 @@ if [ -z "$TARGET_DIR" ]; then
     TARGET_DIR="$SECURITY_REPO_DIR"
 fi
 
-# Allowlist file location
-ALLOWLIST_FILE="$TARGET_DIR/.pii-allowlist"
+# Allowlist file location (in .allowlists/ directory, gitignored)
+ALLOWLIST_DIR="$TARGET_DIR/.allowlists"
+ALLOWLIST_FILE="$ALLOWLIST_DIR/pii-allowlist"
 
 # Use UTC for consistent timestamps across time zones
 TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
@@ -161,7 +162,10 @@ add_to_allowlist() {
     local reason="$2"
     local hash=$(hash_finding "$finding")
 
-    # Create allowlist file with header if it doesn't exist
+    # Create allowlist directory and file with header if they don't exist
+    if [ ! -d "$ALLOWLIST_DIR" ]; then
+        mkdir -p "$ALLOWLIST_DIR"
+    fi
     if [ ! -f "$ALLOWLIST_FILE" ]; then
         {
             echo "# PII Scan Allowlist"

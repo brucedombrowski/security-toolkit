@@ -26,6 +26,20 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Source shared libraries
+AUDIT_AVAILABLE=0
+TIMESTAMPS_AVAILABLE=0
+
+if [ -f "$SCRIPT_DIR/lib/audit-log.sh" ]; then
+    source "$SCRIPT_DIR/lib/audit-log.sh"
+    AUDIT_AVAILABLE=1
+fi
+
+if [ -f "$SCRIPT_DIR/lib/timestamps.sh" ]; then
+    source "$SCRIPT_DIR/lib/timestamps.sh"
+    TIMESTAMPS_AVAILABLE=1
+fi
+
 # Toolkit identification
 TOOLKIT_VERSION=$(git -C "$SECURITY_REPO_DIR" describe --tags --always 2>/dev/null || echo "unknown")
 TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -134,12 +148,18 @@ check_docker_status() {
 # Run Docker status check
 check_docker_status
 
-# Use UTC for consistent timestamps across time zones
-TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
-DATE_STAMP=$(date -u "+%Y-%m-%d")
-# Filesystem-safe timestamp for unique filenames (no colons)
-# Format: YYYY-MM-DD-THHMMSSZ (e.g., 2026-01-15-T154452Z)
-FILE_TIMESTAMP=$(date -u "+%Y-%m-%d-T%H%M%SZ")
+# Use standardized timestamps (UTC for consistency across time zones)
+if [ "$TIMESTAMPS_AVAILABLE" -eq 1 ]; then
+    TIMESTAMP=$(get_iso_timestamp)
+    DATE_STAMP=$(get_date_stamp)
+    FILE_TIMESTAMP=$(get_filename_timestamp)
+else
+    TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+    DATE_STAMP=$(date -u "+%Y-%m-%d")
+    # Filesystem-safe timestamp for unique filenames (no colons)
+    # Format: YYYY-MM-DD-THHMMSSZ (e.g., 2026-01-15-T154452Z)
+    FILE_TIMESTAMP=$(date -u "+%Y-%m-%d-T%H%M%SZ")
+fi
 
 # Get hostname for attestation
 TARGET_HOST=$(hostname -s 2>/dev/null || hostname 2>/dev/null || echo "unknown")
@@ -237,6 +257,11 @@ if [ -d "$SCANS_DIR" ]; then
 fi
 
 mkdir -p "$SCANS_DIR"
+
+# Initialize audit logging for the master scan
+if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+    init_audit_log "$TARGET_DIR" "master-scan" || true
+fi
 
 # Consolidated report file (using FILE_TIMESTAMP for unique UTC-timestamped filenames)
 REPORT_FILE="$SCANS_DIR/security-scan-report-$FILE_TIMESTAMP.txt"
@@ -570,6 +595,15 @@ if [ -n "$FINAL_REPORT_CHECKSUM" ]; then
     # Replace the report checksum line in checksums.md
     sed -i.bak "s/^[a-f0-9]*  security-scan-report-.*\.txt$/$FINAL_REPORT_CHECKSUM  $(basename "$REPORT_FILE")/" "$CHECKSUMS_FILE"
     rm -f "$CHECKSUMS_FILE.bak"
+fi
+
+# Finalize audit logging
+if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+    if [ "$OVERALL_STATUS" = "PASS" ]; then
+        finalize_audit_log "PASS" "passed=$PASS_COUNT failed=$FAIL_COUNT"
+    else
+        finalize_audit_log "FAIL" "passed=$PASS_COUNT failed=$FAIL_COUNT"
+    fi
 fi
 
 if [ "$OVERALL_STATUS" = "PASS" ]; then

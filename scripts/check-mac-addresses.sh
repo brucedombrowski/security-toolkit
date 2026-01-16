@@ -15,11 +15,28 @@
 #
 # Usage: ./check-mac-addresses.sh [target_directory]
 #        If no target specified, uses parent directory of script location
+#
+# Note: Test fixture directories (tests/, test/) are excluded from scanning
+#       as they intentionally contain MAC address patterns for validation.
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Source shared libraries
+AUDIT_AVAILABLE=0
+TIMESTAMPS_AVAILABLE=0
+
+if [ -f "$SCRIPT_DIR/lib/audit-log.sh" ]; then
+    source "$SCRIPT_DIR/lib/audit-log.sh"
+    AUDIT_AVAILABLE=1
+fi
+
+if [ -f "$SCRIPT_DIR/lib/timestamps.sh" ]; then
+    source "$SCRIPT_DIR/lib/timestamps.sh"
+    TIMESTAMPS_AVAILABLE=1
+fi
 
 # Allow target directory to be specified as argument
 if [ -n "$1" ]; then
@@ -28,8 +45,12 @@ else
     TARGET_DIR="$SECURITY_REPO_DIR"
 fi
 
-# Use UTC for consistent timestamps across time zones
-TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+# Use standardized timestamps (UTC for consistency across time zones)
+if [ "$TIMESTAMPS_AVAILABLE" -eq 1 ]; then
+    TIMESTAMP=$(get_iso_timestamp)
+else
+    TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+fi
 REPO_NAME=$(basename "$TARGET_DIR")
 TOOLKIT_VERSION=$(git -C "$SECURITY_REPO_DIR" describe --tags --always 2>/dev/null || echo "unknown")
 TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -49,6 +70,13 @@ echo "Toolkit: Security Verification Toolkit $TOOLKIT_VERSION ($TOOLKIT_COMMIT)"
 echo "Target: $TARGET_DIR"
 echo "Repository: $REPO_NAME"
 echo ""
+echo "Note: Test fixture directories (tests/, test/, fixtures/) are excluded"
+echo ""
+
+# Initialize audit logging
+if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+    init_audit_log "$TARGET_DIR" "mac-scan" || true
+fi
 
 # Function to run a MAC address check
 run_mac_check() {
@@ -81,8 +109,13 @@ run_mac_check() {
         --exclude-dir="obj" \
         --exclude-dir="bin" \
         --exclude-dir="publish" \
+        --exclude-dir="tests" \
+        --exclude-dir="test" \
+        --exclude-dir="fixtures" \
+        --exclude-dir="examples" \
         --exclude="*Scan-Results.md" \
         --exclude="check-*.sh" \
+        --exclude="*-EXAMPLE.*" \
         2>/dev/null || true)
 
     local count=0
@@ -114,11 +147,19 @@ echo "========================================="
 
 if [ $FOUND_ISSUES -eq 0 ]; then
     echo "OVERALL RESULT: PASS"
-    echo "No MAC addresses detected."
+    echo "No MAC addresses detected in production code."
+    # Finalize audit log with PASS status
+    if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+        finalize_audit_log "PASS" "mac_addresses=0"
+    fi
 else
     echo "OVERALL RESULT: REVIEW REQUIRED"
-    echo "$TOTAL_FOUND MAC address(es) found."
+    echo "$TOTAL_FOUND MAC address(es) found in production code."
     echo "Manual review required to determine if they represent actual hardware identifiers."
+    # Finalize audit log with FAIL status
+    if [ "$AUDIT_AVAILABLE" -eq 1 ]; then
+        finalize_audit_log "FAIL" "mac_addresses=$TOTAL_FOUND"
+    fi
 fi
 
 exit $FOUND_ISSUES

@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    9050bf072e664f4c...                                       #
+#  Source SHA256:    e2b2f5fd19e7aeb7...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    0f603c2f71583e21...                                       #
-#  Redacted:         2026-01-16T02:29:09Z                                       #
+#  Redacted:         2026-01-16T14:05:19Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,25 +19,62 @@
 PII Verification Scan
 =====================
 Timestamp: 2026-01-16T[REDACTED]Z
-Toolkit: Security Verification Toolkit v0.0.0-test.20260115T211811Z-10-g2d56aa2 (2d56aa2)
+Toolkit: Security Verification Toolkit v1.9.0-5-g5209d7a (5209d7a)
 Target: /Users/[REDACTED]
 Repository: Security
 
 Checking: IPv4 Addresses
-  Result: PASS (0 matches)
+261:- Reality: Limited to [REDACTED], minimal output, no network scanning
+4:**Target System:** Bruces-MacBook-Pro (localhost / [REDACTED])
+223:# Should show [REDACTED], not * or [REDACTED]
+54:  - [L]ocalhost - Loopback addresses (127.0.0.1)
+197:test_start "Reject version number (1.2.3.4.5.6)"
+198:if echo "1.2.3.4.5.6" | grep -qE "$MAC_PATTERN_CISCO"; then
+218:And version numbers like [REDACTED]
+64:test_start "Detect standard IPv4 (192.168.1.1)"
+65:if echo "192.168.1.1" | grep -qE "$IPV4_PATTERN"; then
+71:test_start "Detect private IP (10.0.0.1)"
+  Result: REVIEW - 46 new match(es) found
+  ... and 36 more
 Checking: US Phone Numbers (dashed)
-  Result: PASS (0 matches)
+113:test_start "Detect 555-123-4567"
+114:if echo "555-123-4567" | grep -qE "$PHONE_PATTERN"; then
+  Result: REVIEW - 2 new match(es) found
 Checking: US Phone Numbers (dotted)
-  Result: PASS (0 matches)
+120:test_start "Detect 555.123.4567"
+121:if echo "555.123.4567" | grep -qE "$PHONE_PATTERN"; then
+  Result: REVIEW - 2 new match(es) found
 Checking: US Phone Numbers (parenthetical)
-  Result: PASS (0 matches)
+106:test_start "Detect (555) 123-4567"
+107:if echo "(555) 123-4567" | grep -qE "$PHONE_PATTERN"; then
+250:Phone: (555) 123-4567
+  Result: REVIEW - 3 new match(es) found
 Checking: Social Security Numbers
-  Result: PASS (0 matches)
+141:test_start "Detect valid SSN format (123-45-6789)"
+142:if echo "123-45-6789" | grep -qE "$SSN_PATTERN"; then
+148:test_start "Detect SSN in text (SSN: 123-45-6789)"
+149:if echo "SSN: 123-45-6789" | grep -qE "$SSN_PATTERN"; then
+251:SSN: 123-45-6789
+  Result: REVIEW - 5 new match(es) found
 Checking: Credit Card Numbers (16 digit)
-  Result: PASS (0 matches)
+82:if echo '{"apiKey": "test_key_123456789012345678"}' | grep -qiE 'apikey.*[:=]'; then
+169:test_start "Detect Visa format (4111-1111-1111-1111)"
+170:if echo "4111-1111-1111-1111" | grep -qE "$CREDIT_CARD_PATTERN"; then
+176:test_start "Detect MC format (5500 0000 0000 0004)"
+177:if echo "5500 0000 0000 0004" | grep -qE "$CREDIT_CARD_PATTERN"; then
+183:test_start "Detect continuous digits (4111111111111111)"
+184:if echo "4111111111111111" | grep -qE "$CREDIT_CARD_PATTERN"; then
+21:      "Bash(FINDING2='/Users/[REDACTED]        -e \"\"s/[CHECKSUM_REDACTED]/$INVENTORY_CHECKSUM_SHORT/g\"\" \\\\')",
+39:      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
+253:    -e "s/[CHECKSUM_REDACTED]/$INVENTORY_CHECKSUM_SHORT_ESCAPED/g" \
+  Result: REVIEW - 11 new match(es) found
+  ... and 1 more
 
 =====================
 Allowlist: /Users/[REDACTED] (13 entries)
 
-OVERALL RESULT: PASS
-No PII patterns detected.
+OVERALL RESULT: REVIEW REQUIRED
+Potential PII patterns detected. Manual review required.
+
+Run with -i flag for interactive review:
+  /Users/[REDACTED] -i /Users/[REDACTED]

@@ -134,7 +134,7 @@ REPORT_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/security-scan-report-$FILE_TIMESTAMP
 CHECKSUMS_MD_CHECKSUM_FULL=$(shasum -a 256 "$SCANS_DIR/checksums.md" 2>/dev/null | awk '{print $1}' || echo "N/A")
 
 # Extract PII allowlist count and checksum
-PII_ALLOWLIST_FILE="$TARGET_DIR/.pii-allowlist"
+PII_ALLOWLIST_FILE="$TARGET_DIR/.allowlists/pii-allowlist"
 PII_ALLOWLIST_COUNT=0
 PII_ALLOWLIST_CHECKSUM="N/A"
 if [ -f "$PII_ALLOWLIST_FILE" ]; then
@@ -148,7 +148,7 @@ if [ -f "$PII_ALLOWLIST_FILE" ]; then
 fi
 
 # Extract secrets allowlist count and checksum
-SECRETS_ALLOWLIST_FILE="$TARGET_DIR/.secrets-allowlist"
+SECRETS_ALLOWLIST_FILE="$TARGET_DIR/.allowlists/secrets-allowlist"
 SECRETS_ALLOWLIST_COUNT=0
 SECRETS_ALLOWLIST_CHECKSUM="N/A"
 if [ -f "$SECRETS_ALLOWLIST_FILE" ]; then
