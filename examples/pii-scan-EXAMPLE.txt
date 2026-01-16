@@ -6,37 +6,25 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    eeb7df47803adb56...                                       #
+#  Source SHA256:    9050bf072e664f4c...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    0f603c2f71583e21...                                       #
-#  Redacted:         2026-01-15T21:19:31Z                                       #
+#  Redacted:         2026-01-16T02:29:09Z                                       #
 #                                                                              #
 ################################################################################
 
 # Host Inventory Reference: [CHECKSUM_REDACTED]
-# Scan Timestamp: 2026-01-15T[REDACTED]Z
+# Scan Timestamp: 2026-01-16T[REDACTED]Z
 
 PII Verification Scan
 =====================
-Timestamp: 2026-01-15T[REDACTED]Z
-Toolkit: Security Verification Toolkit v0.0.0-test.20260115T211333Z-1-ga34385a (a34385a)
+Timestamp: 2026-01-16T[REDACTED]Z
+Toolkit: Security Verification Toolkit v0.0.0-test.20260115T211811Z-10-g2d56aa2 (2d56aa2)
 Target: /Users/[REDACTED]
 Repository: Security
 
 Checking: IPv4 Addresses
-/Users/[REDACTED] [REDACTED]/24
-/Users/[REDACTED] -q [REDACTED]
-/Users/[REDACTED] -n [REDACTED]
-/Users/[REDACTED]     Default: localhost (127.0.0.1)
-/Users/[REDACTED]     Default: localhost (127.0.0.1)
-/Users/[REDACTED] scan report for localhost (127.0.0.1)
-/Users/[REDACTED]     Default: localhost (127.0.0.1)
-/Users/[REDACTED]     Default: localhost (127.0.0.1)
-/Users/[REDACTED]     Default: localhost (127.0.0.1)
-/Users/[REDACTED] scan report for localhost (127.0.0.1)
-  Result: REVIEW - 24 new match(es) found
-  ... and 14 more
-  (7 previously allowlisted)
+  Result: PASS (0 matches)
 Checking: US Phone Numbers (dashed)
   Result: PASS (0 matches)
 Checking: US Phone Numbers (dotted)
@@ -46,21 +34,10 @@ Checking: US Phone Numbers (parenthetical)
 Checking: Social Security Numbers
   Result: PASS (0 matches)
 Checking: Credit Card Numbers (16 digit)
-/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
-/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
-/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
-/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
-/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
-/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
-/Users/[REDACTED]      "Bash(line='#  Source SHA256:    1234567890123456...                                     #')",
-  Result: REVIEW - 7 new match(es) found
-  (3 previously allowlisted)
+  Result: PASS (0 matches)
 
 =====================
 Allowlist: /Users/[REDACTED] (13 entries)
 
-OVERALL RESULT: REVIEW REQUIRED
-Potential PII patterns detected. Manual review required.
-
-Run with -i flag for interactive review:
-  /Users/[REDACTED] -i /Users/[REDACTED]
+OVERALL RESULT: PASS
+No PII patterns detected.

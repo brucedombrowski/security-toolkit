@@ -191,14 +191,16 @@ echo ""
 echo "--- Token Detection ---"
 
 test_start "Detect GitHub PAT (ghp_)"
-if echo "ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh" | grep -qE "$GITHUB_TOKEN"; then
+# GitHub PAT tokens have 36 alphanumeric characters after the prefix
+if echo "ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij" | grep -qE "$GITHUB_TOKEN"; then
     test_pass
 else
     test_fail "match" "no match"
 fi
 
 test_start "Detect GitHub Secret (ghs_)"
-if echo "ghs_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh" | grep -qE "$GITHUB_TOKEN"; then
+# GitHub secret tokens have 36 alphanumeric characters after the prefix
+if echo "ghs_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij" | grep -qE "$GITHUB_TOKEN"; then
     test_pass
 else
     test_fail "match" "no match"

@@ -272,6 +272,16 @@ echo "Target: $TARGET_DIR"
 echo "Repository: $REPO_NAME"
 echo ""
 
+# Determine timeout command (GNU coreutils timeout may be gtimeout on macOS)
+if command -v timeout &>/dev/null; then
+    TIMEOUT_CMD="timeout 1"
+elif command -v gtimeout &>/dev/null; then
+    TIMEOUT_CMD="gtimeout 1"
+else
+    # No timeout available - run without it (slightly less protection against symlink attacks)
+    TIMEOUT_CMD=""
+fi
+
 # Function to run a check and log results
 run_check() {
     local check_name="$1"
@@ -303,7 +313,7 @@ run_check() {
             -o -name "*.yaml" -o -name "*.yml" -o -name "*.json" \
             -o -name "*.env" -o -name "*.conf" -o -name "*.config" -o -name "*.md" -o -name "*.tex" \) \
         2>/dev/null | while read -r file; do
-        timeout 1 grep -n -E "$pattern" "$file" 2>/dev/null || true
+        $TIMEOUT_CMD grep -n -E "$pattern" "$file" 2>/dev/null || true
     done || true)
 
     local total_count=0

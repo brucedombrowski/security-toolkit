@@ -219,10 +219,13 @@ echo ""
 # -----------------------------------------------------------------------------
 echo "--- Integration Test ---"
 
-test_start "Run check-pii.sh on clean fixture"
-# Create a clean test file
-CLEAN_FILE="$FIXTURES_DIR/clean-file.txt"
+# Ensure clean fixtures directory before integration tests
+rm -rf "$FIXTURES_DIR"
 mkdir -p "$FIXTURES_DIR"
+
+test_start "Run check-pii.sh on clean fixture"
+# Create a clean test file - use .md extension (check-pii.sh scans *.md)
+CLEAN_FILE="$FIXTURES_DIR/clean-file.md"
 cat > "$CLEAN_FILE" << 'EOF'
 This is a clean file with no PII.
 It contains normal text and code.
@@ -236,8 +239,12 @@ else
     test_fail "exit 0" "exit 1"
 fi
 
+# Remove clean file before testing PII detection
+rm -f "$CLEAN_FILE"
+
 test_start "Run check-pii.sh on file with PII"
-PII_FILE="$FIXTURES_DIR/has-pii.txt"
+# Use .md extension since check-pii.sh scans *.md files
+PII_FILE="$FIXTURES_DIR/has-pii.md"
 cat > "$PII_FILE" << 'EOF'
 Contact: John Doe
 Phone: (555) 123-4567

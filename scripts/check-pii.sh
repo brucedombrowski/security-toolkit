@@ -305,6 +305,16 @@ echo "Target: $TARGET_DIR"
 echo "Repository: $REPO_NAME"
 echo ""
 
+# Determine timeout command (GNU coreutils timeout may be gtimeout on macOS)
+if command -v timeout &>/dev/null; then
+    TIMEOUT_CMD="timeout 1"
+elif command -v gtimeout &>/dev/null; then
+    TIMEOUT_CMD="gtimeout 1"
+else
+    # No timeout available - run without it (slightly less protection against symlink attacks)
+    TIMEOUT_CMD=""
+fi
+
 # Build include arguments for grep
 INCLUDE_ARGS=""
 for pattern in "${INCLUDE_PATTERNS[@]}"; do
@@ -338,7 +348,7 @@ run_check() {
         -not -name "check-*.sh" \
         -not -name ".pii-allowlist" \
         2>/dev/null | while read -r file; do
-        timeout 1 grep -n -E "$pattern" "$file" 2>/dev/null || true
+        $TIMEOUT_CMD grep -n -E "$pattern" "$file" 2>/dev/null || true
     done || true)
 
     local total_count=0

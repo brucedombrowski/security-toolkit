@@ -74,6 +74,11 @@ run_test_suite() {
 # Run pattern detection tests
 run_test_suite "PII Pattern Detection" "$SCRIPT_DIR/test-pii-patterns.sh"
 run_test_suite "Secrets Pattern Detection" "$SCRIPT_DIR/test-secrets-patterns.sh"
+run_test_suite "MAC Address Pattern Detection" "$SCRIPT_DIR/test-mac-patterns.sh"
+
+# Run script functionality tests
+run_test_suite "Secure Delete" "$SCRIPT_DIR/test-secure-delete.sh"
+run_test_suite "Run All Scans Orchestration" "$SCRIPT_DIR/test-run-all-scans.sh"
 
 # Run Phase 1 critical fix tests if they exist
 if [ -x "$REPO_DIR/scripts/test-latex-injection.sh" ]; then
