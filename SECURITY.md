@@ -5,7 +5,7 @@
 If you discover a security vulnerability in the Security Verification Toolkit,
 please **DO NOT** open a public GitHub issue or discussion.
 
-Instead, please email your report to: **REDACTED_EMAIL**
+Instead, please open a GitHub issue with the label `security` (we will make it private promptly).
 
 ## What to Include
 
@@ -110,7 +110,7 @@ you're welcome to publish details, blog posts, or conference presentations.
 
 ## Security Contact
 
-- **Email:** REDACTED_EMAIL
+- **GitHub Issues:** https://github.com/brucedombrowski/Security/issues (use `security` label)
 
 ## Related Documents
 
