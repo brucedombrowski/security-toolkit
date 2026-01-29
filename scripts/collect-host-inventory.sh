@@ -1363,6 +1363,48 @@ fi
 # Podman
 if command -v podman >/dev/null 2>&1; then
     output "  Podman: $(podman --version 2>/dev/null)"
+
+    # Check if podman machine is running (macOS) or podman is accessible
+    if podman info >/dev/null 2>&1; then
+        # List running containers with IPs
+        container_count=$(podman ps -q 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$container_count" -gt 0 ]; then
+            output "    Running Containers: $container_count"
+            # Get container details (name, image, IP)
+            while IFS= read -r container_id; do
+                if [ -n "$container_id" ]; then
+                    name=$(podman inspect -f '{{.Name}}' "$container_id" 2>/dev/null | sed 's/^\///')
+                    image=$(podman inspect -f '{{.Config.Image}}' "$container_id" 2>/dev/null)
+                    ip=$(podman inspect -f '{{.NetworkSettings.IPAddress}}' "$container_id" 2>/dev/null)
+                    output "      - $name ($image): $ip"
+                fi
+            done <<< "$(podman ps -q 2>/dev/null)"
+        else
+            output "    Running Containers: 0"
+        fi
+
+        # List podman networks
+        output "    Networks:"
+        while IFS= read -r network; do
+            if [ -n "$network" ] && [ "$network" != "NETWORK ID" ]; then
+                net_name=$(echo "$network" | awk '{print $1}')
+                net_driver=$(echo "$network" | awk '{print $2}')
+                output "      - $net_name ($net_driver)"
+            fi
+        done <<< "$(podman network ls --format '{{.Name}} {{.Driver}}' 2>/dev/null)"
+    else
+        output "    Status: not running (podman machine not started)"
+    fi
+
+    # pasta (Linux rootless networking)
+    if command -v pasta >/dev/null 2>&1; then
+        output "    pasta: $(pasta --version 2>/dev/null | head -1)"
+    fi
+
+    # slirp4netns (Linux rootless networking)
+    if command -v slirp4netns >/dev/null 2>&1; then
+        output "    slirp4netns: $(slirp4netns --version 2>/dev/null | head -1)"
+    fi
 else
     output "  Podman: not installed"
 fi
