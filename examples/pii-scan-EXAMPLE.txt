@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    f3c14bdde2594de4...                                       #
+#  Source SHA256:    efc55125be52087f...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    bd7c710d99a5c555...                                       #
-#  Redacted:         2026-01-29T18:52:38Z                                       #
+#  Redacted:         2026-01-29T19:05:36Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,7 +19,7 @@
 PII Verification Scan
 =====================
 Timestamp: 2026-01-29T[REDACTED]Z
-Toolkit: Security Verification Toolkit v1.17.2-2-gbce4d44 (bce4d44)
+Toolkit: Security Verification Toolkit v1.17.3-2-g918cbe0 (918cbe0)
 Target: /Users/[REDACTED]
 Repository: Security
 
@@ -104,8 +104,8 @@ Checking: Credit Card Numbers (16 digit)
 /Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]test_start "Detect MC format (5500 0000 0000 0004)"
 /Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]if echo "5500 0000 0000 0004" | grep -qE "$CREDIT_CARD_PATTERN"; then
 /Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]test_start "Detect continuous digits (4111111111111111)"
-  Result: REVIEW - 44 new match(es) found
-  ... and 34 more
+  Result: REVIEW - 42 new match(es) found
+  ... and 32 more
   (10 previously allowlisted)
 
 =====================
