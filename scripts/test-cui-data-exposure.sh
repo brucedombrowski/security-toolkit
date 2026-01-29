@@ -54,7 +54,15 @@ echo ""
 # TEST 1: File created with restricted permissions (600)
 echo -n "TEST 1: File permissions set to 600... "
 test_file="$TEST_DIR/inventory1.txt"
-cd "$TEST_DIR" && "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>/dev/null
+# Capture exit code and stderr for debugging
+script_exit_code=0
+script_stderr=$(cd "$TEST_DIR" && "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>&1 >/dev/null) || script_exit_code=$?
+if [ $script_exit_code -ne 0 ]; then
+    echo ""
+    echo "DEBUG: Script failed with exit code $script_exit_code"
+    echo "DEBUG: stderr: $script_stderr"
+    exit 1
+fi
 file_perms=$(get_file_perms "$test_file")
 if [ "$file_perms" = "600" ]; then
     echo -e "${GREEN}PASS${NC}"
