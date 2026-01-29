@@ -1400,14 +1400,20 @@ if command -v podman >/dev/null 2>&1; then
         output "    Status: not running (podman machine not started)"
     fi
 
-    # pasta (Linux rootless networking)
+    # pasta (Linux rootless networking - replacement for slirp4netns)
     if command -v pasta >/dev/null 2>&1; then
-        output "    pasta: $(pasta --version 2>/dev/null | head -1)"
+        output "    pasta:"
+        while IFS= read -r line; do
+            [ -n "$line" ] && output "      $line"
+        done <<< "$(pasta --version 2>/dev/null)"
     fi
 
     # slirp4netns (Linux rootless networking)
     if command -v slirp4netns >/dev/null 2>&1; then
-        output "    slirp4netns: $(slirp4netns --version 2>/dev/null | head -1)"
+        output "    slirp4netns:"
+        while IFS= read -r line; do
+            [ -n "$line" ] && output "      $line"
+        done <<< "$(slirp4netns --version 2>/dev/null)"
     fi
 else
     output "  Podman: not installed"
