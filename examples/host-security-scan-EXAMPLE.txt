@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    d193579b344ef26d...                                       #
+#  Source SHA256:    f21506b68dc42d70...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    4504dce3b3744c10...                                       #
-#  Redacted:         2026-01-29T17:19:35Z                                       #
+#  Redacted:         2026-01-29T17:44:21Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -20,7 +20,7 @@ Host OS Security Verification
 ==============================
 Timestamp: 2026-01-29T[REDACTED]Z
 Host: [REDACTED]
-Toolkit: Security Verification Toolkit v1.15.1-1-gccc9dc4 (ccc9dc4)
+Toolkit: Security Verification Toolkit v1.15.2-4-gbff6765 (bff6765)
 Source: https://[REDACTED]/brucedombrowski/Security
 
 Running security configuration checks...

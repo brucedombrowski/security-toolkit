@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    35be6cfa10ff6783...                                       #
+#  Source SHA256:    5174b09d0633efd2...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    4504dce3b3744c10...                                       #
-#  Redacted:         2026-01-29T17:19:35Z                                       #
+#  Redacted:         2026-01-29T17:44:21Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,7 +19,7 @@
 PII Verification Scan
 =====================
 Timestamp: 2026-01-29T[REDACTED]Z
-Toolkit: Security Verification Toolkit v1.15.1-1-gccc9dc4 (ccc9dc4)
+Toolkit: Security Verification Toolkit v1.15.2-4-gbff6765 (bff6765)
 Target: /Users/[REDACTED]
 Repository: Security
 
@@ -46,8 +46,8 @@ Checking: US Phone Numbers (dashed)
 /Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]if echo "555-123-4567" | grep -qE "$PHONE_PATTERN"; then
 /Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]test_start "Detect 555-123-4567"
 /Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]if echo "555-123-4567" | grep -qE "$PHONE_PATTERN"; then
-/Users/[REDACTED] "Detect 555-123-4567"
-/Users/[REDACTED] echo "555-123-4567" | grep -qE "$PHONE_PATTERN"; then
+/Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]test_start "Detect 555-123-4567"
+/Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]if echo "555-123-4567" | grep -qE "$PHONE_PATTERN"; then
   Result: REVIEW - 22 new match(es) found
   ... and 12 more
   (2 previously allowlisted)
@@ -60,8 +60,8 @@ Checking: US Phone Numbers (dotted)
 /Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]if echo "555.123.4567" | grep -qE "$PHONE_PATTERN"; then
 /Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]test_start "Detect 555.123.4567"
 /Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]if echo "555.123.4567" | grep -qE "$PHONE_PATTERN"; then
-/Users/[REDACTED] "Detect 555.123.4567"
-/Users/[REDACTED] echo "555.123.4567" | grep -qE "$PHONE_PATTERN"; then
+/Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]test_start "Detect 555.123.4567"
+/Users/[REDACTED] # Placeholder pattern (build-time substitution) # [REDACTED]if echo "555.123.4567" | grep -qE "$PHONE_PATTERN"; then
   Result: REVIEW - 22 new match(es) found
   ... and 12 more
   (2 previously allowlisted)
