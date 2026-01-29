@@ -73,9 +73,14 @@ if [ -n "$OUTPUT_FILE" ]; then
     chmod 600 "$OUTPUT_FILE" 2>/dev/null || true
     
     # Verify permissions were set correctly (NIST SP 800-171 AC-3)
-    file_mode=$(stat -f "%OLp" "$OUTPUT_FILE" 2>/dev/null || stat -c "%a" "$OUTPUT_FILE" 2>/dev/null)
-    if [ "$file_mode" != "600" ]; then
-        echo "WARNING: File permissions may not be fully restricted (mode: $file_mode, expected 600)" >&2
+    # Note: stat syntax differs between macOS (-f "%OLp") and Linux (-c "%a")
+    if [[ "$(uname)" == "Darwin" ]]; then
+        file_mode=$(stat -f "%OLp" "$OUTPUT_FILE" 2>/dev/null)
+    else
+        file_mode=$(stat -c "%a" "$OUTPUT_FILE" 2>/dev/null)
+    fi
+    if [ "${file_mode:-}" != "600" ]; then
+        echo "WARNING: File permissions may not be fully restricted (mode: ${file_mode:-unknown}, expected 600)" >&2
     fi
 fi
 

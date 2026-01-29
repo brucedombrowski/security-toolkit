@@ -36,6 +36,16 @@ trap "rm -rf '$TEST_DIR'" EXIT
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Helper function to get file permissions portably (macOS vs Linux)
+get_file_perms() {
+    local file="$1"
+    if [[ "$(uname)" == "Darwin" ]]; then
+        stat -f "%OLp" "$file" 2>/dev/null
+    else
+        stat -c "%a" "$file" 2>/dev/null
+    fi
+}
+
 echo "CUI Data Exposure Test Suite (CRITICAL-004)"
 echo "==========================================="
 echo "Test Directory: $TEST_DIR"
@@ -44,16 +54,8 @@ echo ""
 # TEST 1: File created with restricted permissions (600)
 echo -n "TEST 1: File permissions set to 600... "
 test_file="$TEST_DIR/inventory1.txt"
-# Run script, capturing stderr to temp file for debugging if it fails
-script_stderr="$TEST_DIR/stderr1.txt"
-if ! (cd "$TEST_DIR" && "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>"$script_stderr"); then
-    echo ""
-    echo "DEBUG: collect-host-inventory.sh failed with exit code $?"
-    echo "DEBUG: stderr output:"
-    cat "$script_stderr" 2>/dev/null || echo "(no stderr)"
-    exit 1
-fi
-file_perms=$(stat -f "%OLp" "$test_file" 2>/dev/null || stat -c "%a" "$test_file" 2>/dev/null)
+cd "$TEST_DIR" && "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>/dev/null
+file_perms=$(get_file_perms "$test_file")
 if [ "$file_perms" = "600" ]; then
     echo -e "${GREEN}PASS${NC}"
     ((TESTS_PASSED++))
@@ -70,7 +72,7 @@ test_file="$TEST_DIR/inventory2.txt"
     umask 0022
     "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>/dev/null
 )
-file_perms=$(stat -f "%OLp" "$test_file" 2>/dev/null || stat -c "%a" "$test_file" 2>/dev/null)
+file_perms=$(get_file_perms "$test_file")
 if [ "$file_perms" = "600" ]; then
     echo -e "${GREEN}PASS${NC}"
     ((TESTS_PASSED++))
@@ -120,7 +122,7 @@ fi
 echo -n "TEST 6: File not world-readable... "
 test_file="$TEST_DIR/inventory6.txt"
 "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>/dev/null
-file_perms=$(stat -f "%OLp" "$test_file" 2>/dev/null || stat -c "%a" "$test_file" 2>/dev/null)
+file_perms=$(get_file_perms "$test_file")
 # Check that 'other' (last digit) is 0
 if [ "${file_perms: -1}" = "0" ]; then
     echo -e "${GREEN}PASS${NC} (mode: $file_perms)"
@@ -134,7 +136,7 @@ fi
 echo -n "TEST 7: File not group-readable... "
 test_file="$TEST_DIR/inventory7.txt"
 "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>/dev/null
-file_perms=$(stat -f "%OLp" "$test_file" 2>/dev/null || stat -c "%a" "$test_file" 2>/dev/null)
+file_perms=$(get_file_perms "$test_file")
 # Check that 'group' (middle digit) is 0
 if [ "${file_perms:1:1}" = "0" ]; then
     echo -e "${GREEN}PASS${NC} (mode: $file_perms)"
@@ -148,7 +150,7 @@ fi
 echo -n "TEST 8: Owner has read/write permission... "
 test_file="$TEST_DIR/inventory8.txt"
 "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>/dev/null
-file_perms=$(stat -f "%OLp" "$test_file" 2>/dev/null || stat -c "%a" "$test_file" 2>/dev/null)
+file_perms=$(get_file_perms "$test_file")
 # Check that 'owner' (first digit) is 6 (rw)
 if [ "${file_perms:0:1}" = "6" ]; then
     echo -e "${GREEN}PASS${NC} (mode: $file_perms)"
