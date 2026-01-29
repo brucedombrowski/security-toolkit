@@ -44,11 +44,17 @@ if [ -f "$SCRIPT_DIR/lib/toolkit-info.sh" ]; then
     init_toolkit_info "$SECURITY_REPO_DIR"
 fi
 
+# Ensure toolkit variables have defaults (set -u safety)
+TOOLKIT_NAME="${TOOLKIT_NAME:-Security Verification Toolkit}"
+TOOLKIT_VERSION="${TOOLKIT_VERSION:-unknown}"
+TOOLKIT_COMMIT="${TOOLKIT_COMMIT:-unknown}"
+TOOLKIT_SOURCE="${TOOLKIT_SOURCE:-unknown}"
+
 # Use UTC for consistent timestamps across time zones
 TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 
-# Optional output file
-OUTPUT_FILE="$1"
+# Optional output file (use ${1:-} for set -u safety)
+OUTPUT_FILE="${1:-}"
 
 # Function to output (to file or stdout)
 output() {
@@ -147,10 +153,11 @@ if [[ "$(uname)" == "Darwin" ]]; then
 elif [[ "$(uname)" == "Linux" ]]; then
     output "  Platform: Linux"
     if [ -f /etc/os-release ]; then
+        # Source os-release and use safe defaults for set -u compatibility
         . /etc/os-release
-        output "  Distribution: $NAME"
-        output "  Version: $VERSION"
-        output "  Version ID: $VERSION_ID"
+        output "  Distribution: ${NAME:-unknown}"
+        output "  Version: ${VERSION:-unknown}"
+        output "  Version ID: ${VERSION_ID:-unknown}"
     fi
     output "  Kernel: $(uname -r)"
     output "  Architecture: $(uname -m)"
