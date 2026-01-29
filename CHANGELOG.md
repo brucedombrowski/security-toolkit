@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.3] - 2026-01-29
+
+### Changed
+
+- **Added Undefined Variable Checking**
+  - All 31 scripts now use `set -eu` instead of just `set -e`
+  - Catches typos in variable names at runtime
+  - Errors on uninitialized or missing variables
+  - Improves script robustness and debugging
+
 ## [1.17.2] - 2026-01-29
 
 ### Changed
@@ -460,6 +470,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 199 (Standards for Security Categorization)
 - FIPS 200 (Minimum Security Requirements)
 
+[1.17.3]: https://github.com/brucedombrowski/Security/releases/tag/v1.17.3
 [1.17.2]: https://github.com/brucedombrowski/Security/releases/tag/v1.17.2
 [1.17.1]: https://github.com/brucedombrowski/Security/releases/tag/v1.17.1
 [1.17.0]: https://github.com/brucedombrowski/Security/releases/tag/v1.17.0
