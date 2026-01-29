@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    02813578c1012ea4...                                       #
+#  Source SHA256:    4fbb8424f72969cf...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    d42c54e5d15a5782...                                       #
-#  Redacted:         2026-01-29T20:55:52Z                                       #
+#  Redacted:         2026-01-29T21:49:02Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,7 +19,7 @@
 PII Verification Scan
 =====================
 Timestamp: 2026-01-29T[REDACTED]Z
-Toolkit: Security Verification Toolkit v1.17.5-2-gcd4a28a (cd4a28a)
+Toolkit: Security Verification Toolkit v1.17.6-1-g1da4387 (1da4387)
 Target: /Users/[REDACTED]
 Repository: Security
 
@@ -31,13 +31,28 @@ Checking: US Phone Numbers (dotted)
   Result: PASS (0 matches)
 Checking: US Phone Numbers (parenthetical)
   Result: PASS (0 matches)
+Checking: International Phone Numbers
+  Result: PASS (0 matches)
 Checking: Social Security Numbers
   Result: PASS (0 matches)
-Checking: Credit Card Numbers (16 digit)
-  Result: PASS (4 allowlisted)
+Checking: Credit Card Numbers (Luhn validated)
+  /Users/[REDACTED] 0000000000000000 (Luhn valid)
+  /Users/[REDACTED] 0000000000000000 (Luhn valid)
+  /Users/[REDACTED] 0000000000000000 (Luhn valid)
+  /Users/[REDACTED] 0000000000000000 (Luhn valid)
+  /Users/[REDACTED] 5500000000000004 (Luhn valid)
+  /Users/[REDACTED] 0000000000000000 (Luhn valid)
+  /Users/[REDACTED] 0000000000000000 (Luhn valid)
+  /Users/[REDACTED] 0000000000000000 (Luhn valid)
+  /Users/[REDACTED] 0000000000000000 (Luhn valid)
+  /Users/[REDACTED] 0000000000000000 (Luhn valid)
+  Result: REVIEW - 13 valid card(s) found (4 filtered by Luhn)
 
 =====================
 Allowlist: /Users/[REDACTED] (74 entries)
 
-OVERALL RESULT: PASS
-No PII patterns detected.
+OVERALL RESULT: REVIEW REQUIRED
+Potential PII patterns detected. Manual review required.
+
+Run with -i flag for interactive review:
+  /Users/[REDACTED] -i /Users/[REDACTED]
