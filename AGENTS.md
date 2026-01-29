@@ -17,28 +17,53 @@ This repository contains security analysis and compliance documentation tools fo
 
 ```
 Security/
-├── README.md           # Usage documentation
-├── AGENTS.md           # This file (AI agent instructions)
-├── CHANGELOG.md        # Version history
-├── LICENSE             # MIT License
-├── .gitignore          # Excludes .scans/, .assessments/, and result files
+├── README.md                    # Usage documentation
+├── AGENTS.md                    # This file (AI agent instructions)
+├── CLAUDE.md                    # Claude Code guidance
+├── CHANGELOG.md                 # Version history
+├── INSTALLATION.md              # Platform-specific setup
+├── SECURITY.md                  # Vulnerability reporting
+├── LICENSE                      # MIT License
+├── .gitignore                   # Excludes .scans/, .assessments/, CUI, secrets
 ├── scripts/
 │   ├── run-all-scans.sh         # Master orchestrator (inventory + scans + PDF)
-│   ├── collect-host-inventory.sh # System inventory (SENSITIVE: MAC addresses, etc.)
+│   ├── release.sh               # Release workflow automation
+│   ├── collect-host-inventory.sh # System inventory (CUI: MAC addresses, etc.)
+│   ├── Collect-HostInventory.ps1 # Windows PowerShell inventory
 │   ├── check-pii.sh             # PII pattern detection
-│   ├── check-malware.sh         # ClamAV malware scanning (with DB auto-update)
+│   ├── check-malware.sh         # ClamAV malware scanning
 │   ├── check-secrets.sh         # Secrets/credentials detection
 │   ├── check-mac-addresses.sh   # IEEE 802.3 MAC address scan
 │   ├── check-host-security.sh   # Host OS security verification
-│   ├── scan-vulnerabilities.sh  # Comprehensive vuln scanning (Nmap/OpenVAS/Lynis)
-│   ├── secure-delete.sh         # NIST SP 800-88 secure file deletion
-│   └── purge-git-history.sh     # Remove sensitive files from git history
+│   ├── check-kev.sh             # CISA KEV catalog cross-reference
+│   ├── scan-vulnerabilities.sh  # Vuln scanning (Nmap/OpenVAS/Lynis)
+│   ├── harden-system.sh         # System hardening (macOS/Linux)
+│   ├── secure-delete.sh         # NIST SP 800-88 secure deletion
+│   ├── purge-git-history.sh     # Remove sensitive files from git
+│   ├── pre-scan-cleanup.sh      # BleachBit cleanup before scans
+│   ├── generate-compliance.sh   # Compliance statement PDF
+│   ├── generate-scan-attestation.sh # PDF attestation from scan results
+│   ├── redact-examples.sh       # Strip sensitive data for examples
+│   ├── backup-guidance.sh       # Backup verification guidance
+│   └── lib/
+│       ├── audit-log.sh         # JSON Lines audit logging (AU-2/AU-3)
+│       ├── progress.sh          # Spinners, progress bars, ETA
+│       └── timestamps.sh        # ISO 8601 UTC timestamps
 ├── templates/
-│   ├── scan_attestation.tex         # Generic attestation LaTeX template
-│   ├── security_compliance_statement.tex  # Project-specific compliance template
-│   └── logo.png                     # Logo for PDF headers
-├── .scans/             # Raw scan output (gitignored, auto-generated)
-└── .assessments/       # Security assessment reports (gitignored, PRIVATE)
+│   ├── scan_attestation.tex     # Generic attestation LaTeX template
+│   ├── security_compliance_statement.tex  # Compliance template
+│   └── logo.png                 # Logo for PDF headers
+├── tests/                       # Unit tests for patterns and libraries
+├── docs/                        # Additional documentation
+│   ├── COMPLIANCE.md            # NIST control mapping
+│   ├── MAINTENANCE.md           # Maintenance schedules
+│   ├── THREAT-INTELLIGENCE.md   # CISA KEV, DHS MARs integration
+│   └── false-positives-macos.md # macOS-specific guidance
+├── examples/                    # Redacted example outputs
+├── .scans/                      # Raw scan output (gitignored)
+├── .assessments/                # Security assessments (gitignored, PRIVATE)
+├── .allowlists/                 # Reviewed exceptions with SHA256 hashes
+└── .cache/                      # Threat intelligence cache (KEV catalog)
 ```
 
 ## Script Design Patterns

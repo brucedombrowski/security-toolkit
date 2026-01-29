@@ -117,8 +117,8 @@ Location: `scripts/check-pii.sh`
 **Update Process:**
 1. Document the new pattern requirement
 2. Add pattern to `check-pii.sh`
-3. Add test case to `tests/test-check-pii.sh`
-4. Run tests: `./tests/test-check-pii.sh`
+3. Add test case to `tests/test-pii-patterns.sh`
+4. Run tests: `./tests/test-pii-patterns.sh`
 5. Update examples with `./scripts/redact-examples.sh`
 
 **Current Patterns:**

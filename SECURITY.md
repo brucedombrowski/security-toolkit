@@ -5,7 +5,8 @@
 If you discover a security vulnerability in the Security Verification Toolkit,
 please **DO NOT** open a public GitHub issue or discussion.
 
-Instead, please open a GitHub issue with the label `security` (we will make it private promptly).
+Instead, please report via GitHub Security Advisories:
+https://github.com/brucedombrowski/Security/security/advisories/new
 
 ## What to Include
 
@@ -36,7 +37,7 @@ When reporting a security vulnerability, please provide:
 
 We follow coordinated vulnerability disclosure:
 
-1. **Day 0:** You report vulnerability via email
+1. **Day 0:** You report vulnerability via GitHub Security Advisory
 2. **Day 1:** We acknowledge receipt and assign severity level
 3. **Day 7:** We provide initial assessment or request clarification
 4. **Day 30:** We provide patch/workaround or timeline to fix
@@ -110,12 +111,12 @@ you're welcome to publish details, blog posts, or conference presentations.
 
 ## Security Contact
 
-- **GitHub Issues:** https://github.com/brucedombrowski/Security/issues (use `security` label)
+- **GitHub Security Advisories:** https://github.com/brucedombrowski/Security/security/advisories/new
 
 ## Related Documents
 
 - [AGENTS.md](./AGENTS.md) - Security toolkit architecture
-- [COMPLIANCE.md](./COMPLIANCE.md) - Compliance framework
+- [docs/COMPLIANCE.md](./docs/COMPLIANCE.md) - Compliance framework
 - [docs/false-positives-macos.md](./docs/false-positives-macos.md) - macOS security notes
 
 ---

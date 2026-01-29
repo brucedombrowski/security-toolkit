@@ -100,6 +100,6 @@ JSON Lines format with ISO 8601 UTC timestamps. Maintain schema compatibility fo
 ## Key Documentation
 
 - [AGENTS.md](AGENTS.md) - Full architecture, templates, security model
-- [COMPLIANCE.md](COMPLIANCE.md) - NIST control mapping details
+- [docs/COMPLIANCE.md](docs/COMPLIANCE.md) - NIST control mapping details
 - [INSTALLATION.md](INSTALLATION.md) - Platform-specific setup
 - [docs/THREAT-INTELLIGENCE.md](docs/THREAT-INTELLIGENCE.md) - CISA KEV integration

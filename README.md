@@ -14,8 +14,8 @@ IT security analysis and compliance documentation tools for software projects.
 |----------|-------------|
 | [INSTALLATION.md](INSTALLATION.md) | Setup and prerequisites |
 | [AGENTS.md](AGENTS.md) | Toolkit architecture |
-| [COMPLIANCE.md](COMPLIANCE.md) | NIST control mapping |
-| [MAINTENANCE.md](MAINTENANCE.md) | Maintenance schedules and procedures |
+| [docs/COMPLIANCE.md](docs/COMPLIANCE.md) | NIST control mapping |
+| [docs/MAINTENANCE.md](docs/MAINTENANCE.md) | Maintenance schedules and procedures |
 | [SECURITY.md](SECURITY.md) | Vulnerability reporting |
 | [docs/THREAT-INTELLIGENCE.md](docs/THREAT-INTELLIGENCE.md) | CISA KEV, DHS MARs, NASA SOC-MARs integration |
 | [docs/false-positives-macos.md](docs/false-positives-macos.md) | macOS-specific guidance |
@@ -126,7 +126,7 @@ Generate a formal security compliance statement PDF for a project:
 ./scripts/generate-compliance.sh /path/to/project /path/to/output
 ```
 
-See [COMPLIANCE.md](COMPLIANCE.md) for detailed documentation on the compliance workflow.
+See [docs/COMPLIANCE.md](docs/COMPLIANCE.md) for detailed documentation on the compliance workflow.
 
 ### Vulnerability Scanning
 
