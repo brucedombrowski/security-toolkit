@@ -220,16 +220,22 @@ for file in "$SOURCE_DIR"/*-scan-*.txt; do
 done
 
 # Process consolidated report
-if [ -f "$SOURCE_DIR/security-scan-report-"*.txt ]; then
-    redact_file "$SOURCE_DIR/security-scan-report-"*.txt "$OUTPUT_DIR/security-scan-report-EXAMPLE.txt"
-    echo "Created: $OUTPUT_DIR/security-scan-report-EXAMPLE.txt"
-fi
+for report in "$SOURCE_DIR"/security-scan-report-*.txt; do
+    if [ -f "$report" ]; then
+        redact_file "$report" "$OUTPUT_DIR/security-scan-report-EXAMPLE.txt"
+        echo "Created: $OUTPUT_DIR/security-scan-report-EXAMPLE.txt"
+        break
+    fi
+done
 
 # Process host inventory if present
-if [ -f "$SOURCE_DIR/host-inventory-"*.txt ]; then
-    redact_file "$SOURCE_DIR/host-inventory-"*.txt "$OUTPUT_DIR/host-inventory-EXAMPLE.txt"
-    echo "Created: $OUTPUT_DIR/host-inventory-EXAMPLE.txt"
-fi
+for inventory in "$SOURCE_DIR"/host-inventory-*.txt; do
+    if [ -f "$inventory" ]; then
+        redact_file "$inventory" "$OUTPUT_DIR/host-inventory-EXAMPLE.txt"
+        echo "Created: $OUTPUT_DIR/host-inventory-EXAMPLE.txt"
+        break
+    fi
+done
 
 # Copy scan attestation PDF if present
 # Note: PDF attestation is UNCLASSIFIED - it contains:

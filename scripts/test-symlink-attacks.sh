@@ -126,7 +126,6 @@ mkdir -p "$test_dir"
 echo "content" > "$test_dir/file.txt"
 ln -s "/nonexistent/target" "$test_dir/broken_link" 2>/dev/null || true
 file_count=$(find "$test_dir" -type f -not -type l 2>/dev/null | wc -l)
-error_output=$(find "$test_dir" -type f -not -type l 2>&1 | wc -l)
 if [ "$file_count" -eq 1 ]; then
     echo -e "${GREEN}PASS${NC}"
     ((TESTS_PASSED++))
