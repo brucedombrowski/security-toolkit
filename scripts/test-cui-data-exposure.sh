@@ -54,8 +54,18 @@ echo ""
 # TEST 1: File created with restricted permissions (600)
 echo -n "TEST 1: File permissions set to 600... "
 test_file="$TEST_DIR/inventory1.txt"
-cd "$TEST_DIR" && "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>/dev/null
+# Run script with error capture for debugging
+if ! (cd "$TEST_DIR" && "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file") 2>&1 | head -20; then
+    echo "DEBUG: Script returned non-zero"
+fi
+# Verify file was created
+if [ ! -f "$test_file" ]; then
+    echo "DEBUG: File not created: $test_file"
+    ls -la "$TEST_DIR"
+    exit 1
+fi
 file_perms=$(get_file_perms "$test_file")
+echo "DEBUG: file_perms=$file_perms"
 if [ "$file_perms" = "600" ]; then
     echo -e "${GREEN}PASS${NC}"
     ((TESTS_PASSED++))
