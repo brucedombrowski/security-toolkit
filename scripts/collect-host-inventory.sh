@@ -969,12 +969,13 @@ if [[ "$(uname)" == "Darwin" ]]; then
 
 elif [[ "$(uname)" == "Linux" ]]; then
     # Chrome - check command, snap, flatpak, package managers
-    chrome_ver=$(find_linux_browser "Chrome" "google-chrome" "chromium" "com.google.Chrome" "google-chrome" "google-chrome")
+    # Note: || true prevents set -e from exiting when browser not found
+    chrome_ver=$(find_linux_browser "Chrome" "google-chrome" "chromium" "com.google.Chrome" "google-chrome" "google-chrome" || true)
     if [ -z "$chrome_ver" ]; then
         # Also try chromium variants
-        chrome_ver=$(find_linux_browser "Chromium" "chromium" "chromium" "" "chromium" "chromium")
+        chrome_ver=$(find_linux_browser "Chromium" "chromium" "chromium" "" "chromium" "chromium" || true)
         if [ -z "$chrome_ver" ]; then
-            chrome_ver=$(find_linux_browser "Chromium" "chromium-browser" "" "" "" "")
+            chrome_ver=$(find_linux_browser "Chromium" "chromium-browser" "" "" "" "" || true)
         fi
     fi
     if [ -n "$chrome_ver" ]; then
@@ -984,7 +985,7 @@ elif [[ "$(uname)" == "Linux" ]]; then
     fi
 
     # Firefox - check command, snap, flatpak, package managers
-    firefox_ver=$(find_linux_browser "Firefox" "firefox" "firefox" "org.mozilla.firefox" "firefox" "firefox")
+    firefox_ver=$(find_linux_browser "Firefox" "firefox" "firefox" "org.mozilla.firefox" "firefox" "firefox" || true)
     if [ -n "$firefox_ver" ]; then
         output "  Firefox: $firefox_ver"
     else
@@ -992,9 +993,9 @@ elif [[ "$(uname)" == "Linux" ]]; then
     fi
 
     # Edge - check command and package managers
-    edge_ver=$(find_linux_browser "Edge" "microsoft-edge" "" "" "microsoft-edge" "microsoft-edge")
+    edge_ver=$(find_linux_browser "Edge" "microsoft-edge" "" "" "microsoft-edge" "microsoft-edge" || true)
     if [ -z "$edge_ver" ]; then
-        edge_ver=$(find_linux_browser "Edge" "microsoft-edge-stable" "" "" "" "")
+        edge_ver=$(find_linux_browser "Edge" "microsoft-edge-stable" "" "" "" "" || true)
     fi
     if [ -n "$edge_ver" ]; then
         output "  Edge: $edge_ver"
@@ -1003,7 +1004,7 @@ elif [[ "$(uname)" == "Linux" ]]; then
     fi
 
     # Brave - check command, snap, flatpak, package managers
-    brave_ver=$(find_linux_browser "Brave" "brave-browser" "brave" "com.brave.Browser" "brave-browser" "brave-browser")
+    brave_ver=$(find_linux_browser "Brave" "brave-browser" "brave" "com.brave.Browser" "brave-browser" "brave-browser" || true)
     if [ -n "$brave_ver" ]; then
         output "  Brave: $brave_ver"
     else
@@ -1011,7 +1012,7 @@ elif [[ "$(uname)" == "Linux" ]]; then
     fi
 
     # Opera - check command, snap, flatpak, package managers
-    opera_ver=$(find_linux_browser "Opera" "opera" "opera" "com.opera.Opera" "opera" "opera")
+    opera_ver=$(find_linux_browser "Opera" "opera" "opera" "com.opera.Opera" "opera" "opera" || true)
     if [ -n "$opera_ver" ]; then
         output "  Opera: $opera_ver"
     else
@@ -1019,9 +1020,9 @@ elif [[ "$(uname)" == "Linux" ]]; then
     fi
 
     # Vivaldi - check command and package managers
-    vivaldi_ver=$(find_linux_browser "Vivaldi" "vivaldi" "vivaldi" "com.vivaldi.Vivaldi" "vivaldi" "vivaldi")
+    vivaldi_ver=$(find_linux_browser "Vivaldi" "vivaldi" "vivaldi" "com.vivaldi.Vivaldi" "vivaldi" "vivaldi" || true)
     if [ -z "$vivaldi_ver" ]; then
-        vivaldi_ver=$(find_linux_browser "Vivaldi" "vivaldi-stable" "" "" "" "")
+        vivaldi_ver=$(find_linux_browser "Vivaldi" "vivaldi-stable" "" "" "" "" || true)
     fi
     if [ -n "$vivaldi_ver" ]; then
         output "  Vivaldi: $vivaldi_ver"
