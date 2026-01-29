@@ -29,6 +29,46 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Exclusion config file
+PII_EXCLUDE_FILE=""
+
+# Build find exclusion arguments from .pii-exclude file
+build_exclusions() {
+    local target_dir="$1"
+    local exclude_file="$target_dir/.pii-exclude"
+    local exclusions=""
+
+    if [ -f "$exclude_file" ]; then
+        PII_EXCLUDE_FILE="$exclude_file"
+        while IFS= read -r line || [ -n "$line" ]; do
+            # Skip comments and empty lines
+            [[ "$line" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "${line// }" ]] && continue
+
+            # Trim whitespace
+            line="${line#"${line%%[![:space:]]*}"}"
+            line="${line%"${line##*[![:space:]]}"}"
+
+            # Directory patterns (end with /)
+            if [[ "$line" == */ ]]; then
+                local dir="${line%/}"
+                exclusions="$exclusions -not -path \"*/$dir/*\""
+            # File patterns (contain *)
+            elif [[ "$line" == *"*"* ]]; then
+                exclusions="$exclusions -not -name \"$line\""
+            # Plain names (could be file or dir)
+            else
+                exclusions="$exclusions -not -path \"*/$line/*\" -not -name \"$line\""
+            fi
+        done < "$exclude_file"
+    else
+        # Fallback defaults if no config file
+        exclusions="-not -path \"*/.git/*\" -not -path \"*/.scans/*\""
+    fi
+
+    echo "$exclusions"
+}
+
 # Source audit logging library
 if [ -f "$SCRIPT_DIR/lib/audit-log.sh" ]; then
     source "$SCRIPT_DIR/lib/audit-log.sh"
@@ -361,23 +401,13 @@ run_check() {
 
     # Run grep, capture output
     # CRITICAL-003: Protection against symlink attacks - use find to exclude symlinks, add per-file timeout
+    # Exclusions loaded from .pii-exclude config file
     local results=""
-    results=$(find "$TARGET_DIR" \
-        -type f \
-        -not -type l \
-        -not -path "*/.git/*" \
-        -not -path "*/node_modules/*" \
-        -not -path "*/venv/*" \
-        -not -path "*/.venv/*" \
-        -not -path "*/__pycache__/*" \
-        -not -path "*/.scans/*" \
-        -not -path "*/obj/*" \
-        -not -path "*/bin/*" \
-        -not -path "*/publish/*" \
-        -not -name "*Scan-Results.md" \
-        -not -name "check-*.sh" \
-        -not -name ".pii-allowlist" \
-        2>/dev/null | while read -r file; do
+    local exclusions
+    exclusions=$(build_exclusions "$TARGET_DIR")
+
+    # Build and execute find command with exclusions
+    results=$(eval "find \"$TARGET_DIR\" -type f -not -type l $exclusions 2>/dev/null" | while read -r file; do
         $TIMEOUT_CMD grep -H -n -E "$pattern" "$file" 2>/dev/null || true
     done || true)
 
@@ -495,8 +525,12 @@ fi
 if [ -f "$ALLOWLIST_FILE" ]; then
     ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$ALLOWLIST_FILE" 2>/dev/null || echo "0")
     echo "Allowlist: $ALLOWLIST_FILE ($ALLOWLIST_COUNT entries)"
-    echo ""
 fi
+if [ -n "$PII_EXCLUDE_FILE" ] && [ -f "$PII_EXCLUDE_FILE" ]; then
+    EXCLUDE_COUNT=$(grep -cvE "^[[:space:]]*#|^[[:space:]]*$" "$PII_EXCLUDE_FILE" 2>/dev/null || echo "0")
+    echo "Exclusions: $PII_EXCLUDE_FILE ($EXCLUDE_COUNT patterns)"
+fi
+echo ""
 
 if [ $FOUND_ISSUES -eq 0 ]; then
     echo "OVERALL RESULT: PASS"

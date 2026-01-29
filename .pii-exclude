@@ -1,0 +1,33 @@
+# PII Scan Exclusions
+# Lines starting with # are comments
+# One pattern per line, directory patterns end with /
+
+# Version control & dependencies
+.git/
+node_modules/
+venv/
+.venv/
+__pycache__/
+
+# Scan artifacts (already reviewed/allowlisted)
+.scans/
+.allowlists/
+.cache/
+
+# Documentation (contains example IPs, placeholder data)
+.assessments/
+docs/
+examples/
+
+# Test files (contain intentional test patterns)
+tests/
+
+# Build outputs
+obj/
+bin/
+publish/
+
+# Specific files
+*Scan-Results.md
+check-*.sh
+.pii-allowlist
