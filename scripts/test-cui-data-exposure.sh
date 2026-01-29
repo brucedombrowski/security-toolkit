@@ -54,24 +54,14 @@ echo ""
 # TEST 1: File created with restricted permissions (600)
 echo -n "TEST 1: File permissions set to 600... "
 test_file="$TEST_DIR/inventory1.txt"
-# Run script with error capture for debugging
-if ! (cd "$TEST_DIR" && "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file") 2>&1 | head -20; then
-    echo "DEBUG: Script returned non-zero"
-fi
-# Verify file was created
-if [ ! -f "$test_file" ]; then
-    echo "DEBUG: File not created: $test_file"
-    ls -la "$TEST_DIR"
-    exit 1
-fi
+cd "$TEST_DIR" && "$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>/dev/null
 file_perms=$(get_file_perms "$test_file")
-echo "DEBUG: file_perms=$file_perms"
 if [ "$file_perms" = "600" ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (permissions: $file_perms, expected 600)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 2: Explicit chmod applied (umask override)
@@ -85,10 +75,10 @@ test_file="$TEST_DIR/inventory2.txt"
 file_perms=$(get_file_perms "$test_file")
 if [ "$file_perms" = "600" ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (global umask not overridden: $file_perms)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 3: CUI header present in file
@@ -98,10 +88,10 @@ test_file="$TEST_DIR/inventory3.txt"
 header_check=$(head -5 "$test_file" | grep -i "CONTROLLED UNCLASSIFIED INFORMATION" || true)
 if [ -n "$header_check" ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (CUI header not found)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 4: CUI warning displayed to console (stderr)
@@ -110,10 +100,10 @@ test_file="$TEST_DIR/inventory4.txt"
 warning_output=$("$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>&1 1>/dev/null | grep -i "SECURITY WARNING" || true)
 if [ -n "$warning_output" ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (warning not displayed to stderr)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 5: Warning includes handling requirements
@@ -122,10 +112,10 @@ test_file="$TEST_DIR/inventory5.txt"
 warning_output=$("$SCRIPT_DIR/collect-host-inventory.sh" "$test_file" 2>&1 1>/dev/null | grep -i "REQUIRED HANDLING" || true)
 if [ -n "$warning_output" ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (handling requirements not in warning)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 6: File not world-readable
@@ -136,10 +126,10 @@ file_perms=$(get_file_perms "$test_file")
 # Check that 'other' (last digit) is 0
 if [ "${file_perms: -1}" = "0" ]; then
     echo -e "${GREEN}PASS${NC} (mode: $file_perms)"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (other readable: $file_perms)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 7: File not group-readable
@@ -150,10 +140,10 @@ file_perms=$(get_file_perms "$test_file")
 # Check that 'group' (middle digit) is 0
 if [ "${file_perms:1:1}" = "0" ]; then
     echo -e "${GREEN}PASS${NC} (mode: $file_perms)"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (group readable: $file_perms)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 8: File owner has read/write
@@ -164,10 +154,10 @@ file_perms=$(get_file_perms "$test_file")
 # Check that 'owner' (first digit) is 6 (rw)
 if [ "${file_perms:0:1}" = "6" ]; then
     echo -e "${GREEN}PASS${NC} (mode: $file_perms)"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (owner permissions wrong: $file_perms)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # Summary

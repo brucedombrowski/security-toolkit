@@ -58,10 +58,10 @@ echo "content2" > "$test_dir/file2.txt"
 file_count=$(find "$test_dir" -type f -not -type l 2>/dev/null | wc -l)
 if [ "$file_count" -eq 2 ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (expected 2 files, got $file_count)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 2: Symlinks are ignored (core protection)
@@ -74,10 +74,10 @@ file_count=$(find "$test_dir" -type f -not -type l 2>/dev/null | wc -l)
 symlink_count=$(find "$test_dir" -type l 2>/dev/null | wc -l)
 if [ "$file_count" -eq 1 ] && [ "$symlink_count" -eq 1 ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (expected 1 file + 1 symlink, got $file_count files + $symlink_count symlinks)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 3: Symlink to large file handled with timeout
@@ -94,10 +94,10 @@ end_time=$(date +%s)
 elapsed=$((end_time - start_time))
 if [ $elapsed -lt 2 ]; then
     echo -e "${GREEN}PASS${NC} (completed in ${elapsed}s)"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (timeout or too slow: ${elapsed}s)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 4: Symlink to /dev/zero is safe (not followed)
@@ -113,10 +113,10 @@ end_time=$(date +%s)
 elapsed=$((end_time - start_time))
 if [ $elapsed -lt 3 ]; then
     echo -e "${GREEN}PASS${NC} (completed in ${elapsed}s, not blocked)"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (potential infinite read: ${elapsed}s)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 5: Broken symlinks handled gracefully
@@ -128,10 +128,10 @@ ln -s "/nonexistent/target" "$test_dir/broken_link" 2>/dev/null || true
 file_count=$(find "$test_dir" -type f -not -type l 2>/dev/null | wc -l)
 if [ "$file_count" -eq 1 ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (expected 1 file, got $file_count)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 6: Depth limiting (find with -maxdepth)
@@ -145,10 +145,10 @@ shallow_count=$(find "$test_dir" -maxdepth 2 -type f -not -type l 2>/dev/null | 
 deep_count=$(find "$test_dir" -type f -not -type l 2>/dev/null | wc -l)
 if [ "$shallow_count" -lt "$deep_count" ]; then
     echo -e "${GREEN}PASS${NC} (shallow: $shallow_count, all: $deep_count)"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (depth limit ineffective)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 7: Symlink to /etc directory ignored
@@ -163,10 +163,10 @@ file_count=$(find "$test_dir" -type f -not -type l 2>/dev/null | wc -l)
 symlink_count=$(find "$test_dir" -type l -name "etc_link" 2>/dev/null | wc -l)
 if [ "$file_count" -eq 1 ] && [ "$symlink_count" -eq 1 ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (files: $file_count, symlinks: $symlink_count)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 8: Mixed content (files + symlinks + directories)
@@ -182,10 +182,10 @@ file_count=$(find "$test_dir" -type f -not -type l 2>/dev/null | wc -l)
 symlink_count=$(find "$test_dir" -type l 2>/dev/null | wc -l)
 if [ "$file_count" -eq 2 ] && [ "$symlink_count" -eq 2 ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC} (files: $file_count, symlinks: $symlink_count)"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # Summary

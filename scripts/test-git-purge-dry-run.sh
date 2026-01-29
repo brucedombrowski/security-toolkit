@@ -65,10 +65,10 @@ setup_test_repo "$test_repo"
 output=$(cd "$test_repo" && "$SCRIPT_DIR/purge-git-history.sh" "secrets.json" 2>&1)
 if echo "$output" | grep -q "DRY-RUN MODE" && echo "$output" | grep -q "secrets.json"; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 2: Without --execute, runs dry-run only
@@ -80,10 +80,10 @@ output=$(cd "$test_repo" && "$SCRIPT_DIR/purge-git-history.sh" "secrets.json" 2>
 new_commits=$(git -C "$test_repo" log --all --oneline | wc -l)
 if echo "$output" | grep -q "DRY-RUN" && [ "$original_commits" -eq "$new_commits" ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 3: Confirmation 'no' cancels purge
@@ -95,10 +95,10 @@ output=$(echo "no" | (cd "$test_repo" && "$SCRIPT_DIR/purge-git-history.sh" --ex
 new_commits=$(git -C "$test_repo" log --all --oneline | wc -l)
 if echo "$output" | grep -q "cancelled" && [ "$original_commits" -eq "$new_commits" ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 4: Confirmation case-sensitive
@@ -110,10 +110,10 @@ output=$(echo "YES" | (cd "$test_repo" && "$SCRIPT_DIR/purge-git-history.sh" --e
 new_commits=$(git -C "$test_repo" log --all --oneline | wc -l)
 if echo "$output" | grep -q "cancelled" && [ "$original_commits" -eq "$new_commits" ]; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 5: Dry-run displays file count
@@ -123,10 +123,10 @@ setup_test_repo "$test_repo"
 output=$(cd "$test_repo" && "$SCRIPT_DIR/purge-git-history.sh" "secrets.json" 2>&1)
 if echo "$output" | grep -q "Total files"; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 6: Audit log created on execute
@@ -136,10 +136,10 @@ setup_test_repo "$test_repo"
 output=$(echo "yes" | (cd "$test_repo" && "$SCRIPT_DIR/purge-git-history.sh" --execute "secrets.json" 2>&1) || true)
 if [ -f "$test_repo/.git/PURGE_LOG.txt" ] && grep -q "Purged" "$test_repo/.git/PURGE_LOG.txt"; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 7: Multiple patterns supported
@@ -149,10 +149,10 @@ setup_test_repo "$test_repo"
 output=$(cd "$test_repo" && "$SCRIPT_DIR/purge-git-history.sh" "secrets.json" ".env" 2>&1)
 if echo "$output" | grep -q "secrets.json" && echo "$output" | grep -q ".env"; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 8: No files found handled gracefully
@@ -162,10 +162,10 @@ setup_test_repo "$test_repo"
 output=$(cd "$test_repo" && "$SCRIPT_DIR/purge-git-history.sh" "nonexistent-file.txt" 2>&1)
 if echo "$output" | grep -q "Nothing to purge"; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 9: Rollback instructions provided (on execute)
@@ -175,10 +175,10 @@ setup_test_repo "$test_repo"
 output=$(echo "yes" | (cd "$test_repo" && "$SCRIPT_DIR/purge-git-history.sh" --execute "secrets.json" 2>&1) || true)
 if echo "$output" | grep -q "IF YOU NEED TO UNDO"; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # TEST 10: Dry-run shows --execute command
@@ -188,10 +188,10 @@ setup_test_repo "$test_repo"
 output=$(cd "$test_repo" && "$SCRIPT_DIR/purge-git-history.sh" "secrets.json" 2>&1)
 if echo "$output" | grep -q "execute" || echo "$output" | grep -q "DRY-RUN"; then
     echo -e "${GREEN}PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 else
     echo -e "${RED}FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
 
 # Summary
