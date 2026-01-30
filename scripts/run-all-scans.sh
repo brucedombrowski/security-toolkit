@@ -434,8 +434,8 @@ run_scan() {
 }
 
 # Run all scans with NIST control references
-# Total scans: 6 (5 standard + 1 vulnerability)
-TOTAL_SCANS=6
+# Total scans: 7 (5 standard + 1 NVD CVE + 1 vulnerability)
+TOTAL_SCANS=7
 CURRENT_SCAN=0
 
 # Start overall progress tracking
@@ -477,6 +477,14 @@ run_scan "IEEE 802.3 MAC Address Scan" \
     "NIST 800-53: SC-8 (Transmission Confidentiality)" \
     "mac-address-scan-$FILE_TIMESTAMP.txt" \
     "MAC_RESULT" "MAC_FINDINGS"
+
+CURRENT_SCAN=$((CURRENT_SCAN + 1))
+[ "$PROGRESS_AVAILABLE" -eq 1 ] && progress_step $CURRENT_SCAN $TOTAL_SCANS "NVD CVE Vulnerability Lookup"
+run_scan "NVD CVE Vulnerability Lookup" \
+    "$SCRIPT_DIR/check-nvd-cves.sh --offline -i $SCANS_DIR/host-inventory-$FILE_TIMESTAMP.txt" \
+    "NIST 800-53: RA-5 (Vulnerability Monitoring), SI-2 (Flaw Remediation)" \
+    "nvd-cve-scan-$FILE_TIMESTAMP.txt" \
+    "NVD_RESULT" "NVD_FINDINGS"
 
 CURRENT_SCAN=$((CURRENT_SCAN + 1))
 [ "$PROGRESS_AVAILABLE" -eq 1 ] && progress_step $CURRENT_SCAN $TOTAL_SCANS "Host Security Configuration"
