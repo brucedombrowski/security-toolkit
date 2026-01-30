@@ -26,6 +26,43 @@ jobs:
           scandir: './tests'
           severity: error
 
+  syntax-check:
+    name: Bash Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check script syntax
+        run: |
+          errors=0
+          echo "Checking scripts..."
+          for script in scripts/*.sh; do
+            if ! bash -n "$script" 2>&1; then
+              echo "Syntax error in $script"
+              errors=$((errors + 1))
+            fi
+          done
+          echo "Checking lib..."
+          for script in scripts/lib/*.sh scripts/lib/*/*.sh 2>/dev/null; do
+            if [ -f "$script" ] && ! bash -n "$script" 2>&1; then
+              echo "Syntax error in $script"
+              errors=$((errors + 1))
+            fi
+          done
+          echo "Checking tests..."
+          for script in tests/*.sh; do
+            if ! bash -n "$script" 2>&1; then
+              echo "Syntax error in $script"
+              errors=$((errors + 1))
+            fi
+          done
+          if [ $errors -gt 0 ]; then
+            echo "Found $errors syntax errors"
+            exit 1
+          fi
+          echo "All scripts passed syntax check"
+
   test-ubuntu:
     name: Tests (Ubuntu)
     runs-on: ubuntu-latest
@@ -41,22 +78,20 @@ jobs:
       - name: Update ClamAV database
         run: |
           sudo systemctl stop clamav-freshclam || true
-          sudo freshclam || true
+          sudo freshclam || echo "ClamAV update failed (non-critical)"
 
-      - name: Run test suites
-        run: |
-          chmod +x scripts/*.sh tests/*.sh
-          for test in scripts/test-*.sh; do
-            echo "=== Running $test ==="
-            bash "$test"
-          done
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh tests/*.sh
 
-      - name: Run pattern tests
+      - name: Run all unit tests
+        run: ./tests/run-all-tests.sh
+
+      - name: Run integration tests
         run: |
-          for test in tests/test-*.sh; do
-            echo "=== Running $test ==="
-            bash "$test"
-          done
+          if [ -f ./tests/test-integration-advanced.sh ]; then
+            chmod +x ./tests/test-integration-advanced.sh
+            ./tests/test-integration-advanced.sh
+          fi
 
   test-macos:
     name: Tests (macOS)
@@ -68,44 +103,124 @@ jobs:
       - name: Install dependencies
         run: |
           brew install jq clamav || true
+          # Configure ClamAV
+          if [ -f /opt/homebrew/etc/clamav/freshclam.conf.sample ]; then
+            cp /opt/homebrew/etc/clamav/freshclam.conf.sample /opt/homebrew/etc/clamav/freshclam.conf
+            sed -i '' 's/^Example/#Example/' /opt/homebrew/etc/clamav/freshclam.conf
+          fi
 
       - name: Update ClamAV database
-        run: |
-          freshclam || true
+        run: freshclam 2>/dev/null || echo "ClamAV update failed (non-critical)"
 
-      - name: Run test suites
-        run: |
-          chmod +x scripts/*.sh tests/*.sh
-          for test in scripts/test-*.sh; do
-            echo "=== Running $test ==="
-            bash "$test"
-          done
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh tests/*.sh
 
-      - name: Run pattern tests
-        run: |
-          for test in tests/test-*.sh; do
-            echo "=== Running $test ==="
-            bash "$test"
-          done
+      - name: Run all unit tests
+        run: ./tests/run-all-tests.sh
 
-  syntax-check:
-    name: Bash Syntax Check
+      - name: Run integration tests
+        run: |
+          if [ -f ./tests/test-integration-advanced.sh ]; then
+            chmod +x ./tests/test-integration-advanced.sh
+            ./tests/test-integration-advanced.sh
+          fi
+
+  security-self-scan:
+    name: Security Self-Scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check script syntax
+      - name: Install ClamAV
         run: |
-          errors=0
-          for script in scripts/*.sh scripts/lib/*.sh tests/*.sh; do
-            if ! bash -n "$script" 2>&1; then
-              echo "Syntax error in $script"
-              errors=$((errors + 1))
+          sudo apt-get update
+          sudo apt-get install -y clamav
+          sudo systemctl stop clamav-freshclam || true
+          sudo freshclam || echo "ClamAV update failed (non-critical)"
+
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh
+
+      - name: Run PII check on repository
+        run: ./scripts/check-pii.sh . || echo "::warning::PII check found potential issues"
+
+      - name: Run secrets check on repository
+        run: ./scripts/check-secrets.sh . || echo "::warning::Secrets check found potential issues"
+
+      - name: Run malware check on repository
+        run: ./scripts/check-malware.sh . || echo "Malware check completed"
+
+  docs-check:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for required files
+        run: |
+          required_files="README.md CHANGELOG.md LICENSE CLAUDE.md SECURITY.md"
+          missing=0
+          for file in $required_files; do
+            if [ ! -f "$file" ]; then
+              echo "Missing required file: $file"
+              missing=$((missing + 1))
             fi
           done
-          if [ $errors -gt 0 ]; then
-            echo "Found $errors syntax errors"
+          if [ $missing -gt 0 ]; then
+            echo "::error::Missing $missing required files"
             exit 1
           fi
-          echo "All scripts passed syntax check"
+          echo "All required files present"
+
+      - name: Check CHANGELOG format
+        run: |
+          echo "Checking CHANGELOG.md format..."
+          if ! grep -q "^## \[" CHANGELOG.md; then
+            echo "::warning::CHANGELOG.md may not follow Keep a Changelog format"
+          fi
+          echo "CHANGELOG check complete"
+
+      - name: Verify version in scripts
+        run: |
+          echo "Checking for version consistency..."
+          # Just informational, versions may differ during development
+          grep -h "VERSION=" scripts/*.sh | head -5 || echo "No VERSION variables found"
+
+  kev-catalog-check:
+    name: KEV Catalog Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify bundled KEV catalog
+        run: |
+          if [ -f data/kev-catalog.json ]; then
+            echo "KEV catalog found"
+            # Verify it's valid JSON
+            if command -v jq >/dev/null 2>&1; then
+              jq -e '.vulnerabilities | length' data/kev-catalog.json > /dev/null || {
+                echo "::error::KEV catalog is not valid JSON"
+                exit 1
+              }
+              count=$(jq '.vulnerabilities | length' data/kev-catalog.json)
+              echo "KEV catalog contains $count vulnerabilities"
+            fi
+          else
+            echo "::warning::Bundled KEV catalog not found (will be created on release)"
+          fi
+
+      - name: Verify KEV catalog checksum
+        run: |
+          if [ -f data/kev-catalog.json ] && [ -f data/kev-catalog.json.sha256 ]; then
+            echo "Verifying KEV catalog integrity..."
+            cd data
+            if shasum -a 256 -c kev-catalog.json.sha256; then
+              echo "KEV catalog integrity verified"
+            else
+              echo "::error::KEV catalog checksum mismatch"
+              exit 1
+            fi
+          fi
