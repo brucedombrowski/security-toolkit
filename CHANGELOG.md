@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.4] - 2026-01-30
+
+### Fixed
+
+- **CI Test Compatibility**
+  - KEV catalog checksum now uses relative path (works on CI runners)
+  - Platform-aware `stat` command (macOS `-f "%OLp"` vs Linux `-c "%a"`)
+  - Git tag test handles shallow clones (CI environments)
+  - Fixed ShellCheck SC2144: use `ls` instead of `[ -f ]` with glob patterns
+
 ## [2.0.3] - 2026-01-30
 
 ### Changed
