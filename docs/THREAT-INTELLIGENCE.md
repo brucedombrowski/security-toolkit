@@ -80,47 +80,36 @@ comm -12 /tmp/scan-cves.txt /tmp/kev-cves.txt
 
 ### Automated KEV Check Script
 
+The toolkit includes `scripts/check-kev.sh` for automated KEV cross-referencing:
+
 ```bash
-#!/bin/bash
-# check-kev.sh - Cross-reference scan findings against CISA KEV
-# Usage: ./check-kev.sh <vulnerability-scan-output>
+# Cross-reference a vulnerability scan against CISA KEV
+./scripts/check-kev.sh .scans/vulnerability-scan-2026-01-15.txt
 
-SCAN_FILE="$1"
-KEV_URL="https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
-KEV_CACHE="/tmp/kev-catalog.json"
+# Force refresh of KEV catalog
+./scripts/check-kev.sh --force .scans/vulnerability-scan-2026-01-15.txt
 
-# Update KEV catalog (cache for 24 hours)
-if [ ! -f "$KEV_CACHE" ] || [ $(find "$KEV_CACHE" -mmin +1440 2>/dev/null) ]; then
-    curl -s "$KEV_URL" -o "$KEV_CACHE"
-fi
+# Quiet mode (only output matches)
+./scripts/check-kev.sh --quiet .scans/vulnerability-scan-2026-01-15.txt
 
-# Extract CVEs from scan
-SCAN_CVES=$(grep -oE 'CVE-[0-9]{4}-[0-9]+' "$SCAN_FILE" | sort -u)
-
-echo "=== CISA KEV Cross-Reference ==="
-echo "Scan file: $SCAN_FILE"
-echo "KEV catalog date: $(jq -r '.catalogVersion' "$KEV_CACHE")"
-echo ""
-
-FOUND_KEV=0
-for cve in $SCAN_CVES; do
-    KEV_ENTRY=$(jq -r ".vulnerabilities[] | select(.cveID == \"$cve\")" "$KEV_CACHE")
-    if [ -n "$KEV_ENTRY" ]; then
-        FOUND_KEV=$((FOUND_KEV + 1))
-        echo "*** KNOWN EXPLOITED: $cve ***"
-        echo "    Product: $(echo "$KEV_ENTRY" | jq -r '.product')"
-        echo "    Due Date: $(echo "$KEV_ENTRY" | jq -r '.dueDate')"
-        echo "    Ransomware: $(echo "$KEV_ENTRY" | jq -r '.knownRansomwareCampaignUse')"
-        echo ""
-    fi
-done
-
-if [ $FOUND_KEV -eq 0 ]; then
-    echo "No KEV matches found in scan results."
-else
-    echo "=== $FOUND_KEV KEV MATCHES REQUIRE IMMEDIATE ATTENTION ==="
-fi
+# Uses most recent scan if no file specified
+./scripts/check-kev.sh
 ```
+
+### Offline Mode (Air-Gapped Systems)
+
+For security scanning on offline or air-gapped systems, the toolkit bundles a KEV catalog snapshot with each release:
+
+- **Bundled file:** `data/kev-catalog.json`
+- **SHA256 hash:** `data/kev-catalog.json.sha256`
+- **Updated:** With each release (check catalog date in output)
+
+When network is unavailable:
+1. Script attempts to download latest KEV from CISA
+2. Falls back to `.cache/kev-catalog.json` (if recent)
+3. Falls back to bundled `data/kev-catalog.json` (offline mode)
+
+**Note:** For maximum security, ensure the bundled catalog is recent enough for your compliance requirements. The catalog date is displayed in script output.
 
 ---
 

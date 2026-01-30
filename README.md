@@ -51,6 +51,7 @@ This toolkit provides automated security verification scripts aligned with feder
 | `run-all-scans.sh` | - | Run all scans with consolidated report |
 | `scan-vulnerabilities.sh` | RA-5, SI-2 | Comprehensive vulnerability scanning (Nmap/OpenVAS/Lynis) |
 | `secure-delete.sh` | SP 800-88 | Securely delete files (NIST Clear method) |
+| `upgrade.sh` | - | Upgrade toolkit to latest version |
 
 ## Usage
 

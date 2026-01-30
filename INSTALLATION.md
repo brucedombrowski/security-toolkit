@@ -330,6 +330,65 @@ head -1 scripts/run-all-scans.sh
 chmod +x scripts/*.sh
 ```
 
+## Upgrading
+
+### Using the Upgrade Script
+
+```bash
+# Navigate to toolkit directory
+cd ~/Security
+
+# Run upgrade script
+./scripts/upgrade.sh
+```
+
+The upgrade script will:
+1. Show what commits are pending
+2. Show if the KEV catalog will be updated
+3. Confirm before applying changes
+
+### Manual Upgrade
+
+```bash
+cd ~/Security
+git fetch origin
+git pull origin main
+```
+
+### What's Preserved During Upgrades
+
+Your **project-specific data** is stored in your scanned projects, not in the toolkit:
+
+| Location | Description | Preserved? |
+|----------|-------------|------------|
+| `<your-project>/.scans/` | Scan results | Yes (in your project) |
+| `<your-project>/.allowlists/` | Reviewed exceptions | Yes (in your project) |
+| `<your-project>/requirements.json` | Your requirements | Yes (copy from template) |
+| `Security/.cache/` | Toolkit cache | Refreshed on upgrade |
+| `Security/data/` | Bundled resources | Updated to latest |
+
+### Using Your Own Requirements
+
+If you use the `requirements/project-requirements-template.json`:
+
+1. **Copy** the template to your own project:
+   ```bash
+   cp ~/Security/requirements/project-requirements-template.json \
+      /path/to/your-project/requirements.json
+   ```
+
+2. **Customize** with your project's requirements
+
+3. **Upgrade the toolkit** without affecting your project's requirements file
+
+### Offline/Air-Gapped Systems
+
+The toolkit bundles a KEV catalog snapshot (`data/kev-catalog.json`) for offline use. After upgrading:
+
+- New bundled KEV catalog is available immediately
+- Your project's cached KEV data (`.cache/`) is refreshed on next scan
+- No network required to use the bundled catalog
+
 ## Getting Help
 
 If you encounter issues not covered here:

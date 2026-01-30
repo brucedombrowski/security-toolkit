@@ -185,6 +185,54 @@ run_scans() {
     return 0
 }
 
+# Bundle KEV catalog for offline use
+bundle_kev_catalog() {
+    print_info "Bundling CISA KEV catalog for offline use..."
+
+    local kev_url="https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+    local data_dir="$REPO_ROOT/data"
+    local kev_file="$data_dir/kev-catalog.json"
+
+    mkdir -p "$data_dir"
+
+    if ! curl -s --connect-timeout 10 --max-time 60 "$kev_url" -o "${kev_file}.tmp"; then
+        print_warning "Failed to download KEV catalog (network unavailable)"
+        if [ -f "$kev_file" ]; then
+            print_info "Keeping existing bundled KEV catalog"
+        else
+            print_warning "No bundled KEV catalog available - offline scanning will be limited"
+        fi
+        return 0
+    fi
+
+    # Validate JSON
+    if ! jq empty "${kev_file}.tmp" 2>/dev/null; then
+        print_warning "Downloaded KEV catalog is invalid JSON"
+        rm -f "${kev_file}.tmp"
+        return 0
+    fi
+
+    mv "${kev_file}.tmp" "$kev_file"
+
+    # Generate SHA256 hash
+    if [[ "$(uname)" == "Darwin" ]]; then
+        shasum -a 256 "$kev_file" > "${kev_file}.sha256"
+    else
+        sha256sum "$kev_file" > "${kev_file}.sha256"
+    fi
+
+    # Get catalog metadata
+    local kev_count
+    local kev_date
+    kev_count=$(jq -r '.count' "$kev_file")
+    kev_date=$(jq -r '.dateReleased' "$kev_file")
+
+    print_success "KEV catalog bundled ($kev_count vulnerabilities, released $kev_date)"
+
+    # Stage for commit
+    git -C "$REPO_ROOT" add "$kev_file" "${kev_file}.sha256" > /dev/null 2>&1 || true
+}
+
 # Create redacted examples
 create_examples() {
     print_info "Creating redacted example files..."
@@ -396,6 +444,9 @@ main() {
         print_info "Skipping security tests (--skip-tests flag)"
     fi
     
+    # Bundle KEV catalog for offline scanning
+    bundle_kev_catalog
+
     # Create examples
     create_examples
 

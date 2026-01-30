@@ -23,11 +23,14 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# KEV Catalog URLs
+# KEV Catalog URLs and paths
 KEV_JSON_URL="https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
 KEV_CACHE_DIR="${SECURITY_REPO_DIR}/.cache"
 KEV_CACHE_FILE="${KEV_CACHE_DIR}/kev-catalog.json"
 KEV_CACHE_MAX_AGE=86400  # 24 hours in seconds
+
+# Bundled KEV catalog for offline use (included in releases)
+KEV_BUNDLED_FILE="${SECURITY_REPO_DIR}/data/kev-catalog.json"
 
 # Colors for output
 RED='\033[0;31m'
@@ -127,11 +130,22 @@ update_kev_cache() {
         [ "$QUIET" -eq 0 ] && echo -e "${CYAN}Updating KEV catalog from CISA...${NC}" || true
 
         if ! curl -s --connect-timeout 10 --max-time 30 "$KEV_JSON_URL" -o "${KEV_CACHE_FILE}.tmp"; then
-            echo -e "${RED}Error: Failed to download KEV catalog${NC}"
+            echo -e "${YELLOW}Warning: Failed to download KEV catalog (network unavailable)${NC}"
+            # Fall back to existing cache
             if [ -f "$KEV_CACHE_FILE" ]; then
                 echo -e "${YELLOW}Using cached version${NC}"
                 return 0
             fi
+            # Fall back to bundled catalog for offline use
+            if [ -f "$KEV_BUNDLED_FILE" ]; then
+                echo -e "${CYAN}Using bundled KEV catalog (offline mode)${NC}"
+                cp "$KEV_BUNDLED_FILE" "$KEV_CACHE_FILE"
+                if [ -f "${KEV_BUNDLED_FILE}.sha256" ]; then
+                    cp "${KEV_BUNDLED_FILE}.sha256" "${KEV_CACHE_FILE}.sha256"
+                fi
+                return 0
+            fi
+            echo -e "${RED}Error: No KEV catalog available (no cache, no bundled file)${NC}"
             exit 2
         fi
 

@@ -35,6 +35,9 @@ All changes must maintain:
 # Release workflow (maintainers only)
 ./scripts/release.sh              # Test release
 ./scripts/release.sh 1.16.0       # Specific version
+
+# Upgrade toolkit
+./scripts/upgrade.sh
 ```
 
 **Release Policy:** Only the latest release is kept on GitHub. Old releases are automatically deleted by `release.sh`, but all tags are preserved for version history.
@@ -66,6 +69,7 @@ Security/
 │   ├── purge-git-history.sh     # Remove sensitive files from git
 │   ├── generate-compliance.sh   # Compliance statement PDF
 │   ├── generate-scan-attestation.sh # PDF attestation
+│   ├── upgrade.sh               # Toolkit upgrade helper
 │   └── lib/
 │       ├── audit-log.sh         # JSON Lines audit logging
 │       ├── progress.sh          # Spinners, progress bars
@@ -84,6 +88,9 @@ Security/
 │       └── nvd/                 # NVD CVE lookup modules
 │           ├── api.sh           # NVD API client with caching
 │           └── matcher.sh       # Package-to-CPE mapping
+├── data/                        # Bundled resources for offline use
+│   ├── kev-catalog.json         # CISA KEV catalog snapshot
+│   └── kev-catalog.json.sha256  # Integrity hash
 ├── requirements/                # Requirements documentation (JSON)
 │   ├── controls/                # NIST 800-53, 800-171 mappings
 │   ├── functional/              # Functional requirements (FR-XXX)
