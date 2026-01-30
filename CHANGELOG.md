@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.1] - 2026-01-29
+
+### Added
+
+- **Library API Documentation** (`docs/LIBRARY-API.md`)
+  - Comprehensive API reference for all 27 shell library modules
+  - Documents 90+ functions across 4 subsystems (Core, Inventory, Scanners, NVD)
+  - Usage examples and contributing guidelines
+
+- **Security Validation Scripts in README**
+  - Added 5 security test scripts to documentation (test-cui-data-exposure,
+    test-git-purge-dry-run, test-latex-injection, test-rm-rf-validation, test-symlink-attacks)
+
+### Changed
+
+- **Complete Script Documentation**
+  - All 26 scripts now documented in README.md
+  - Added backup-guidance.sh, harden-system.sh, pre-scan-cleanup.sh, release.sh
+  - Added docs/README.md and templates/README.md directory indexes
+
 ## [1.18.0] - 2026-01-29
 
 ### Added
