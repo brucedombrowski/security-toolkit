@@ -80,9 +80,6 @@ These scripts validate the toolkit's own security controls:
 # Run in non-interactive mode (for CI/CD)
 ./scripts/run-all-scans.sh -n /path/to/project
 
-# Interactive TUI mode (menu-driven)
-./scripts/tui.sh /path/to/project
-
 # Run individual scans
 ./scripts/check-pii.sh /path/to/project
 ./scripts/check-secrets.sh /path/to/project
@@ -91,6 +88,23 @@ These scripts validate the toolkit's own security controls:
 # Securely delete scan artifacts (NIST SP 800-88)
 ./scripts/secure-delete.sh -rf .scans/
 ```
+
+### Interactive TUI Mode
+
+For a menu-driven experience, use the TUI:
+
+```bash
+./scripts/tui.sh /path/to/project
+```
+
+Features:
+- **Run All Scans** - Execute complete scan suite with progress spinner
+- **Select Individual Scans** - Toggle specific scans (PII, secrets, malware, etc.)
+- **View Scan Results** - Browse and open result files
+- **Generate Verification Report** - Create PDF compliance package
+- **Change Target Directory** - Switch projects without restarting
+
+The TUI shows elapsed time during long-running scans (like malware scanning) so you know it's still working. Works with Bash 3.2+ (macOS default).
 
 ### Integrate into CI/CD
 
