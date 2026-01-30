@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.11] - 2026-01-30
+
+### Added
+
+- **Comprehensive Integration Tests**
+  - Expanded `tests/test-integration.sh` from 307 to 750 lines (61 tests total)
+  - New test sections:
+    - Multi-language secret detection (Python, JavaScript, Go)
+    - Multi-format PII detection (SSNs, phones, credit cards)
+    - MAC address format detection (colon, dash, Cisco)
+    - Audit log format verification (JSON Lines, required fields)
+    - Host inventory end-to-end testing
+    - Output file verification with timestamps
+    - False positive verification with clean code fixtures
+    - Host security scanner validation
+    - Scanner module library sourcing tests
+    - Inventory module library sourcing tests
+
+- **Test Fixtures for Multi-Language Scanning**
+  - `tests/fixtures/vulnerable-code/python-secrets.py` - AWS keys, private keys, passwords
+  - `tests/fixtures/vulnerable-code/javascript-secrets.js` - Firebase, Stripe, Twilio tokens
+  - `tests/fixtures/vulnerable-code/go-secrets.go` - Hardcoded credentials, connection strings
+  - `tests/fixtures/vulnerable-code/pii-data.txt` - SSNs, phones, credit cards, IPs
+  - `tests/fixtures/config-files/network-config.conf` - MAC addresses in multiple formats
+  - `tests/fixtures/clean-code/clean-python.py` - Environment variable patterns
+  - `tests/fixtures/clean-code/clean-javascript.js` - Safe configuration patterns
+  - `tests/fixtures/clean-code/clean-config.yaml` - Secret manager references
+
 ## [1.17.10] - 2026-01-30
 
 ### Changed
