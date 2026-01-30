@@ -422,3 +422,7 @@ Host inventory contains Controlled Unclassified Information (MAC addresses, seri
 - [docs/COMPLIANCE.md](docs/COMPLIANCE.md) - NIST control mapping details
 - [docs/MAINTENANCE.md](docs/MAINTENANCE.md) - Maintenance schedules
 - [docs/THREAT-INTELLIGENCE.md](docs/THREAT-INTELLIGENCE.md) - CISA KEV integration
+- [docs/FAQ.md](docs/FAQ.md) - Frequently asked questions
+- [docs/PERFORMANCE.md](docs/PERFORMANCE.md) - Performance baselines
+- [requirements/README.md](requirements/README.md) - Requirements framework and traceability
+- [verification/README.md](verification/README.md) - Verification evidence workflow

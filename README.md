@@ -247,6 +247,40 @@ If you need to preserve scan results for a specific release or submittal, copy t
 | SI-4 | System and Information Integrity | System Monitoring | `scan-vulnerabilities.sh` |
 | SI-12 | System and Information Integrity | Information Management and Retention | `check-pii.sh` |
 
+## Requirements & Verification Framework
+
+The toolkit includes a machine-readable requirements framework for compliance documentation:
+
+```
+requirements/
+├── controls/
+│   ├── nist-800-53.json      # NIST SP 800-53 Rev 5 control definitions
+│   └── nist-800-171.json     # NIST SP 800-171 Rev 2 control definitions
+├── functional/
+│   └── functional-requirements.json  # Toolkit functional requirements (FR-001 to FR-014)
+├── mapping.json              # Traceability matrix (Requirement → Control → Script → Test)
+└── project-requirements-template.json  # Template for your project's requirements
+```
+
+### For Your Project
+
+If your project has compliance requirements that reference NIST controls, you can:
+
+1. **Define your requirements** in JSON using the template
+2. **Link to NIST controls** that your requirements satisfy
+3. **Run toolkit scans** to generate verification evidence
+4. **Use the PDF attestation** for compliance submittals
+
+Example traceability chain:
+```
+Your Requirement     →  NIST Control  →  Toolkit Script    →  Evidence
+────────────────────────────────────────────────────────────────────────
+"No hardcoded creds" →  SA-11         →  check-secrets.sh  →  secrets-scan.txt
+"Vuln monitoring"    →  RA-5, SI-2    →  check-nvd-cves.sh →  nvd-cve-scan.txt
+```
+
+See [`requirements/README.md`](requirements/README.md) for detailed documentation.
+
 ## CUI Handling
 
 The `collect-host-inventory.sh` script generates output marked as **Controlled Unclassified Information (CUI)** per:
