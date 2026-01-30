@@ -35,6 +35,7 @@ This toolkit provides automated security verification scripts aligned with feder
 
 | Script | NIST Control | Description |
 |--------|--------------|-------------|
+| `backup-guidance.sh` | CP-9, CP-10 | Display backup guidance before scans/remediation |
 | `check-host-security.sh` | CM-6 | Host OS security posture verification |
 | `check-kev.sh` | RA-5, SI-5 | Cross-reference CVEs against CISA KEV catalog |
 | `check-mac-addresses.sh` | SC-8 | IEEE 802.3 MAC address detection |
@@ -46,8 +47,11 @@ This toolkit provides automated security verification scripts aligned with feder
 | `Collect-HostInventory.ps1` | CM-8 | Windows PowerShell host inventory |
 | `generate-compliance.sh` | - | Generate security compliance statement PDF |
 | `generate-scan-attestation.sh` | - | Generate PDF attestation from scan results |
+| `harden-system.sh` | CM-6, SC-7 | Apply security hardening configurations |
+| `pre-scan-cleanup.sh` | SI-14 | Clean temp files/caches before scanning |
 | `purge-git-history.sh` | SP 800-88 | Remove sensitive files from git history |
 | `redact-examples.sh` | - | Strip sensitive data for public examples |
+| `release.sh` | - | Release workflow (maintainers only) |
 | `run-all-scans.sh` | - | Run all scans with consolidated report |
 | `scan-vulnerabilities.sh` | RA-5, SI-2 | Comprehensive vulnerability scanning (Nmap/OpenVAS/Lynis) |
 | `secure-delete.sh` | SP 800-88 | Securely delete files (NIST Clear method) |
