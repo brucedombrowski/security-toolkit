@@ -1,0 +1,129 @@
+{
+  "$schema": "../schema.json",
+  "standard": "NIST SP 800-171 Rev 2",
+  "title": "Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+  "url": "https://csrc.nist.gov/publications/detail/sp/800-171/rev-2/final",
+  "controls": {
+    "3.4.1": {
+      "family": "Configuration Management",
+      "title": "System Component Inventory",
+      "description": "Establish and maintain baseline configurations and inventories of organizational systems.",
+      "derived_from": ["CM-8"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["collect-host-inventory.sh", "Collect-HostInventory.ps1"],
+        "notes": "CUI-marked system inventory with MAC addresses, serial numbers, software versions"
+      }
+    },
+    "3.4.2": {
+      "family": "Configuration Management",
+      "title": "Security Configuration Enforcement",
+      "description": "Establish and enforce security configuration settings for information technology products.",
+      "derived_from": ["CM-6"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["check-host-security.sh", "harden-system.sh"],
+        "notes": "Verifies and enforces security configurations on host systems"
+      }
+    },
+    "3.5.10": {
+      "family": "Identification and Authentication",
+      "title": "Cryptographic Authentication",
+      "description": "Store and transmit only cryptographically-protected passwords.",
+      "derived_from": ["IA-5(1)"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["check-secrets.sh"],
+        "notes": "Detects plaintext passwords and credentials in source code"
+      }
+    },
+    "3.8.9": {
+      "family": "Media Protection",
+      "title": "Media Sanitization",
+      "description": "Sanitize or destroy system media containing CUI before disposal or release for reuse.",
+      "derived_from": ["MP-6"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["secure-delete.sh"],
+        "notes": "NIST SP 800-88 Clear method with verification"
+      }
+    },
+    "3.11.2": {
+      "family": "Risk Assessment",
+      "title": "Vulnerability Scanning",
+      "description": "Scan for vulnerabilities in organizational systems and applications periodically and when new vulnerabilities are identified.",
+      "derived_from": ["RA-5"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["scan-vulnerabilities.sh", "check-nvd-cves.sh", "check-kev.sh"],
+        "notes": "Comprehensive vulnerability scanning with NVD and CISA KEV integration"
+      }
+    },
+    "3.11.3": {
+      "family": "Risk Assessment",
+      "title": "Vulnerability Remediation",
+      "description": "Remediate vulnerabilities in accordance with risk assessments.",
+      "derived_from": ["RA-5"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["check-nvd-cves.sh"],
+        "notes": "CVSS scoring enables risk-based remediation prioritization"
+      }
+    },
+    "3.13.16": {
+      "family": "System and Communications Protection",
+      "title": "CUI at Rest",
+      "description": "Protect the confidentiality of CUI at rest.",
+      "derived_from": ["SC-28"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["collect-host-inventory.sh"],
+        "notes": "CUI inventory files created with mode 600 (owner read/write only)"
+      }
+    },
+    "3.14.1": {
+      "family": "System and Information Integrity",
+      "title": "Flaw Remediation",
+      "description": "Identify, report, and correct system flaws in a timely manner.",
+      "derived_from": ["SI-2"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["scan-vulnerabilities.sh", "check-nvd-cves.sh"],
+        "notes": "Automated vulnerability identification with CVE details"
+      }
+    },
+    "3.14.2": {
+      "family": "System and Information Integrity",
+      "title": "Malicious Code Protection",
+      "description": "Provide protection from malicious code at designated locations within organizational systems.",
+      "derived_from": ["SI-3"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["check-malware.sh"],
+        "notes": "ClamAV malware scanning with automatic signature updates"
+      }
+    },
+    "3.14.3": {
+      "family": "System and Information Integrity",
+      "title": "Security Alerts and Advisories",
+      "description": "Monitor system security alerts and advisories and take action in response.",
+      "derived_from": ["SI-5"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["check-kev.sh"],
+        "notes": "CISA KEV catalog integration for known exploited vulnerabilities"
+      }
+    },
+    "3.14.6": {
+      "family": "System and Information Integrity",
+      "title": "System Monitoring",
+      "description": "Monitor organizational systems, including inbound and outbound communications traffic.",
+      "derived_from": ["SI-4"],
+      "implementation": {
+        "status": "implemented",
+        "scripts": ["scan-vulnerabilities.sh"],
+        "notes": "Network port monitoring and system security auditing"
+      }
+    }
+  }
+}

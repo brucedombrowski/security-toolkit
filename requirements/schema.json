@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/brucedombrowski/Security/requirements/schema.json",
+  "title": "Security Verification Toolkit Requirements Schema",
+  "description": "JSON Schema for requirements and control documentation",
+  "definitions": {
+    "nist_control": {
+      "type": "object",
+      "properties": {
+        "family": {"type": "string"},
+        "title": {"type": "string"},
+        "description": {"type": "string"},
+        "implementation": {
+          "type": "object",
+          "properties": {
+            "status": {"enum": ["implemented", "partial", "planned", "not_applicable"]},
+            "scripts": {"type": "array", "items": {"type": "string"}},
+            "libraries": {"type": "array", "items": {"type": "string"}},
+            "notes": {"type": "string"}
+          },
+          "required": ["status"]
+        }
+      },
+      "required": ["family", "title", "description", "implementation"]
+    },
+    "functional_requirement": {
+      "type": "object",
+      "properties": {
+        "title": {"type": "string"},
+        "description": {"type": "string"},
+        "category": {"type": "string"},
+        "priority": {"enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"]},
+        "nist_800_53": {"type": "array", "items": {"type": "string"}},
+        "nist_800_171": {"type": "array", "items": {"type": "string"}},
+        "implementation": {
+          "type": "object",
+          "properties": {
+            "script": {"type": ["string", "null"]},
+            "library": {"type": "string"},
+            "tests": {"type": "array", "items": {"type": "string"}},
+            "output": {"type": ["string", "null"]}
+          }
+        },
+        "acceptance_criteria": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["title", "description", "priority", "implementation"]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "$schema": {"type": "string"},
+    "standard": {"type": "string"},
+    "title": {"type": "string"},
+    "version": {"type": "string"},
+    "url": {"type": "string", "format": "uri"},
+    "controls": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/definitions/nist_control"}
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/definitions/functional_requirement"}
+    }
+  }
+}

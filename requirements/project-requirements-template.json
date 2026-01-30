@@ -1,0 +1,104 @@
+{
+  "$schema": "schema.json",
+  "title": "Project Requirements Template",
+  "description": "Template for projects using Security Verification Toolkit to document their compliance requirements",
+  "version": "1.0.0",
+  "project": {
+    "name": "YOUR_PROJECT_NAME",
+    "version": "1.0.0",
+    "repository": "https://github.com/org/project"
+  },
+  "compliance_frameworks": [
+    "NIST SP 800-53 Rev 5",
+    "NIST SP 800-171 Rev 2"
+  ],
+  "requirements": {
+    "REQ-001": {
+      "title": "Example: Scan for Hardcoded Credentials",
+      "description": "The project shall not contain hardcoded credentials, API keys, or secrets in source code.",
+      "source_document": "Security Policy Section 4.2",
+      "source_reference": "SP-4.2.1",
+      "nist_controls": {
+        "800-53": ["SA-11"],
+        "800-171": ["3.5.10"]
+      },
+      "verification": {
+        "toolkit_script": "check-secrets.sh",
+        "acceptance": "Scan returns exit code 0 (PASS) or all findings are in allowlist with justification"
+      },
+      "evidence": {
+        "scan_output": ".scans/secrets-scan-*.txt",
+        "attestation": ".scans/scan-attestation-*.pdf"
+      }
+    },
+    "REQ-002": {
+      "title": "Example: Vulnerability Monitoring",
+      "description": "The project infrastructure shall be monitored for known vulnerabilities.",
+      "source_document": "Risk Management Plan",
+      "source_reference": "RMP-3.1",
+      "nist_controls": {
+        "800-53": ["RA-5", "SI-2"],
+        "800-171": ["3.11.2", "3.14.1"]
+      },
+      "verification": {
+        "toolkit_script": "check-nvd-cves.sh",
+        "acceptance": "No CRITICAL or HIGH severity CVEs, or documented remediation plan"
+      },
+      "evidence": {
+        "scan_output": ".scans/nvd-cve-scan-*.txt",
+        "attestation": ".scans/scan-attestation-*.pdf"
+      }
+    },
+    "REQ-003": {
+      "title": "Example: Malware Scanning",
+      "description": "The project shall be scanned for malware before release.",
+      "source_document": "Release Checklist",
+      "source_reference": "RC-5.1",
+      "nist_controls": {
+        "800-53": ["SI-3"],
+        "800-171": ["3.14.2"]
+      },
+      "verification": {
+        "toolkit_script": "check-malware.sh",
+        "acceptance": "ClamAV scan returns PASS with no malware detected"
+      },
+      "evidence": {
+        "scan_output": ".scans/malware-scan-*.txt",
+        "attestation": ".scans/scan-attestation-*.pdf"
+      }
+    }
+  },
+  "verification_workflow": {
+    "description": "How this project uses the Security Verification Toolkit",
+    "steps": [
+      {
+        "step": 1,
+        "action": "Clone Security Verification Toolkit",
+        "command": "git clone https://github.com/brucedombrowski/Security ~/Security"
+      },
+      {
+        "step": 2,
+        "action": "Run all scans on project",
+        "command": "~/Security/scripts/run-all-scans.sh /path/to/project"
+      },
+      {
+        "step": 3,
+        "action": "Review findings and update allowlists",
+        "command": "Review .scans/ outputs, add justified exceptions to .allowlists/"
+      },
+      {
+        "step": 4,
+        "action": "Generate attestation",
+        "command": "Copy .scans/scan-attestation-*.pdf for compliance submittal"
+      }
+    ]
+  },
+  "traceability_example": {
+    "requirement": "REQ-001",
+    "maps_to": "Your internal requirement (e.g., from a contract, policy, or RFP)",
+    "satisfies_nist": "SA-11 (Developer Testing and Evaluation)",
+    "verified_by": "check-secrets.sh scan",
+    "evidence": "secrets-scan-TIMESTAMP.txt showing PASS",
+    "attestation": "scan-attestation-TIMESTAMP.pdf with NIST control mapping"
+  }
+}

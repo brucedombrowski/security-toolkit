@@ -69,13 +69,35 @@ Security/
 │   └── lib/
 │       ├── audit-log.sh         # JSON Lines audit logging
 │       ├── progress.sh          # Spinners, progress bars
-│       └── timestamps.sh        # ISO 8601 UTC timestamps
+│       ├── timestamps.sh        # ISO 8601 UTC timestamps
+│       ├── toolkit-info.sh      # Version, commit, config management
+│       ├── inventory/           # Host inventory modules
+│       │   ├── detect.sh        # Platform detection helpers
+│       │   ├── output.sh        # CUI-safe file output
+│       │   └── collectors/      # 13 modular collectors
+│       ├── scanners/            # Vulnerability scanner modules
+│       │   ├── common.sh        # Shared scanner utilities
+│       │   ├── nist-controls.sh # NIST control definitions
+│       │   ├── nmap.sh          # Nmap integration
+│       │   ├── lynis.sh         # Lynis integration
+│       │   └── report.sh        # Report generation
+│       └── nvd/                 # NVD CVE lookup modules
+│           ├── api.sh           # NVD API client with caching
+│           └── matcher.sh       # Package-to-CPE mapping
+├── requirements/                # Requirements documentation (JSON)
+│   ├── controls/                # NIST 800-53, 800-171 mappings
+│   ├── functional/              # Functional requirements (FR-XXX)
+│   └── mapping.json             # Traceability matrix
+├── verification/                # Verification evidence
+│   └── templates/               # LaTeX templates for PDFs
 ├── templates/                   # LaTeX templates for PDFs
 ├── tests/                       # Unit tests
 ├── docs/
 │   ├── COMPLIANCE.md            # NIST control mapping
 │   ├── MAINTENANCE.md           # Maintenance schedules
 │   ├── THREAT-INTELLIGENCE.md   # CISA KEV, DHS MARs
+│   ├── FAQ.md                   # Frequently asked questions
+│   ├── PERFORMANCE.md           # Performance baselines
 │   └── false-positives-macos.md # macOS-specific guidance
 ├── examples/                    # Redacted example outputs
 ├── .scans/                      # Raw scan output (gitignored)
@@ -104,6 +126,7 @@ All scripts follow these conventions:
 | `audit-log.sh` | JSON Lines audit logging (NIST AU-2/AU-3) |
 | `progress.sh` | Spinners, progress bars, ETA, TTY detection |
 | `timestamps.sh` | ISO 8601 UTC timestamp utilities |
+| `toolkit-info.sh` | Toolkit version, commit hash, configuration |
 
 ### NIST Control Mapping
 

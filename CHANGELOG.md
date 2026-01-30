@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.15] - 2026-01-30
+
+### Added
+
+- **Requirements Documentation Framework** (`requirements/`)
+  - `controls/nist-800-53.json` - NIST SP 800-53 Rev 5 control definitions with implementation status
+  - `controls/nist-800-171.json` - NIST SP 800-171 Rev 2 control definitions
+  - `functional/functional-requirements.json` - 14 functional requirements (FR-001 to FR-014)
+  - `mapping.json` - Traceability matrix (FR → NIST → Script → Test)
+  - `schema.json` - JSON Schema for validation
+  - `project-requirements-template.json` - Template for other projects to define their requirements
+
+- **Verification Framework** (`verification/`)
+  - Directory structure for PDF verification evidence
+  - Templates for compliance attestation documents
+  - README documenting verification workflow
+
+### Changed
+
+- **Documentation Updates**
+  - Updated CLAUDE.md with complete lib/ structure (inventory/, scanners/, nvd/)
+  - Added toolkit-info.sh to library documentation
+  - Added FAQ.md and PERFORMANCE.md to key documentation section
+  - Updated INSTALLATION.md last updated date
+  - Added requirements/ and verification/ to repository structure
+
 ## [1.17.14] - 2026-01-30
 
 ### Changed

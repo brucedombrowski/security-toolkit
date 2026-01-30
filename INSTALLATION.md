@@ -352,5 +352,5 @@ After successful installation:
 
 ---
 
-**Last Updated:** January 15, 2026
+**Last Updated:** January 30, 2026
 **Tested On:** macOS 13+, Ubuntu 20.04+, CentOS 7+

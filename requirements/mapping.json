@@ -1,0 +1,125 @@
+{
+  "$schema": "schema.json",
+  "title": "Requirements Traceability Matrix",
+  "description": "Maps functional requirements to NIST controls, scripts, and tests",
+  "version": "1.0.0",
+  "generated": null,
+  "traceability": {
+    "by_script": {
+      "check-malware.sh": {
+        "functional": ["FR-001"],
+        "nist_800_53": ["SI-3"],
+        "nist_800_171": ["3.14.2"],
+        "tests": ["tests/test-integration.sh"]
+      },
+      "check-pii.sh": {
+        "functional": ["FR-002"],
+        "nist_800_53": ["SI-12"],
+        "nist_800_171": [],
+        "tests": ["tests/test-pii-patterns.sh", "tests/test-integration.sh"]
+      },
+      "check-secrets.sh": {
+        "functional": ["FR-003"],
+        "nist_800_53": ["SA-11"],
+        "nist_800_171": ["3.5.10"],
+        "tests": ["tests/test-secrets-patterns.sh", "tests/test-integration.sh"]
+      },
+      "check-mac-addresses.sh": {
+        "functional": ["FR-004"],
+        "nist_800_53": ["SC-8"],
+        "nist_800_171": [],
+        "tests": ["tests/test-mac-patterns.sh", "tests/test-integration.sh"]
+      },
+      "collect-host-inventory.sh": {
+        "functional": ["FR-005"],
+        "nist_800_53": ["CM-8"],
+        "nist_800_171": ["3.4.1", "3.13.16"],
+        "tests": ["tests/test-inventory-modules.sh", "tests/test-integration.sh"]
+      },
+      "check-host-security.sh": {
+        "functional": ["FR-006"],
+        "nist_800_53": ["CM-6"],
+        "nist_800_171": ["3.4.2"],
+        "tests": ["tests/test-integration.sh"]
+      },
+      "scan-vulnerabilities.sh": {
+        "functional": ["FR-007"],
+        "nist_800_53": ["RA-5", "SI-2", "SI-4", "CA-2"],
+        "nist_800_171": ["3.11.2", "3.14.1", "3.14.6"],
+        "tests": ["tests/test-scanner-modules.sh"]
+      },
+      "check-nvd-cves.sh": {
+        "functional": ["FR-008"],
+        "nist_800_53": ["RA-5", "SI-2"],
+        "nist_800_171": ["3.11.2", "3.11.3", "3.14.1"],
+        "tests": ["tests/test-nvd-cves.sh"]
+      },
+      "check-kev.sh": {
+        "functional": ["FR-009"],
+        "nist_800_53": ["RA-5", "SI-5"],
+        "nist_800_171": ["3.11.2", "3.14.3"],
+        "tests": []
+      },
+      "secure-delete.sh": {
+        "functional": ["FR-010"],
+        "nist_800_53": ["MP-6"],
+        "nist_800_171": ["3.8.9"],
+        "tests": ["tests/test-secure-delete.sh"]
+      },
+      "purge-git-history.sh": {
+        "functional": ["FR-011"],
+        "nist_800_53": ["MP-6", "SI-12"],
+        "nist_800_171": ["3.8.9"],
+        "tests": ["scripts/test-git-purge-dry-run.sh"]
+      },
+      "run-all-scans.sh": {
+        "functional": ["FR-012"],
+        "nist_800_53": [],
+        "nist_800_171": [],
+        "tests": ["tests/test-run-all-scans.sh", "tests/test-integration.sh"]
+      },
+      "generate-scan-attestation.sh": {
+        "functional": ["FR-013"],
+        "nist_800_53": [],
+        "nist_800_171": [],
+        "tests": []
+      }
+    },
+    "by_nist_800_53": {
+      "AU-2": {"functional": ["FR-014"], "scripts": ["lib/audit-log.sh"]},
+      "AU-3": {"functional": ["FR-014"], "scripts": ["lib/audit-log.sh"]},
+      "CA-2": {"functional": ["FR-007"], "scripts": ["scan-vulnerabilities.sh", "generate-compliance.sh"]},
+      "CM-6": {"functional": ["FR-006"], "scripts": ["check-host-security.sh", "harden-system.sh"]},
+      "CM-8": {"functional": ["FR-005"], "scripts": ["collect-host-inventory.sh"]},
+      "MP-6": {"functional": ["FR-010", "FR-011"], "scripts": ["secure-delete.sh", "purge-git-history.sh"]},
+      "RA-5": {"functional": ["FR-007", "FR-008", "FR-009"], "scripts": ["scan-vulnerabilities.sh", "check-nvd-cves.sh", "check-kev.sh"]},
+      "SA-11": {"functional": ["FR-003"], "scripts": ["check-secrets.sh"]},
+      "SC-8": {"functional": ["FR-004"], "scripts": ["check-mac-addresses.sh"]},
+      "SI-2": {"functional": ["FR-007", "FR-008"], "scripts": ["scan-vulnerabilities.sh", "check-nvd-cves.sh"]},
+      "SI-3": {"functional": ["FR-001"], "scripts": ["check-malware.sh"]},
+      "SI-4": {"functional": ["FR-007"], "scripts": ["scan-vulnerabilities.sh"]},
+      "SI-5": {"functional": ["FR-009"], "scripts": ["check-kev.sh"]},
+      "SI-12": {"functional": ["FR-002", "FR-011"], "scripts": ["check-pii.sh", "purge-git-history.sh", "redact-examples.sh"]}
+    },
+    "by_nist_800_171": {
+      "3.4.1": {"functional": ["FR-005"], "derived_from": "CM-8"},
+      "3.4.2": {"functional": ["FR-006"], "derived_from": "CM-6"},
+      "3.5.10": {"functional": ["FR-003"], "derived_from": "IA-5(1)"},
+      "3.8.9": {"functional": ["FR-010", "FR-011"], "derived_from": "MP-6"},
+      "3.11.2": {"functional": ["FR-007", "FR-008", "FR-009"], "derived_from": "RA-5"},
+      "3.11.3": {"functional": ["FR-008"], "derived_from": "RA-5"},
+      "3.13.16": {"functional": ["FR-005"], "derived_from": "SC-28"},
+      "3.14.1": {"functional": ["FR-007", "FR-008"], "derived_from": "SI-2"},
+      "3.14.2": {"functional": ["FR-001"], "derived_from": "SI-3"},
+      "3.14.3": {"functional": ["FR-009"], "derived_from": "SI-5"},
+      "3.14.6": {"functional": ["FR-007"], "derived_from": "SI-4"}
+    }
+  },
+  "coverage_summary": {
+    "total_functional_requirements": 14,
+    "nist_800_53_controls_implemented": 14,
+    "nist_800_171_controls_implemented": 11,
+    "scripts_with_tests": 12,
+    "scripts_without_tests": 2
+  }
+}
