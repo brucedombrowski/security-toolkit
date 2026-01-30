@@ -249,9 +249,9 @@ EOF
 test_start "Full scan workflow creates all expected outputs"
 "$REPO_DIR/scripts/run-all-scans.sh" -n "$TEST_DIR/project" > /dev/null 2>&1 || true
 outputs_found=0
-[ -f "$TEST_DIR/project/.scans/"*pii*.txt ] && outputs_found=$((outputs_found + 1))
-[ -f "$TEST_DIR/project/.scans/"*secrets*.txt ] && outputs_found=$((outputs_found + 1))
-[ -f "$TEST_DIR/project/.scans/"*report*.txt ] && outputs_found=$((outputs_found + 1))
+ls "$TEST_DIR/project/.scans/"*pii*.txt >/dev/null 2>&1 && outputs_found=$((outputs_found + 1))
+ls "$TEST_DIR/project/.scans/"*secrets*.txt >/dev/null 2>&1 && outputs_found=$((outputs_found + 1))
+ls "$TEST_DIR/project/.scans/"*report*.txt >/dev/null 2>&1 && outputs_found=$((outputs_found + 1))
 if [ $outputs_found -ge 3 ]; then
     test_pass
 else
