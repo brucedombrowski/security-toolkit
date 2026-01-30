@@ -63,7 +63,7 @@ show_header() {
     clear
     local version="${TOOLKIT_VERSION:-unknown}"
     echo "${BOLD}${BLUE}+================================================================+${RESET}"
-    echo "${BOLD}${BLUE}|${RESET}       ${BOLD}Security Verification Toolkit${RESET} ${DIM}v${version}${RESET}        ${BOLD}${BLUE}|${RESET}"
+    echo "${BOLD}${BLUE}|${RESET}       ${BOLD}Security Verification Toolkit${RESET} ${DIM}${version}${RESET}         ${BOLD}${BLUE}|${RESET}"
     echo "${BOLD}${BLUE}|${RESET}                 ${DIM}NIST 800-53 / 800-171 Compliance${RESET}               ${BOLD}${BLUE}|${RESET}"
     echo "${BOLD}${BLUE}+================================================================+${RESET}"
     echo ""
