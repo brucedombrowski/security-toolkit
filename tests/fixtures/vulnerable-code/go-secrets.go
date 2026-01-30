@@ -1,46 +1,33 @@
-// Test Fixture: Go file with intentional secrets for scanner detection.
-// This file is used by integration tests to verify secret detection.
-// DO NOT use these credentials - they are fake test data.
-
 package main
 
-import (
-	"database/sql"
-	"fmt"
-	"net/http"
-)
+// Test fixture with intentional secrets for scanner verification.
+// All secrets use TEST patterns to avoid GitHub push protection.
 
-// Hardcoded credentials (should be detected)
+import "fmt"
+
+// Hardcoded credentials
 const (
-	AWSAccessKeyID     = "AKIAIOSFODNN7EXAMPLE"
-	AWSSecretAccessKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-	DatabasePassword   = "super_secret_db_pass_123"
-	APIKey             = "sk-proj-TESTKEY00000000000000000000000000000000000000"
+	DatabaseUser     = "admin"
+	DatabasePassword = "super_secret_password_123"
+	APIKey           = "api_key_test_1234567890abcdef"
 )
 
-// Connection string with embedded credentials (should be detected)
-var dbConnectionString = "postgres://admin:MyPassword123@localhost:5432/mydb?sslmode=disable"
+// Bearer token (test pattern)
+var (
+	token := "Bearer ghp_TESTTOKE00000000000000000000000000"
+)
 
-// Private key embedded in code (should be detected)
-var privateKey = `-----BEGIN EC PRIVATE KEY-----
-MHQCAQEEIKvU9KCXgAL8L4cD8v3c5E8dJkRJlvFiQBf3N...
------END EC PRIVATE KEY-----`
-
-func connectDatabase() (*sql.DB, error) {
-	// Inline password (should be detected)
-	password := "hardcoded_password_456"
-	connStr := fmt.Sprintf("user=root password=%s dbname=test", password)
-	return sql.Open("postgres", connStr)
+// Connection string with credentials
+func GetConnectionString() string {
+	return "postgres://admin:MyDBPassword456@localhost:5432/production?sslmode=disable"
 }
 
-func makeAPIRequest() (*http.Response, error) {
-	// API token in header (should be detected - test pattern)
-	token := "Bearer ghp_TESTTOKEN00000000000000000000000000"
-	req, _ := http.NewRequest("GET", "https://api.github.com/user", nil)
-	req.Header.Set("Authorization", token)
-	return http.DefaultClient.Do(req)
+// AWS-style credentials (example patterns)
+var awsConfig = map[string]string{
+	"AccessKeyId":     "AKIAIOSFODNN7EXAMPLE",
+	"SecretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
 }
 
 func main() {
-	fmt.Println("This is a test fixture for secret detection")
+	fmt.Println("This is a test fixture with intentional secrets")
 }

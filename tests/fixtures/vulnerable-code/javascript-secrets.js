@@ -1,45 +1,31 @@
 /**
- * Test Fixture: JavaScript file with intentional secrets for scanner detection.
- * This file is used by integration tests to verify secret detection.
- * DO NOT use these credentials - they are fake test data.
+ * Test fixture with intentional secrets for scanner verification.
+ * All secrets use TEST patterns to avoid GitHub push protection.
  */
 
-// Firebase config with API key (should be detected - test pattern)
+// Firebase-style config (with test values)
 const firebaseConfig = {
-  apiKey: "AIzaTESTKEY0000000000000000000000000",
-  authDomain: "myapp.firebaseapp.com",
-  projectId: "myapp-12345",
-  storageBucket: "myapp.appspot.com",
+  apiKey: "TEST_firebase_api_key_1234567890abcdef",
+  authDomain: "test-app.firebaseapp.com",
+  databaseURL: "https://test-app.firebaseio.com"
 };
 
-// Stripe publishable key (should be detected - test pattern)
-const STRIPE_KEY = "pk_test_TESTKEY000000000000000000";
+// Stripe-style test key
+const STRIPE_KEY = "sk_test_TESTKEY1234567890abcdefghij";
 
-// SendGrid API key (should be detected - test pattern)
-const SENDGRID_API_KEY = "SG.TESTKEY00000000000000.TEST00000000000000000000000000000000000000";
+// SendGrid-style test key
+const SENDGRID_KEY = "SG.TESTtestTEST1234567890abcdefghij.testkey1234";
 
-// Twilio credentials (should be detected - using test patterns)
-const TWILIO_ACCOUNT_SID = "ACTEST00000000000000000000000000";
-const TWILIO_AUTH_TOKEN = "auth_token_TEST0000000000000000";
+// Twilio-style test values
+const twilioConfig = {
+  accountSid: "ACTEST1234567890abcdef1234567890",
+  authToken: "test_auth_token_1234567890abcdef"
+};
 
-// Database connection string (should be detected)
-const mongoConnection = "mongodb+srv://user:MyP@ssw0rd!@cluster.mongodb.net/test";
+// Hardcoded password
+const password = "admin123!@#";
 
-// OAuth client secret (should be detected - test pattern)
-const GOOGLE_CLIENT_SECRET = "GOCSPX-TESTSECRET0000000000000";
+// Database URL with credentials
+const dbUrl = "postgresql://admin:password123@db.example.com:5432/myapp";
 
-// Hardcoded password in code (should be detected)
-function authenticate(username) {
-  const password = "admin123!@#";
-  return login(username, password);
-}
-
-// API endpoint with embedded token (should be detected)
-const apiEndpoint = "https://api.example.com/v1/data?token=secret_token_12345";
-
-// Private key in JS (should be detected)
-const privateKey = `-----BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7...
------END PRIVATE KEY-----`;
-
-module.exports = { firebaseConfig, STRIPE_KEY };
+module.exports = { firebaseConfig, STRIPE_KEY, SENDGRID_KEY, twilioConfig };

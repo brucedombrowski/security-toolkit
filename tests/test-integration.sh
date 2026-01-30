@@ -275,7 +275,7 @@ fi
 section_header "Multi-Format PII Detection"
 
 # Test comprehensive PII fixture
-if [ -f "$FIXTURES_DIR/vulnerable-code/pii-data.txt" ]; then
+if [ -f "$FIXTURES_DIR/vulnerable-code/sensitive-data.txt" ]; then
     pii_fixture_output=$("$REPO_DIR/scripts/check-pii.sh" "$FIXTURES_DIR/vulnerable-code" 2>&1 || true)
 
     test_start "PII scanner detects multiple SSN formats"

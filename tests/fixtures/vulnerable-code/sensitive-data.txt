@@ -1,0 +1,32 @@
+# PII Test Data Fixture
+# Contains patterns that should be detected by PII scanner
+
+# Social Security Numbers
+Customer SSN: 123-45-6789
+Employee SSN: 987-65-4321
+Legacy format: 111-22-3333
+
+# Phone Numbers (various formats)
+Contact: (555) 123-4567
+Mobile: 555-987-6543
+Office: 555.111.2222
+International: +1 555 123 4567
+
+# Credit Card Numbers (test patterns)
+Visa: 4111-1111-1111-1111
+Mastercard: 5500 0000 0000 0004
+Amex: 378282246310005
+
+# IP Addresses
+Server: 192.168.1.100
+Gateway: 10.0.0.1
+Public: 8.8.8.8
+External: 203.0.113.50
+
+# Email Addresses
+Contact: user@example.com
+Admin: admin@company.com
+
+# Street Addresses
+123 Main Street, Anytown, CA 90210
+456 Oak Avenue, Suite 100, Springfield, IL 62701

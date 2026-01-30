@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.12] - 2026-01-30
+
+### Added
+
+- **Scanner Module Unit Tests** (`tests/test-scanner-modules.sh`)
+  - 74 unit tests covering all scanner library modules:
+    - `common.sh` - Logging functions, dependency checking, output initialization
+    - `nist-controls.sh` - Control lookups, family lookups, scanner-to-control mapping
+    - `report.sh` - Header generation, compliance reports, usage output
+    - `nmap.sh` - Module sourcing, result summarization with mock data
+    - `lynis.sh` - Module sourcing, result summarization with mock data
+    - `openvas.sh` - Module sourcing, function existence
+  - Integration tests verifying all modules work together
+  - Mock nmap/lynis output for testing without real scanners
+
+- **Test Runner Updates**
+  - Added `test-scanner-modules.sh` to `run-all-tests.sh`
+  - Added `test-integration.sh` to `run-all-tests.sh`
+  - Total test suite now includes 13 test suites
+
 ## [1.17.11] - 2026-01-30
 
 ### Added

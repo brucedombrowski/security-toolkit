@@ -1,56 +1,53 @@
-# Test Fixture: Clean configuration file with no secrets or PII.
-# This file is used by integration tests to verify no false positives.
+# Clean configuration fixture - should NOT trigger secret detection.
+# Uses environment variables and secret manager references.
 
 application:
   name: my-app
   version: 1.0.0
   environment: production
 
-server:
-  host: 0.0.0.0
-  port: 8080
-  timeout_seconds: 30
-  max_connections: 100
-
+# Safe: Environment variable references
 database:
-  # Safe: Uses environment variable reference
+  host: ${DB_HOST}
+  port: ${DB_PORT:-5432}
+  username: ${DB_USERNAME}
+  password: ${DB_PASSWORD}
   url: ${DATABASE_URL}
-  pool_size: 10
-  max_idle_time: 300
 
-logging:
-  level: info
-  format: json
-  outputs:
-    - stdout
-    - file
+# Safe: AWS Secrets Manager references
+aws:
+  credentials:
+    access_key: !ssm /myapp/aws/access_key
+    secret_key: !ssm /myapp/aws/secret_key
+  region: ${AWS_REGION:-us-east-1}
 
-cache:
-  enabled: true
-  ttl_seconds: 3600
-  max_size_mb: 256
+# Safe: HashiCorp Vault references
+vault:
+  api_key: vault:secret/data/myapp#api_key
+  database_password: vault:secret/data/myapp#db_password
 
-features:
-  enable_metrics: true
-  enable_tracing: true
-  enable_profiling: false
+# Safe: Kubernetes secret references
+kubernetes:
+  secrets:
+    - name: api-credentials
+      valueFrom:
+        secretKeyRef:
+          name: myapp-secrets
+          key: api-key
 
-security:
-  # Safe: References to secrets manager, not actual secrets
-  api_key_secret: ${SECRETS_MANAGER}/api-key
-  jwt_secret: ${VAULT_PATH}/jwt-signing-key
+# Safe: Placeholder patterns
+placeholders:
+  api_key: "<YOUR_API_KEY>"
+  password: "{{PASSWORD}}"
+  token: "${TOKEN}"
+  secret: "REPLACE_ME"
 
-  cors:
-    allowed_origins:
-      - https://example.com
-      - https://app.example.com
-    allowed_methods:
-      - GET
-      - POST
-      - PUT
-      - DELETE
+# Safe: Empty values
+empty:
+  password: ""
+  token: ~
+  key: null
 
-rate_limiting:
-  enabled: true
-  requests_per_minute: 100
-  burst_size: 20
+# Safe: Example values in comments
+# Example: DATABASE_URL=postgres://user:password@localhost:5432/mydb
+# Set API_KEY environment variable before running
