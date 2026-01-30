@@ -13,6 +13,7 @@ These examples show the structure and format of toolkit outputs without exposing
 - `host-security-scan-EXAMPLE.txt` - Host security posture results
 - `mac-address-scan-EXAMPLE.txt` - MAC address scan results
 - `malware-scan-EXAMPLE.txt` - ClamAV malware scan results
+- `nvd-cve-scan-EXAMPLE.txt` - Scan output
 - `pii-scan-EXAMPLE.txt` - PII pattern scan results
 - `secrets-scan-EXAMPLE.txt` - Secrets/credentials scan results
 - `security-scan-report-EXAMPLE.txt` - Consolidated scan report
