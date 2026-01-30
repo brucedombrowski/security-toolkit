@@ -165,6 +165,164 @@ echo ""
 exit $EXIT_CODE
 ```
 
+## Adding Scanner Modules to scan-vulnerabilities.sh
+
+The vulnerability scanner uses a modular architecture. To add a new scanner (e.g., Trivy):
+
+### 1. Create the Scanner Module
+
+Create `scripts/lib/scanners/<scanner>.sh`:
+
+```bash
+#!/bin/bash
+#
+# <Scanner Name> Module
+#
+# Purpose: <What this scanner does>
+# NIST Controls: <Relevant controls, e.g., RA-5, SI-2>
+#
+# Functions:
+#   run_<scanner>_scan() - Execute the scan
+#   summarize_<scanner>_results() - Parse and summarize results (optional)
+#
+# Dependencies: common.sh, nist-controls.sh
+#
+# Note: This file is sourced, not executed directly
+
+# Prevent direct execution
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo "Error: This script should be sourced, not executed directly." >&2
+    exit 1
+fi
+
+# Run <scanner> scan
+# Usage: run_<scanner>_scan "target" "output_dir" "timestamp" "scan_mode"
+# Returns: 0 on success, 1 on failure
+run_<scanner>_scan() {
+    local target="$1"
+    local output_dir="$2"
+    local timestamp="$3"
+    local scan_mode="${4:-full}"
+    local output_file="$output_dir/<scanner>-$timestamp.txt"
+
+    print_scanner_section "<SCANNER NAME> SCAN"
+    print_nist_controls_header "<scanner>"  # After adding to nist-controls.sh
+
+    echo "Target: $target"
+    echo ""
+
+    # Check if scanner is available
+    if ! command -v <scanner-cmd> &>/dev/null; then
+        log_error "<Scanner> not installed"
+        return 1
+    fi
+
+    log_info "Running <scanner> scan..."
+
+    # Run the scan
+    if <scanner-cmd> <args> "$target" > "$output_file" 2>&1; then
+        log_success "<Scanner> scan completed"
+        echo "Results saved to: $output_file"
+        return 0
+    else
+        log_error "<Scanner> scan failed"
+        return 1
+    fi
+}
+```
+
+### 2. Add NIST Control Mapping
+
+Edit `scripts/lib/scanners/nist-controls.sh`:
+
+```bash
+# In get_scanner_controls_800_53():
+"<scanner>") echo "RA-5 SI-2" ;;  # Add relevant controls
+
+# In get_scanner_controls_800_171():
+"<scanner>") echo "3.11.2 3.14.1" ;;  # Add relevant controls
+```
+
+### 3. Add Dependency Check
+
+Edit `scripts/lib/scanners/common.sh` in `check_scanner_deps()`:
+
+```bash
+# <Scanner> check
+if ! command -v <scanner-cmd> &>/dev/null; then
+    optional_tools+=("<scanner>")
+    SCANNER_RUN_<SCANNER>=false
+else
+    log_success "<scanner>: found"
+fi
+```
+
+### 4. Integrate into Main Script
+
+Edit `scripts/scan-vulnerabilities.sh`:
+
+```bash
+# Add source line
+source "$SCRIPT_DIR/lib/scanners/<scanner>.sh"
+
+# Add command-line option in argument parsing
+-t|--<scanner>-only)
+    RUN_NMAP=false
+    RUN_OPENVAS=false
+    RUN_LYNIS=false
+    RUN_<SCANNER>=true
+    shift
+    ;;
+
+# Add scan execution
+if $RUN_<SCANNER> && ! $REPORT_ONLY; then
+    scan_count=$((scan_count + 1))
+    if run_<scanner>_scan "$TARGET" "$SCANNER_OUTPUT_DIR" "$TIMESTAMP" "$SCAN_MODE" 2>&1 | tee -a "$SCANNER_REPORT_FILE"; then
+        pass_count=$((pass_count + 1))
+    else
+        overall_status=1
+    fi
+fi
+```
+
+### Example: Adding Trivy Container Scanner
+
+```bash
+# scripts/lib/scanners/trivy.sh
+run_trivy_scan() {
+    local target="$1"
+    local output_dir="$2"
+    local timestamp="$3"
+    local scan_mode="${4:-full}"
+    local output_file="$output_dir/trivy-$timestamp.json"
+
+    print_scanner_section "TRIVY CONTAINER VULNERABILITY SCAN"
+
+    if ! command -v trivy &>/dev/null; then
+        log_error "Trivy not installed. Install with: brew install trivy"
+        return 1
+    fi
+
+    local trivy_args="--format json --output $output_file"
+    if [ "$scan_mode" = "quick" ]; then
+        trivy_args="$trivy_args --severity HIGH,CRITICAL"
+    fi
+
+    log_info "Running Trivy scan on $target..."
+
+    if trivy image $trivy_args "$target" 2>&1; then
+        log_success "Trivy scan completed"
+        # Parse results
+        local vuln_count=$(jq '.Results[].Vulnerabilities | length' "$output_file" 2>/dev/null | paste -sd+ | bc)
+        echo "Vulnerabilities found: ${vuln_count:-0}"
+        return 0
+    else
+        log_error "Trivy scan failed"
+        return 1
+    fi
+}
+```
+
 ## Integration Patterns
 
 ### With build scripts
