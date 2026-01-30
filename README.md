@@ -56,6 +56,7 @@ This toolkit provides automated security verification scripts aligned with feder
 | `run-all-scans.sh` | - | Run all scans with consolidated report |
 | `scan-vulnerabilities.sh` | RA-5, SI-2 | Comprehensive vulnerability scanning (Nmap/OpenVAS/Lynis) |
 | `secure-delete.sh` | SP 800-88 | Securely delete files (NIST Clear method) |
+| `tui.sh` | - | Interactive TUI for scan selection |
 | `upgrade.sh` | - | Upgrade toolkit to latest version |
 
 ### Security Validation Scripts
@@ -78,6 +79,9 @@ These scripts validate the toolkit's own security controls:
 
 # Run in non-interactive mode (for CI/CD)
 ./scripts/run-all-scans.sh -n /path/to/project
+
+# Interactive TUI mode (menu-driven)
+./scripts/tui.sh /path/to/project
 
 # Run individual scans
 ./scripts/check-pii.sh /path/to/project

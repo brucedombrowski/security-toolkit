@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-01-29
+
+### Added
+
+- **Interactive TUI Mode** (`scripts/tui.sh`)
+  - Menu-driven interface for scan selection and execution
+  - Supports dialog/whiptail when available, falls back to bash menu
+  - Features: run all/individual scans, view results, generate reports
+  - Change target directory on the fly
+  - Keyboard navigation and visual feedback
+
+- **GitHub Actions CI Workflow** (`.github/workflows/ci.yml`)
+  - Comprehensive CI pipeline with 7 parallel jobs
+  - ShellCheck linting for all scripts
+  - Bash syntax validation for scripts and libraries
+  - Unit and integration tests on Ubuntu and macOS
+  - Security self-scan (PII, secrets, malware checks)
+  - Documentation and CHANGELOG format verification
+  - KEV catalog integrity verification
+
+- **Expanded CPE Mappings** (`scripts/lib/nvd/matcher.sh`)
+  - Increased from ~50 to 200+ package mappings for NVD vulnerability matching
+  - New categories: Security Tools (24), Programming Languages (25),
+    Web Servers (15), Databases (25), Message Queues (10),
+    Container/Orchestration (15), Infrastructure/DevOps (22),
+    Package Managers (13), CLI Tools (25), Browsers (10),
+    Compression (10), Email (10), Virtualization (10),
+    Networking (15), OS Components (10), Logging/Monitoring (10),
+    File Sharing (11)
+
+### Changed
+
+- **Major Version Bump**: 2.0 reflects significant new features
+  - Interactive TUI mode for improved user experience
+  - CI/CD integration for automated testing
+  - Comprehensive NVD vulnerability coverage
+
 ## [1.19.0] - 2026-01-29
 
 ### Added
