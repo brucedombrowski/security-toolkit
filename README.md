@@ -39,6 +39,7 @@ This toolkit provides automated security verification scripts aligned with feder
 | `check-kev.sh` | RA-5, SI-5 | Cross-reference CVEs against CISA KEV catalog |
 | `check-mac-addresses.sh` | SC-8 | IEEE 802.3 MAC address detection |
 | `check-malware.sh` | SI-3 | ClamAV malware scanning |
+| `check-nvd-cves.sh` | RA-5, SI-2 | Cross-reference installed software against NVD |
 | `check-pii.sh` | SI-12 | Scan for PII patterns (SSN, phone, IP, credit card) |
 | `check-secrets.sh` | SA-11 | Detect hardcoded credentials and API keys |
 | `collect-host-inventory.sh` | CM-8 | System component inventory (CUI-marked) |
@@ -238,10 +239,10 @@ If you need to preserve scan results for a specific release or submittal, copy t
 | CM-6 | Configuration Management | Configuration Settings | `check-host-security.sh`, `scan-vulnerabilities.sh` |
 | CM-8 | Configuration Management | System Component Inventory | `collect-host-inventory.sh`, `scan-vulnerabilities.sh` |
 | MP-6 | Media Protection | Media Sanitization | `secure-delete.sh`, `purge-git-history.sh` |
-| RA-5 | Risk Assessment | Vulnerability Monitoring and Scanning | `scan-vulnerabilities.sh` |
+| RA-5 | Risk Assessment | Vulnerability Monitoring and Scanning | `scan-vulnerabilities.sh`, `check-nvd-cves.sh`, `check-kev.sh` |
 | SA-11 | System and Services Acquisition | Developer Testing and Evaluation | `check-secrets.sh` |
 | SC-8 | System and Communications Protection | Transmission Confidentiality and Integrity | `check-mac-addresses.sh` |
-| SI-2 | System and Information Integrity | Flaw Remediation | `scan-vulnerabilities.sh` |
+| SI-2 | System and Information Integrity | Flaw Remediation | `scan-vulnerabilities.sh`, `check-nvd-cves.sh` |
 | SI-3 | System and Information Integrity | Malicious Code Protection | `check-malware.sh` |
 | SI-4 | System and Information Integrity | System Monitoring | `scan-vulnerabilities.sh` |
 | SI-12 | System and Information Integrity | Information Management and Retention | `check-pii.sh` |

@@ -115,6 +115,8 @@ All scripts follow these conventions:
 | `check-secrets.sh` | SA-11 (Developer Testing) |
 | `check-mac-addresses.sh` | SC-8 (Transmission Confidentiality) |
 | `check-host-security.sh` | CM-6 (Configuration Settings) |
+| `check-kev.sh` | RA-5, SI-5 (Vulnerability/Security Alerts) |
+| `check-nvd-cves.sh` | RA-5, SI-2 (Vulnerability Monitoring) |
 | `scan-vulnerabilities.sh` | RA-5, SI-2, SI-4, CA-2 |
 | `secure-delete.sh` | MP-6 (Media Sanitization) |
 | `purge-git-history.sh` | MP-6, SI-12 |
