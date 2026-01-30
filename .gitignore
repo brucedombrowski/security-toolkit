@@ -22,6 +22,9 @@ host-inventory*.txt
 # Security assessments & remediation plans (internal use only)
 .assessments/
 
+# Verification package outputs (generated PDFs - attach to releases)
+.verification/
+
 # Vulnerability scan outputs (SENSITIVE - network topology, CVEs)
 nmap-*.txt
 nmap-*.xml

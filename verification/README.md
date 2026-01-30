@@ -10,76 +10,140 @@ Generate PDF verification packages for compliance submittals that demonstrate:
 - Scans execute successfully
 - Evidence is traceable and timestamped
 
+## Quick Start
+
+```bash
+# Generate verification report for this toolkit
+./scripts/generate-verification-report.sh
+
+# Generate for an external project
+./scripts/generate-verification-report.sh /path/to/your/project
+
+# Tests only (skip scans for faster generation)
+./scripts/generate-verification-report.sh --tests-only /path/to/project
+```
+
 ## Structure
 
 ```
 verification/
 ├── README.md                    # This file
-├── templates/
-│   └── verification-report.tex  # LaTeX template (future)
-└── releases/                    # Generated PDFs (gitignored, attached to GitHub releases)
+└── templates/                   # LaTeX templates (if needed)
+
+# Output goes to:
+.verification/                   # Generated PDFs (gitignored)
+├── verification-report-VERSION.pdf
+├── test-results-VERSION.txt
+├── scan-results-VERSION.txt
+└── checksums-VERSION.sha256
 ```
 
 ## Verification Package Contents
 
-Each release verification package includes:
+Each verification report PDF includes:
 
-1. **Requirements Traceability Matrix**
-   - FR-XXX → NIST Control → Script → Test → Status
+1. **Executive Summary**
+   - Project version and commit hash
+   - Overall test/scan status
+   - Requirements count
 
-2. **Test Execution Report**
+2. **Requirements Traceability Matrix**
+   - FR-XXX → NIST Control → Script → Test
+
+3. **Test Execution Report**
    - All test suites with pass/fail counts
-   - Individual test results
    - Execution timestamps
 
-3. **Scan Results Summary**
+4. **Scan Results Summary**
    - Each scan type with findings
    - NIST control mapping
-   - Overall compliance status
 
-4. **Attestation**
-   - Toolkit version and commit hash
-   - Timestamp
+5. **NIST Control Implementation**
+   - 800-53 controls mapped to scripts
+   - Implementation status
+
+6. **Attestation**
+   - Formal verification statement
    - Checksums for reproducibility
 
-## Workflow
+## For External Projects
 
-```
-release.sh →
-  1. Run tests/run-all-tests.sh
-  2. Run scripts/run-all-scans.sh
-  3. Generate verification PDFs (future)
-  4. Attach to GitHub release
-```
+If your project needs verification reports:
 
-## Current Status
+1. **Create requirements.json** in your project root:
+   ```bash
+   cp ~/Security/requirements/project-requirements-template.json \
+      /path/to/your/project/requirements.json
+   ```
 
-**Implemented:**
-- `scripts/generate-scan-attestation.sh` - Basic PDF attestation
-- `templates/scan_attestation_template.tex` - LaTeX template
+2. **Edit requirements.json** with your project's requirements
 
-**Planned:**
-- `scripts/generate-verification-report.sh` - Full verification package
-- `templates/verification-report.tex` - Comprehensive template
-- Requirements-to-test mapping in PDF
-- Automated attachment to releases
+3. **Generate verification report**:
+   ```bash
+   ~/Security/scripts/generate-verification-report.sh /path/to/your/project
+   ```
 
-## Future Integration
+4. **Find output** in your project's `.verification/` directory
+
+Your requirements will be linked to NIST controls and verified by toolkit scans.
+
+## Usage Options
 
 ```bash
-# Generate verification package
-./scripts/generate-verification-report.sh --release v1.17.14
+# Basic usage (runs tests + scans)
+./scripts/generate-verification-report.sh [TARGET_DIR]
 
-# Output:
-#   verification/releases/v1.17.14/
-#     ├── requirements-traceability.pdf
-#     ├── test-verification.pdf
-#     └── compliance-attestation.pdf
+# Specify version
+./scripts/generate-verification-report.sh -v 1.0.0 /path/to/project
+
+# Custom output directory
+./scripts/generate-verification-report.sh -o /path/to/output /path/to/project
+
+# Use specific requirements file
+./scripts/generate-verification-report.sh -r /path/to/reqs.json /path/to/project
+
+# Tests only (faster, no scans)
+./scripts/generate-verification-report.sh --tests-only /path/to/project
+```
+
+## Workflow Integration
+
+### With release.sh
+
+```bash
+# Verification reports are generated during release
+./scripts/release.sh 1.18.0
+
+# Or generate separately
+./scripts/generate-verification-report.sh -v 1.18.0
+```
+
+### Attach to GitHub Release
+
+```bash
+VERSION="v1.18.0"
+gh release upload $VERSION .verification/verification-report-$VERSION.pdf
+```
+
+## Requirements
+
+- **pdflatex** - For PDF generation (TeX Live or MiKTeX)
+- **jq** - For JSON parsing
+
+Install on macOS:
+```bash
+brew install basictex jq
+```
+
+Install on Linux:
+```bash
+apt install texlive-latex-base jq
 ```
 
 ## Notes
 
-- Generated PDFs are not committed to the repository (binary files)
+- Generated PDFs are not committed (add `.verification/` to `.gitignore`)
 - PDFs are attached to GitHub releases for distribution
 - Templates and requirements JSON are version controlled
 - Each PDF includes SHA256 checksums for verification
+- Toolkit version is included for traceability

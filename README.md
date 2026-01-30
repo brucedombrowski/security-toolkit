@@ -47,6 +47,7 @@ This toolkit provides automated security verification scripts aligned with feder
 | `Collect-HostInventory.ps1` | CM-8 | Windows PowerShell host inventory |
 | `generate-compliance.sh` | - | Generate security compliance statement PDF |
 | `generate-scan-attestation.sh` | - | Generate PDF attestation from scan results |
+| `generate-verification-report.sh` | CA-2 | Generate verification package PDF |
 | `harden-system.sh` | CM-6, SC-7 | Apply security hardening configurations |
 | `pre-scan-cleanup.sh` | SI-14 | Clean temp files/caches before scanning |
 | `purge-git-history.sh` | SP 800-88 | Remove sensitive files from git history |
