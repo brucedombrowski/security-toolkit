@@ -497,7 +497,12 @@ test_start "Inventory saves to file with correct permissions"
 "$REPO_DIR/scripts/collect-host-inventory.sh" "$INVENTORY_FILE" > /dev/null 2>&1 || true
 if [ -f "$INVENTORY_FILE" ]; then
     # Check file permissions (should be 600)
-    perms=$(stat -f "%OLp" "$INVENTORY_FILE" 2>/dev/null || stat -c "%a" "$INVENTORY_FILE" 2>/dev/null || echo "unknown")
+    # macOS uses -f "%OLp", Linux uses -c "%a"
+    if [[ "$(uname)" == "Darwin" ]]; then
+        perms=$(stat -f "%OLp" "$INVENTORY_FILE" 2>/dev/null || echo "unknown")
+    else
+        perms=$(stat -c "%a" "$INVENTORY_FILE" 2>/dev/null || echo "unknown")
+    fi
     if [ "$perms" = "600" ]; then
         test_pass
     else

@@ -422,8 +422,15 @@ else
 fi
 
 test_start "Git tags match expected format"
+# In CI, shallow clones don't have tags - fetch them or skip
+if ! git -C "$REPO_DIR" describe --tags --abbrev=0 &>/dev/null; then
+    # Try to fetch tags (may fail in restricted environments)
+    git -C "$REPO_DIR" fetch --tags --depth=1 2>/dev/null || true
+fi
 latest_tag=$(git -C "$REPO_DIR" describe --tags --abbrev=0 2>/dev/null || echo "")
-if echo "$latest_tag" | grep -qE "^v[0-9]+\.[0-9]+\.[0-9]+"; then
+if [ -z "$latest_tag" ]; then
+    test_skip "no tags available (shallow clone)"
+elif echo "$latest_tag" | grep -qE "^v[0-9]+\.[0-9]+\.[0-9]+"; then
     test_pass
 else
     test_fail "semver format" "got: $latest_tag"
