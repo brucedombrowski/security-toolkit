@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.13] - 2026-01-30
+
+### Added
+
+- **NVD CVE Vulnerability Lookup** (`scripts/check-nvd-cves.sh`)
+  - Cross-reference installed software against National Vulnerability Database
+  - Automatic CPE (Common Platform Enumeration) mapping for 50+ common packages
+  - CVSS score parsing (supports v2.0, v3.0, v3.1)
+  - Severity classification (CRITICAL, HIGH, MEDIUM, LOW)
+  - Caching system with 24-hour TTL for API responses
+  - Offline mode for air-gapped environments
+  - Priority-only mode for faster scans of critical packages
+  - NIST Controls: RA-5 (Vulnerability Monitoring), SI-2 (Flaw Remediation), 3.11.2 (800-171)
+
+- **NVD Integration Libraries** (`scripts/lib/nvd/`)
+  - `api.sh` - NVD API 2.0 client with rate limiting and caching
+  - `matcher.sh` - Package-to-CPE mapping (Bash 3.2+ compatible)
+
+- **NVD CVE Unit Tests** (`tests/test-nvd-cves.sh`)
+  - 41 tests covering API, matcher, and main script functionality
+  - Mock NVD responses for testing without network
+  - CVSS parsing verification
+
+- **Test Runner Updates**
+  - Added `test-nvd-cves.sh` to `run-all-tests.sh`
+  - Total test suite now includes 14 test suites
+
 ## [1.17.12] - 2026-01-30
 
 ### Added

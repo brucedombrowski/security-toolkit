@@ -82,6 +82,7 @@ run_test_suite "Run All Scans Orchestration" "$SCRIPT_DIR/test-run-all-scans.sh"
 run_test_suite "Inventory Modules" "$SCRIPT_DIR/test-inventory-modules.sh"
 run_test_suite "Scanner Modules" "$SCRIPT_DIR/test-scanner-modules.sh"
 run_test_suite "Integration Tests" "$SCRIPT_DIR/test-integration.sh"
+run_test_suite "NVD CVE Lookup" "$SCRIPT_DIR/test-nvd-cves.sh"
 
 # Run Phase 1 critical fix tests if they exist
 if [ -x "$REPO_DIR/scripts/test-latex-injection.sh" ]; then
