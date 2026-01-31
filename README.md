@@ -4,7 +4,7 @@ IT security analysis and compliance documentation tools for software projects.
 
 ## Quick Start
 
-### Option 1: Homebrew (Recommended for macOS)
+### Option 1: Homebrew (macOS/Linux)
 
 ```bash
 brew tap brucedombrowski/security-toolkit
