@@ -1,12 +1,31 @@
-# Security
+# Security Toolkit
 
 IT security analysis and compliance documentation tools for software projects.
 
 ## Quick Start
 
-1. **[Installation Guide](INSTALLATION.md)** - Platform-specific setup instructions
-2. **Run first scan:** `./scripts/run-all-scans.sh /your/project`
-3. **Review results** in `.scans/` directory
+### Option 1: Homebrew (Recommended for macOS)
+
+```bash
+brew tap brucedombrowski/security-toolkit
+brew install security-toolkit
+
+# Run scans
+security-scan /path/to/project
+security-tui  # Interactive mode
+```
+
+### Option 2: Clone Repository
+
+```bash
+git clone https://github.com/brucedombrowski/security-toolkit.git
+cd security-toolkit
+./scripts/run-all-scans.sh /path/to/project
+```
+
+### Review Results
+
+Results are saved in `.scans/` directory of your target project.
 
 ## Documentation
 
@@ -36,6 +55,7 @@ This toolkit provides automated security verification scripts aligned with feder
 | Script | NIST Control | Description |
 |--------|--------------|-------------|
 | `backup-guidance.sh` | CP-9, CP-10 | Display backup guidance before scans/remediation |
+| `check-containers.sh` | CM-8, RA-5 | Scan Docker/Podman/nerdctl containers for vulnerabilities |
 | `check-host-security.sh` | CM-6 | Host OS security posture verification |
 | `check-kev.sh` | RA-5, SI-5 | Cross-reference CVEs against CISA KEV catalog |
 | `check-mac-addresses.sh` | SC-8 | IEEE 802.3 MAC address detection |
@@ -106,23 +126,55 @@ Features:
 
 The TUI shows elapsed time during long-running scans (like malware scanning) so you know it's still working. Works with Bash 3.2+ (macOS default).
 
+### Container Security Scanning
+
+Scan running Docker, Podman, or nerdctl containers for known vulnerabilities:
+
+```bash
+# Scan all running containers (auto-detects runtime)
+./scripts/check-containers.sh
+
+# Use specific runtime
+./scripts/check-containers.sh --runtime podman
+
+# Via Homebrew
+security-containers
+```
+
+The scanner:
+- Auto-detects container runtime (Docker, Podman, nerdctl)
+- Extracts software versions from running containers
+- Cross-references against NVD CVE database
+- Checks for CISA KEV (Known Exploited Vulnerabilities) matches
+
+**Vulnerable Lab Demo:**
+
+Test the scanner with intentionally vulnerable containers:
+
+```bash
+cd demo/vulnerable-lab
+./scan-containers.sh  # Starts 5 vulnerable containers and scans them
+```
+
+See [demo/vulnerable-lab/README.md](demo/vulnerable-lab/README.md) for details.
+
 ### Integrate into CI/CD
 
 ```yaml
 # GitHub Actions example
 - name: Security Scan
   run: |
-    git clone https://github.com/brucedombrowski/Security.git /tmp/security
-    /tmp/security/scripts/run-all-scans.sh ${{ github.workspace }}
+    git clone https://github.com/brucedombrowski/security-toolkit.git /tmp/security-toolkit
+    /tmp/security-toolkit/scripts/run-all-scans.sh ${{ github.workspace }}
 ```
 
 ### Integrate into build script
 
 ```bash
 # In your project's build.sh
-SECURITY_REPO="/path/to/Security"
-if [ -x "$SECURITY_REPO/scripts/run-all-scans.sh" ]; then
-    "$SECURITY_REPO/scripts/run-all-scans.sh" "$(pwd)"
+SECURITY_TOOLKIT="/path/to/security-toolkit"
+if [ -x "$SECURITY_TOOLKIT/scripts/run-all-scans.sh" ]; then
+    "$SECURITY_TOOLKIT/scripts/run-all-scans.sh" "$(pwd)"
 fi
 ```
 
@@ -175,11 +227,26 @@ sudo ./scripts/scan-vulnerabilities.sh
 
 See [docs/COMPLIANCE.md](docs/COMPLIANCE.md) for complete NIST control mapping.
 
+## Homebrew Commands
+
+When installed via Homebrew, these commands are available:
+
+| Command | Description |
+|---------|-------------|
+| `security-scan` | Run all security scans on a directory |
+| `security-tui` | Interactive menu interface |
+| `security-inventory` | Collect host system inventory |
+| `security-pii` | Scan for PII patterns |
+| `security-secrets` | Scan for hardcoded secrets |
+| `security-malware` | Run ClamAV malware scan |
+| `security-kev` | Check against CISA KEV catalog |
+| `security-containers` | Scan running containers |
+
 ## Prerequisites
 
 - **Bash** - Required to execute all security scripts (included by default on macOS/Linux)
 
-- **ClamAV** - Required for malware scanning
+- **ClamAV** - Required for malware scanning (installed automatically with Homebrew)
   ```bash
   # macOS
   brew install clamav
