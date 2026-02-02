@@ -214,11 +214,14 @@ bundle_kev_catalog() {
 
     mv "${kev_file}.tmp" "$kev_file"
 
-    # Generate SHA256 hash
+    # Generate SHA256 hash (use relative path for portability)
+    local kev_dir kev_basename
+    kev_dir=$(dirname "$kev_file")
+    kev_basename=$(basename "$kev_file")
     if [[ "$(uname)" == "Darwin" ]]; then
-        shasum -a 256 "$kev_file" > "${kev_file}.sha256"
+        (cd "$kev_dir" && shasum -a 256 "$kev_basename" > "${kev_basename}.sha256")
     else
-        sha256sum "$kev_file" > "${kev_file}.sha256"
+        (cd "$kev_dir" && sha256sum "$kev_basename" > "${kev_basename}.sha256")
     fi
 
     # Get catalog metadata

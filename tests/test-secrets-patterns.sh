@@ -45,6 +45,11 @@ test_fail() {
     echo "    Got: $2"
 }
 
+test_known() {
+    echo -n "  Known: $1... "
+    echo -e "${YELLOW}KNOWN${NC} (allowlist handles)"
+}
+
 # Secrets regex patterns (must match check-secrets.sh patterns)
 API_KEY_PATTERN='api[_-]?key["\x27]?\s*[:=]\s*["\x27]?[A-Za-z0-9_-]{20,}'
 AWS_ACCESS_KEY='AKIA[0-9A-Z]{16}'
@@ -220,13 +225,7 @@ echo ""
 # -----------------------------------------------------------------------------
 echo "--- False Positive Prevention ---"
 
-test_start "Reject password placeholder"
-if echo 'password = "<your-password-here>"' | grep -qiE 'password.*[:=].*<.*>'; then
-    echo -e "${YELLOW}KNOWN${NC} (allowlist handles placeholders)"
-    TESTS_RUN=$((TESTS_RUN - 1))
-else
-    test_pass
-fi
+test_known "Password placeholder matches pattern (handled by allowlist)"
 
 test_start "Reject empty password"
 if echo 'password = ""' | grep -qiE 'password.*[:=].*""$'; then

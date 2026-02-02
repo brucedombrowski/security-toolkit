@@ -1,10 +1,16 @@
 # Branch Protection Setup Guide
 
-This document describes the recommended branch protection settings for the `main` branch.
+This document describes the branch protection settings for the `main` branch.
+
+## Status
+
+**Branch protection is ACTIVE** on `brucedombrowski/security-toolkit`.
+
+Configured via GitHub API on 2026-02-02.
 
 ## Overview
 
-Branch protection rules ensure code quality and prevent accidental pushes to the main branch. These settings should be configured in GitHub repository settings.
+Branch protection rules ensure code quality and prevent accidental pushes to the main branch.
 
 ## Recommended Settings
 

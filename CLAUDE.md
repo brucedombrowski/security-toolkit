@@ -42,6 +42,86 @@ All changes must maintain:
 
 **Release Policy:** Only the latest release is kept on GitHub. Old releases are automatically deleted by `release.sh`, but all tags are preserved for version history.
 
+## Development Workflow
+
+This project uses **git worktrees** to separate development from releases:
+
+```
+~/Security/        # main branch - always release-ready
+~/security-dev/    # dev branch - active development
+```
+
+### Worktree Setup (One-Time)
+
+```bash
+# From the main repo
+cd ~/Security
+git worktree add ../security-dev -b dev
+```
+
+### Terminal Tab Naming
+
+When working in multiple terminal tabs (especially with multiple agents), set a descriptive tab title immediately on session start:
+
+```bash
+echo -ne "\033]0;Lead Systems Engineer\007"
+```
+
+This helps distinguish between agent contexts and worktrees at a glance.
+
+### Development Process
+
+1. **All development happens in the dev worktree:**
+   ```bash
+   cd ~/security-dev
+   # Make changes, commit frequently
+   git add <files>
+   git commit -m "feat: Add new feature"
+   ```
+
+2. **Run tests before proposing changes:**
+   ```bash
+   ./tests/run-all-tests.sh
+   ```
+
+3. **Push dev branch and create PR:**
+   ```bash
+   git push -u origin dev
+   gh pr create --base main --head dev
+   ```
+
+4. **After PR is merged, sync and release from main:**
+   ```bash
+   cd ~/Security
+   git pull
+   ./scripts/release.sh X.Y.Z
+   ```
+
+5. **Reset dev branch after release:**
+   ```bash
+   cd ~/security-dev
+   git fetch origin
+   git reset --hard origin/main
+   ```
+
+### Branch Rules
+
+| Branch | Purpose | Direct Commits | Force Push |
+|--------|---------|----------------|------------|
+| `main` | Releases only | No (PR required) | Never |
+| `dev` | Active development | Yes | After release only |
+| `feature/*` | Isolated features | Yes | Yes |
+
+### CI/CD Workflows
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` | Push to main, PRs | Tests, linting, security scans |
+| `pr.yml` | Pull requests | Auto-labeling, title validation |
+| `release.yml` | Version tags (`v*.*.*`) | Automated releases |
+
+See [docs/BRANCH-PROTECTION.md](docs/BRANCH-PROTECTION.md) for recommended GitHub settings.
+
 ## Repository Structure
 
 ```

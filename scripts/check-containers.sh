@@ -315,7 +315,8 @@ check_vulnerable_version() {
             ;;
         jenkins)
             # CVE-2024-23897 affects Jenkins <= 2.441
-            if [[ "$version" == "2.441" ]] || [[ "$version" < "2.442" ]]; then
+            # Use awk for numeric version comparison
+            if awk -v ver="$version" 'BEGIN { exit !(ver <= 2.441) }'; then
                 cve="CVE-2024-23897"
             fi
             ;;

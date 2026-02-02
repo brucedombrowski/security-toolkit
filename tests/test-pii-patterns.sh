@@ -45,6 +45,11 @@ test_fail() {
     echo "    Got: $2"
 }
 
+test_known() {
+    echo -n "  Known: $1... "
+    echo -e "${YELLOW}KNOWN${NC} (allowlist handles)"
+}
+
 # PII regex patterns (must match check-pii.sh)
 IPV4_PATTERN='[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
 PHONE_PATTERN='\(?[0-9]{3}\)?[-. ]?[0-9]{3}[-. ]?[0-9]{4}'
@@ -202,15 +207,8 @@ else
     test_pass
 fi
 
-test_start "Reject version number (6.0.0.0)"
-# This will match IPv4 pattern - this is a known limitation
-# The check-pii.sh script handles this via allowlist
-if echo "version 6.0.0.0" | grep -qE "$IPV4_PATTERN"; then
-    echo -e "${YELLOW}KNOWN${NC} (allowlist handles)"
-    TESTS_RUN=$((TESTS_RUN - 1))  # Don't count as test
-else
-    test_pass
-fi
+test_known "Version number (6.0.0.0) matches IPv4 pattern"
+# This will match IPv4 pattern - this is a known limitation handled via allowlist
 
 echo ""
 
