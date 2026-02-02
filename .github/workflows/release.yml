@@ -1,0 +1,162 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Pre-release Tests
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    name: Create Release
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tarball_sha256: ${{ steps.checksum.outputs.sha256 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+
+      - name: Download fresh KEV catalog
+        run: |
+          echo "Downloading latest CISA KEV catalog..."
+          curl -sSL -o data/kev-catalog.json \
+            "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+
+          # Verify it's valid JSON
+          if ! jq -e '.vulnerabilities | length' data/kev-catalog.json > /dev/null 2>&1; then
+            echo "::error::Downloaded KEV catalog is not valid JSON"
+            exit 1
+          fi
+
+          # Generate checksum
+          cd data
+          shasum -a 256 kev-catalog.json > kev-catalog.json.sha256
+
+          KEV_COUNT=$(jq '.vulnerabilities | length' kev-catalog.json)
+          echo "KEV catalog contains $KEV_COUNT vulnerabilities"
+
+      - name: Extract release notes from CHANGELOG
+        id: changelog
+        run: |
+          # Extract the section for this version from CHANGELOG.md
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Use awk to extract the section between this version header and the next
+          NOTES=$(awk -v ver="$VERSION" '
+            /^## \[/ {
+              if (found) exit
+              if (index($0, "[" ver "]")) found=1
+              next
+            }
+            found { print }
+          ' CHANGELOG.md)
+
+          # Write to file for the release body
+          echo "$NOTES" > release-notes.md
+
+          # Show preview
+          echo "Release notes preview:"
+          head -20 release-notes.md
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.version.outputs.version }}
+          body_path: release-notes.md
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute tarball SHA256
+        id: checksum
+        run: |
+          # Download the source tarball that GitHub auto-generates
+          TARBALL_URL="https://github.com/${{ github.repository }}/archive/refs/tags/v${{ steps.version.outputs.version }}.tar.gz"
+          curl -sSL -o release.tar.gz "$TARBALL_URL"
+
+          SHA256=$(shasum -a 256 release.tar.gz | cut -d' ' -f1)
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "Tarball SHA256: $SHA256"
+
+  update-homebrew:
+    name: Update Homebrew Tap
+    needs: release
+    runs-on: ubuntu-latest
+    if: ${{ vars.HOMEBREW_TAP_REPO != '' }}
+    steps:
+      - name: Checkout homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.HOMEBREW_TAP_REPO }}
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Update formula
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          SHA256="${{ needs.release.outputs.tarball_sha256 }}"
+          FORMULA_PATH="homebrew-tap/Formula/security-toolkit.rb"
+
+          if [ ! -f "$FORMULA_PATH" ]; then
+            echo "::warning::Formula not found at $FORMULA_PATH, skipping update"
+            exit 0
+          fi
+
+          # Update version
+          sed -i "s|version \".*\"|version \"$VERSION\"|" "$FORMULA_PATH"
+
+          # Update URL
+          sed -i "s|url \".*\"|url \"https://github.com/${{ github.repository }}/archive/refs/tags/v$VERSION.tar.gz\"|" "$FORMULA_PATH"
+
+          # Update SHA256
+          sed -i "s|sha256 \".*\"|sha256 \"$SHA256\"|" "$FORMULA_PATH"
+
+          echo "Updated formula:"
+          grep -E "(version|url|sha256)" "$FORMULA_PATH" | head -5
+
+      - name: Commit and push
+        working-directory: homebrew-tap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          VERSION="${{ needs.release.outputs.version }}"
+
+          git add Formula/security-toolkit.rb
+          git diff --staged --quiet && echo "No changes to commit" && exit 0
+
+          git commit -m "security-toolkit $VERSION"
+          git push
+
+  cleanup-old-releases:
+    name: Cleanup Old Releases
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old releases (keep latest only)
+        uses: dev-drprasad/delete-older-releases@v0.3.2
+        with:
+          keep_latest: 1
+          delete_tags: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

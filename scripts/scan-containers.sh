@@ -9,11 +9,16 @@
 #   ./scan-containers.sh              # Start lab and scan
 #   ./scan-containers.sh --no-start   # Scan without starting lab
 #   ./scan-containers.sh --runtime podman  # Use specific runtime
+#
+# Exit codes:
+#   0 = Pass (no KEV matches)
+#   1 = Fail (KEV matches found or error)
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+LAB_DIR="$REPO_DIR/demo/vulnerable-lab"
 
 # Colors
 CYAN='\033[0;36m'
@@ -86,16 +91,16 @@ if [ "$START_LAB" = true ]; then
     COMPOSE_CMD=$(get_compose_cmd "$RUNTIME")
 
     echo -e "${CYAN}Starting vulnerable lab containers...${NC}"
-    if [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
-        $COMPOSE_CMD -f "$SCRIPT_DIR/docker-compose.yml" up -d
+    if [ -f "$LAB_DIR/docker-compose.yml" ]; then
+        $COMPOSE_CMD -f "$LAB_DIR/docker-compose.yml" up -d
         echo "Waiting for containers to initialize..."
         sleep 10
     else
-        echo -e "${YELLOW}Warning: docker-compose.yml not found${NC}"
+        echo -e "${YELLOW}Warning: docker-compose.yml not found at $LAB_DIR${NC}"
         exit 1
     fi
     echo ""
 fi
 
 # Run the main container scanner
-exec "$REPO_DIR/scripts/check-containers.sh" $RUNTIME_ARGS -o "$SCRIPT_DIR"
+exec "$SCRIPT_DIR/check-containers.sh" $RUNTIME_ARGS -o "$LAB_DIR"

@@ -11,14 +11,16 @@ This demo environment provides intentionally vulnerable software for testing the
 Spins up containers with vulnerable software for container security scanning.
 
 ```bash
-# Start vulnerable lab and scan
-./scan-containers.sh --lab
+# From repository root:
 
-# Or just scan existing containers
-./scan-containers.sh
+# Start vulnerable lab and scan
+./scripts/scan-containers.sh
+
+# Scan without starting lab (if containers already running)
+./scripts/scan-containers.sh --no-start
 
 # Use specific runtime
-./scan-containers.sh --runtime podman
+./scripts/scan-containers.sh --runtime podman
 ```
 
 **Supported Runtimes:** Docker, Podman, nerdctl

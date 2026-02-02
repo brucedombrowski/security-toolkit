@@ -152,8 +152,7 @@ The scanner:
 Test the scanner with intentionally vulnerable containers:
 
 ```bash
-cd demo/vulnerable-lab
-./scan-containers.sh  # Starts 5 vulnerable containers and scans them
+./scripts/scan-containers.sh  # Starts 5 vulnerable containers and scans them
 ```
 
 See [demo/vulnerable-lab/README.md](demo/vulnerable-lab/README.md) for details.
