@@ -20,9 +20,11 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/lib/init.sh"
+
+# Initialize toolkit (sets TIMESTAMP, TOOLKIT_VERSION, TOOLKIT_COMMIT)
+init_security_toolkit
 OUTPUT_DIR=""  # Will be set based on target or default
-TIMESTAMP=$(date "+%Y-%m-%dT%H%M%SZ")
 
 # Colors
 RED='\033[0;31m'
@@ -368,7 +370,7 @@ echo ""
 echo -e "${CYAN}Cross-referencing with CISA KEV catalog...${NC}"
 echo ""
 
-KEV_FILE="$REPO_DIR/data/kev-catalog.json"
+KEV_FILE="$SECURITY_REPO_DIR/data/kev-catalog.json"
 KEV_MATCHES=0
 
 cat > "$KEV_RESULTS" << EOF

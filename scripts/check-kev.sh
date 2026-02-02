@@ -21,7 +21,7 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/lib/init.sh"
 
 # KEV Catalog URLs and paths
 KEV_JSON_URL="https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
@@ -39,8 +39,8 @@ GREEN='\033[0;32m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Timestamp
-TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+# Initialize toolkit (sets TIMESTAMP, TOOLKIT_VERSION, TOOLKIT_COMMIT)
+init_security_toolkit
 
 usage() {
     echo "Usage: $0 [vulnerability-scan-file]"
