@@ -33,8 +33,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/brucedombrowski/Security.git
-cd Security
+git clone https://github.com/brucedombrowski/security-toolkit.git
+cd security-toolkit
 
 # Make scripts executable
 chmod +x scripts/*.sh
@@ -47,9 +47,9 @@ chmod +x scripts/*.sh
 
 ```bash
 # Download latest release
-curl -L https://github.com/brucedombrowski/Security/archive/main.zip -o Security.zip
-unzip Security.zip
-cd Security-main
+curl -L https://github.com/brucedombrowski/security-toolkit/archive/main.zip -o security-toolkit.zip
+unzip security-toolkit.zip
+cd security-toolkit-main
 
 # Make scripts executable
 chmod +x scripts/*.sh
@@ -336,7 +336,7 @@ chmod +x scripts/*.sh
 
 ```bash
 # Navigate to toolkit directory
-cd ~/Security
+cd ~/security-toolkit
 
 # Run upgrade script
 ./scripts/upgrade.sh
@@ -350,7 +350,7 @@ The upgrade script will:
 ### Manual Upgrade
 
 ```bash
-cd ~/Security
+cd ~/security-toolkit
 git fetch origin
 git pull origin main
 ```
@@ -364,8 +364,8 @@ Your **project-specific data** is stored in your scanned projects, not in the to
 | `<your-project>/.scans/` | Scan results | Yes (in your project) |
 | `<your-project>/.allowlists/` | Reviewed exceptions | Yes (in your project) |
 | `<your-project>/requirements.json` | Your requirements | Yes (copy from template) |
-| `Security/.cache/` | Toolkit cache | Refreshed on upgrade |
-| `Security/data/` | Bundled resources | Updated to latest |
+| `security-toolkit/.cache/` | Toolkit cache | Refreshed on upgrade |
+| `security-toolkit/data/` | Bundled resources | Updated to latest |
 
 ### Using Your Own Requirements
 
@@ -373,7 +373,7 @@ If you use the `requirements/project-requirements-template.json`:
 
 1. **Copy** the template to your own project:
    ```bash
-   cp ~/Security/requirements/project-requirements-template.json \
+   cp ~/security-toolkit/requirements/project-requirements-template.json \
       /path/to/your-project/requirements.json
    ```
 
