@@ -1,0 +1,216 @@
+\documentclass[11pt,letterpaper]{article}
+
+% ============================================================================
+% PACKAGES
+% ============================================================================
+\usepackage[margin=0.75in, top=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{tikz}
+
+% ============================================================================
+% COLORS
+% ============================================================================
+\definecolor{navyblue}{RGB}{0,51,102}
+\definecolor{lightgray}{RGB}{245,245,245}
+\definecolor{accentgreen}{RGB}{40,167,69}
+
+% ============================================================================
+% DOCUMENT VARIABLES
+% ============================================================================
+\newcommand{\DocumentDate}{February 2026}
+\newcommand{\ToolkitVersion}{2.1.2}
+
+% ============================================================================
+% CONFIGURATION
+% ============================================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=navyblue,
+    urlcolor=navyblue,
+    pdfborder={0 0 0}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+\setlist[itemize]{leftmargin=0.3in, itemsep=4pt, topsep=6pt}
+
+% ============================================================================
+% HEADER AND FOOTER
+% ============================================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{navyblue}{\textbf{SECURITY VERIFICATION TOOLKIT}}}
+\fancyhead[R]{\small\textcolor{gray}{Executive Brief | \DocumentDate}}
+\fancyfoot[C]{\small\textcolor{gray}{Page \thepage\ of \pageref{LastPage}}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ============================================================================
+% CUSTOM COMMANDS
+% ============================================================================
+\newcommand{\slideheader}[1]{%
+    \vspace{12pt}%
+    {\Large\textcolor{navyblue}{\textbf{#1}}}%
+    \vspace{6pt}%
+    \hrule height 0.5pt%
+    \vspace{8pt}%
+}
+
+\newcommand{\keymetric}[2]{%
+    \begin{minipage}[t]{0.22\textwidth}
+        \centering
+        {\LARGE\textcolor{navyblue}{\textbf{#1}}}\\[4pt]
+        {\small #2}
+    \end{minipage}%
+}
+
+% ============================================================================
+% BEGIN DOCUMENT
+% ============================================================================
+\begin{document}
+
+% Title
+\begin{center}
+    {\Huge\textcolor{navyblue}{\textbf{Security Verification Toolkit}}}\\[8pt]
+    {\Large Executive Brief}\\[4pt]
+    {\small Version \ToolkitVersion\ | \DocumentDate}
+\end{center}
+
+\vspace{16pt}
+
+% THE PROBLEM
+\slideheader{The Challenge}
+
+\textbf{Federal compliance is expensive and slow.}
+
+\begin{itemize}
+    \item Manual security reviews take \textbf{weeks per project}
+    \item Compliance gaps discovered late = \textbf{costly rework}
+    \item ATO delays = \textbf{missed contract deadlines}
+    \item No visibility into security posture \textbf{until audit time}
+\end{itemize}
+
+% THE SOLUTION
+\slideheader{The Solution}
+
+\textbf{Automated security scanning aligned to federal standards.}
+
+One command. Instant results. Audit-ready output.
+
+\begin{center}
+\fcolorbox{navyblue}{lightgray}{%
+    \parbox{0.8\textwidth}{\centering\texttt{./scripts/run-all-scans.sh /path/to/project}}%
+}
+\end{center}
+
+% KEY METRICS
+\slideheader{Bottom Line}
+
+\begin{center}
+\keymetric{< 5 min}{Time to First Scan}
+\hfill
+\keymetric{35+}{Secret Patterns Detected}
+\hfill
+\keymetric{12}{NIST Control Families}
+\hfill
+\keymetric{\$0}{License Cost (MIT)}
+\end{center}
+
+\vspace{16pt}
+
+% WHY IT MATTERS
+\slideheader{Why It Matters}
+
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Executive Concern} & \textbf{How We Address It} \\
+\midrule
+\textbf{Cost Reduction} & Replace 40+ hours of manual review with minutes of automated scanning \\
+\textbf{Risk Mitigation} & Continuous detection of PII, secrets, and vulnerabilities before release \\
+\textbf{Compliance Speed} & Pre-mapped to NIST 800-53 and 800-171 controls; PDF attestations ready for submittal \\
+\textbf{Audit Readiness} & Checksummed, traceable evidence with file:line references \\
+\bottomrule
+\end{tabularx}
+
+\newpage
+
+% WHAT WE SCAN
+\slideheader{Scanning Capabilities}
+
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Category} & \textbf{What We Find} \\
+\midrule
+PII Detection & SSN, credit cards, phone numbers, emails, IP addresses \\
+Secrets Detection & API keys, passwords, tokens, private keys (35+ patterns) \\
+Malware Scanning & Malicious code detection via ClamAV integration \\
+Vulnerability Assessment & CVE cross-reference via NVD and CISA KEV catalog \\
+Host Security & OS configuration, encryption status, firewall settings \\
+\bottomrule
+\end{tabularx}
+
+\vspace{16pt}
+
+% STANDARDS COVERAGE
+\slideheader{Federal Standards Coverage}
+
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Standard} & \textbf{Description} & \textbf{Status} \\
+\midrule
+NIST 800-53 & Security and Privacy Controls & \textcolor{accentgreen}{\textbf{12 control families}} \\
+NIST 800-171 & Protecting CUI & \textcolor{accentgreen}{\textbf{Mapped}} \\
+FIPS 199/200 & Security Categorization & \textcolor{accentgreen}{\textbf{Supported}} \\
+\bottomrule
+\end{tabularx}
+
+\vspace{16pt}
+
+% PLATFORM SUPPORT
+\slideheader{Platform Support}
+
+\begin{tabularx}{\textwidth}{lll}
+\toprule
+\textbf{Platform} & \textbf{Status} & \textbf{Notes} \\
+\midrule
+macOS (Intel/ARM) & \textcolor{accentgreen}{\textbf{Ready}} & Full support \\
+Linux (Ubuntu, CentOS, Debian) & \textcolor{accentgreen}{\textbf{Ready}} & Full support \\
+Windows 10/11, Server 2016+ & \textcolor{accentgreen}{\textbf{Ready}} & PowerShell + Git Bash \\
+CI/CD Pipelines & \textcolor{accentgreen}{\textbf{Ready}} & GitHub Actions integrated \\
+Air-Gapped Networks & \textcolor{accentgreen}{\textbf{Ready}} & Bundled threat intel \\
+\bottomrule
+\end{tabularx}
+
+\vspace{16pt}
+
+% NEXT STEPS
+\slideheader{Recommended Next Steps}
+
+\begin{enumerate}[label=\textbf{\arabic*.}, itemsep=8pt]
+    \item \textbf{Pilot} --- Run on one project this week
+    \item \textbf{Evaluate} --- Review findings and attestation quality
+    \item \textbf{Integrate} --- Add to CI/CD pipeline
+    \item \textbf{Scale} --- Roll out across project portfolio
+\end{enumerate}
+
+\vspace{24pt}
+
+\begin{center}
+\fcolorbox{navyblue}{lightgray}{%
+    \parbox{0.9\textwidth}{\centering
+        \textbf{Repository:} github.com/brucedombrowski/security-toolkit\\[4pt]
+        \textbf{License:} MIT (free, open source)\\[4pt]
+        \textbf{Questions:} See SECURITY.md for contact information
+    }%
+}
+\end{center}
+
+\end{document}
