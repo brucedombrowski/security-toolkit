@@ -38,7 +38,7 @@ Results are saved in `.scans/` directory of your target project.
 | [docs/MAINTENANCE.md](docs/MAINTENANCE.md) | Maintenance schedules and procedures |
 | [SECURITY.md](SECURITY.md) | Vulnerability reporting |
 | [docs/THREAT-INTELLIGENCE.md](docs/THREAT-INTELLIGENCE.md) | CISA KEV, DHS MARs, NASA SOC-MARs integration |
-| [docs/false-positives-macos.md](docs/false-positives-macos.md) | macOS-specific guidance |
+| [docs/FALSE-POSITIVES-MACOS.md](docs/FALSE-POSITIVES-MACOS.md) | macOS-specific guidance |
 
 ## Overview
 
@@ -60,7 +60,7 @@ This toolkit provides automated security verification scripts aligned with feder
 | `check-host-security.sh` | CM-6 | Host OS security posture verification |
 | `check-kev.sh` | RA-5, SI-5 | Cross-reference CVEs against CISA KEV catalog |
 | `check-mac-addresses.sh` | SC-8 | IEEE 802.3 MAC address detection |
-| `check-malware.sh` | SI-3 | ClamAV malware scanning |
+| `check-malware.sh` | SI-3 | Malware scanning (ClamAV, future: Windows Defender) |
 | `check-nvd-cves.sh` | RA-5, SI-2 | Cross-reference installed software against NVD |
 | `check-pii.sh` | SI-12 | Scan for PII patterns (SSN, phone, IP, credit card) |
 | `check-secrets.sh` | SA-11 | Detect hardcoded credentials and API keys |
@@ -238,7 +238,7 @@ When installed via Homebrew, these commands are available:
 | `security-inventory` | Collect host system inventory |
 | `security-pii` | Scan for PII patterns |
 | `security-secrets` | Scan for hardcoded secrets |
-| `security-malware` | Run ClamAV malware scan |
+| `security-malware` | Run malware scan |
 | `security-kev` | Check against CISA KEV catalog |
 | `security-containers` | Scan running containers |
 
@@ -246,14 +246,16 @@ When installed via Homebrew, these commands are available:
 
 - **Bash** - Required to execute all security scripts (included by default on macOS/Linux)
 
-- **ClamAV** - Required for malware scanning (installed automatically with Homebrew)
-  ```bash
-  # macOS
-  brew install clamav
+- **Malware Scanner** - Required for malware scanning (SI-3 compliance)
+  - **macOS/Linux:** ClamAV recommended
+    ```bash
+    # macOS
+    brew install clamav
 
-  # Ubuntu/Debian
-  sudo apt install clamav
-  ```
+    # Ubuntu/Debian
+    sudo apt install clamav
+    ```
+  - **Windows:** Windows Defender (built-in) - native support planned
 
 - **pdflatex** - Required for compliance PDF generation (TeX Live or MiKTeX)
   ```bash

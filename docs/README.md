@@ -9,7 +9,7 @@ Supplementary documentation for the Security Verification Toolkit.
 | [ASSESSOR-QUALIFICATIONS.md](ASSESSOR-QUALIFICATIONS.md) | Recommended certifications for security assessors |
 | [COMPLIANCE.md](COMPLIANCE.md) | NIST control mapping and compliance workflow |
 | [FAQ.md](FAQ.md) | Frequently asked questions |
-| [false-positives-macos.md](false-positives-macos.md) | macOS-specific false positive guidance |
+| [FALSE-POSITIVES-MACOS.md](FALSE-POSITIVES-MACOS.md) | macOS-specific false positive guidance |
 | [LIBRARY-API.md](LIBRARY-API.md) | Shell library API reference for contributors |
 | [MAINTENANCE.md](MAINTENANCE.md) | Maintenance schedules and update procedures |
 | [PERFORMANCE.md](PERFORMANCE.md) | Performance optimization and benchmarks |

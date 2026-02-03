@@ -200,7 +200,7 @@ Or add specific matches to `.allowlists/pii-allowlist` using interactive mode:
 
 **Problem:** Patterns like `1.2.3.4` (version numbers) flagged as IPs.
 
-**Solution:** This is a known limitation. Use the allowlist to accept specific matches. See [false-positives-macos.md](false-positives-macos.md) for macOS-specific issues.
+**Solution:** This is a known limitation. Use the allowlist to accept specific matches. See [FALSE-POSITIVES-MACOS.md](FALSE-POSITIVES-MACOS.md) for macOS-specific issues.
 
 ### Credit card test numbers flagged
 

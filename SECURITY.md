@@ -117,7 +117,7 @@ you're welcome to publish details, blog posts, or conference presentations.
 
 - [CLAUDE.md](./CLAUDE.md) - AI agent instructions and architecture
 - [docs/COMPLIANCE.md](./docs/COMPLIANCE.md) - Compliance framework
-- [docs/false-positives-macos.md](./docs/false-positives-macos.md) - macOS security notes
+- [docs/FALSE-POSITIVES-MACOS.md](./docs/FALSE-POSITIVES-MACOS.md) - macOS security notes
 
 ---
 

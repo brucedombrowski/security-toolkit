@@ -172,7 +172,7 @@ To suppress checks that don't apply to macOS, create a custom profile:
 ```bash
 # Create custom profile for macOS
 sudo tee /opt/homebrew/Cellar/lynis/3.1.6/custom.prf << 'EOF'
-# macOS False Positives - See docs/false-positives-macos.md
+# macOS False Positives - See docs/FALSE-POSITIVES-MACOS.md
 skip-test=AUTH-9262
 skip-test=FILE-6310
 skip-test=PKGS-7398

@@ -269,7 +269,7 @@ Security/
 │   ├── THREAT-INTELLIGENCE.md   # CISA KEV, DHS MARs
 │   ├── FAQ.md                   # Frequently asked questions
 │   ├── PERFORMANCE.md           # Performance baselines
-│   └── false-positives-macos.md # macOS-specific guidance
+│   └── FALSE-POSITIVES-MACOS.md # macOS-specific guidance
 ├── examples/                    # Redacted example outputs
 ├── .scans/                      # Raw scan output (gitignored)
 ├── .assessments/                # Security assessments (PRIVATE)
