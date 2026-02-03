@@ -33,14 +33,25 @@ brew install bash
 
 ### Malware Scanning (check-malware.sh)
 
-| Dependency | Minimum Version | Check Command | Install |
-|------------|-----------------|---------------|---------|
-| ClamAV | 0.103+ | `clamscan --version` | `brew install clamav` / `apt install clamav` |
+The toolkit requires a malware scanner for SI-3 (Malicious Code Protection) compliance. Currently supported:
+
+| Scanner | Platform | Status | Check Command |
+|---------|----------|--------|---------------|
+| ClamAV | macOS, Linux, WSL | Supported | `clamscan --version` |
+| Windows Defender | Windows | Planned | `Get-MpComputerStatus` |
+
+**ClamAV** is the recommended scanner for macOS and Linux:
+
+| Dependency | Minimum Version | Install |
+|------------|-----------------|---------|
+| ClamAV | 0.103+ | `brew install clamav` / `apt install clamav` |
 
 ClamAV paths vary by platform:
 - **macOS Homebrew:** `/opt/homebrew/bin/clamscan` or `/usr/local/bin/clamscan`
 - **Linux:** `/usr/bin/clamscan`
 - **Database update:** Run `freshclam` before first use
+
+**Windows users:** Windows Defender is built-in and provides equivalent malware protection. Native PowerShell integration is in development (see [MALWARE-SCANNER-ABSTRACTION.md](MALWARE-SCANNER-ABSTRACTION.md) for roadmap).
 
 ### PDF Generation (generate-*.sh)
 
