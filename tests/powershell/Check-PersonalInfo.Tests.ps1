@@ -150,60 +150,48 @@ Describe 'False Positive Prevention' {
 
 Describe 'Integration Test' -Tag 'Integration' {
     BeforeAll {
-        # Create isolated test directories to avoid cross-test pollution
-        $script:IntegrationDir = Join-Path $script:FixturesDir 'integration'
-        if (Test-Path $script:IntegrationDir) {
-            Remove-Item $script:IntegrationDir -Recurse -Force
-        }
-        New-Item -ItemType Directory -Path $script:IntegrationDir -Force | Out-Null
+        # Use fixtures directory directly for integration tests
+        $script:CleanFile = Join-Path $script:FixturesDir 'clean-file.md'
+        $script:PIIFile = Join-Path $script:FixturesDir 'has-pii.md'
+    }
+
+    BeforeEach {
+        # Clean up any existing test files before each test
+        if (Test-Path $script:CleanFile) { Remove-Item $script:CleanFile -Force }
+        if (Test-Path $script:PIIFile) { Remove-Item $script:PIIFile -Force }
     }
 
     AfterAll {
-        # Cleanup integration test directory
-        if (Test-Path $script:IntegrationDir) {
-            Remove-Item $script:IntegrationDir -Recurse -Force -ErrorAction SilentlyContinue
-        }
+        # Cleanup test files
+        if (Test-Path $script:CleanFile) { Remove-Item $script:CleanFile -Force -ErrorAction SilentlyContinue }
+        if (Test-Path $script:PIIFile) { Remove-Item $script:PIIFile -Force -ErrorAction SilentlyContinue }
     }
 
-    Context 'when scanning clean directory' {
-        BeforeAll {
-            $script:CleanDir = Join-Path $script:IntegrationDir 'clean'
-            New-Item -ItemType Directory -Path $script:CleanDir -Force | Out-Null
-            $script:CleanFile = Join-Path $script:CleanDir 'clean-file.md'
-        }
-
+    Context 'when running Check-PersonalInfo.ps1 on test fixtures' {
         It 'passes on clean fixture file' {
-            # Create clean test file - use Set-Content with ASCII to avoid BOM issues
-            "This is a clean file with no PII.`r`nVersion: 1.2.3`r`nBuild date: 2026-01-15" | Set-Content -Path $script:CleanFile -Encoding ASCII
+            # Create clean test file
+            [System.IO.File]::WriteAllText($script:CleanFile, "This is a clean file with no PII.`r`nVersion: 1.2.3`r`nBuild date: 2026-01-15")
 
             # Verify file exists
             Test-Path $script:CleanFile | Should -BeTrue
 
-            # Run Check-PersonalInfo.ps1 on clean directory - should pass (exit 0)
-            $output = & "$script:RepoDir/scripts/Check-PersonalInfo.ps1" $script:CleanDir 2>&1
+            # Run Check-PersonalInfo.ps1 on fixtures directory - should pass (exit 0)
+            $output = & "$script:RepoDir/scripts/Check-PersonalInfo.ps1" $script:FixturesDir 2>&1
             $LASTEXITCODE | Should -Be 0
-        }
-    }
-
-    Context 'when scanning directory with PII' {
-        BeforeAll {
-            $script:PIIDir = Join-Path $script:IntegrationDir 'pii'
-            New-Item -ItemType Directory -Path $script:PIIDir -Force | Out-Null
-            $script:PIIFile = Join-Path $script:PIIDir 'has-pii.md'
         }
 
         It 'fails on file containing PII' {
-            # Create file with PII - use Set-Content with ASCII to avoid BOM issues
-            "Contact: John Doe`r`nPhone: 555-123-4567`r`nSSN: 123-45-6789" | Set-Content -Path $script:PIIFile -Encoding ASCII
+            # Create file with PII using .NET for explicit control
+            [System.IO.File]::WriteAllText($script:PIIFile, "Contact: John Doe`r`nPhone: 555-123-4567`r`nSSN: 123-45-6789")
 
             # Verify file exists and contains expected content
             Test-Path $script:PIIFile | Should -BeTrue
-            $content = Get-Content $script:PIIFile -Raw
+            $content = [System.IO.File]::ReadAllText($script:PIIFile)
             $content | Should -Match '555-123-4567'
             $content | Should -Match '123-45-6789'
 
-            # Run Check-PersonalInfo.ps1 on PII directory - should fail (exit 1)
-            $output = & "$script:RepoDir/scripts/Check-PersonalInfo.ps1" $script:PIIDir 2>&1
+            # Run Check-PersonalInfo.ps1 on fixtures directory - should fail (exit 1)
+            $output = & "$script:RepoDir/scripts/Check-PersonalInfo.ps1" $script:FixturesDir 2>&1
             $LASTEXITCODE | Should -Be 1
         }
     }
