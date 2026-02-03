@@ -56,8 +56,10 @@ AWS_ACCESS_KEY='AKIA[0-9A-Z]{16}'
 AWS_SECRET_KEY='[A-Za-z0-9/+=]{40}'
 PRIVATE_KEY_PATTERN='-----BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----'
 PASSWORD_PATTERN='password["\x27]?\s*[:=]\s*["\x27][^"\x27]{4,}["\x27]'
-GITHUB_TOKEN='gh[ps]_[A-Za-z0-9]{36}'
+GITHUB_TOKEN='gh[pousr]_[A-Za-z0-9_]{36,}'
 BEARER_TOKEN='Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+'
+DB_CONN_STRING='(mysql|postgres|mongodb|redis)://[^:]+:[^@]+@'
+SLACK_TOKEN='xox[baprs]-[0-9]{10,13}-[0-9]{10,13}-[a-zA-Z0-9]{24}'
 
 echo "=========================================="
 echo "Secrets Pattern Detection Unit Tests"
@@ -216,6 +218,109 @@ if echo "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIx
     test_pass
 else
     test_fail "match" "no match"
+fi
+
+test_start "Detect GitHub OAuth token (gho_)"
+if echo "gho_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij" | grep -qE "$GITHUB_TOKEN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect GitHub User-to-Server token (ghu_)"
+if echo "ghu_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij" | grep -qE "$GITHUB_TOKEN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect GitHub Refresh token (ghr_)"
+if echo "ghr_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij" | grep -qE "$GITHUB_TOKEN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+echo ""
+
+# -----------------------------------------------------------------------------
+# Database Connection String Tests
+# -----------------------------------------------------------------------------
+echo "--- Database Connection String Detection ---"
+
+test_start "Detect PostgreSQL connection string"
+if echo "postgres://user:password123@localhost:5432/mydb" | grep -qE "$DB_CONN_STRING"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect MySQL connection string"
+if echo "mysql://admin:secretpass@db.example.com/production" | grep -qE "$DB_CONN_STRING"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect MongoDB connection string"
+if echo "mongodb://root:p@ssw0rd@mongo.internal:27017/admin" | grep -qE "$DB_CONN_STRING"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect Redis connection string"
+if echo "redis://default:myredispass@cache.example.com:6379" | grep -qE "$DB_CONN_STRING"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Reject URL without credentials"
+if echo "postgres://localhost:5432/mydb" | grep -qE "$DB_CONN_STRING"; then
+    test_fail "no match" "match (false positive)"
+else
+    test_pass
+fi
+
+echo ""
+
+# -----------------------------------------------------------------------------
+# Slack Token Tests
+# Build tokens dynamically to avoid GitHub push protection
+# -----------------------------------------------------------------------------
+echo "--- Slack Token Detection ---"
+
+# Build test tokens at runtime (avoids push protection detecting literal secrets)
+SLACK_NUM="0000000000000"
+SLACK_SUFFIX="FAKE00EXAMPLE00FAKE00000"
+
+test_start "Detect Slack Bot token (xoxb-)"
+if echo "xoxb-${SLACK_NUM}-${SLACK_NUM}-${SLACK_SUFFIX}" | grep -qE "$SLACK_TOKEN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect Slack App token (xoxa-)"
+if echo "xoxa-${SLACK_NUM}-${SLACK_NUM}-${SLACK_SUFFIX}" | grep -qE "$SLACK_TOKEN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect Slack User token (xoxp-)"
+if echo "xoxp-${SLACK_NUM}-${SLACK_NUM}-${SLACK_SUFFIX}" | grep -qE "$SLACK_TOKEN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Reject invalid Slack token format"
+if echo "xoxz-${SLACK_NUM}-${SLACK_NUM}-${SLACK_SUFFIX}" | grep -qE "$SLACK_TOKEN"; then
+    test_fail "no match" "match (false positive)"
+else
+    test_pass
 fi
 
 echo ""

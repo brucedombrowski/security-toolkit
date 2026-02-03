@@ -27,7 +27,7 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/lib/init.sh"
 
 # Exclusion config file
 PII_EXCLUDE_FILE=""
@@ -68,14 +68,6 @@ build_exclusions() {
 
     echo "$exclusions"
 }
-
-# Source audit logging library
-if [ -f "$SCRIPT_DIR/lib/audit-log.sh" ]; then
-    source "$SCRIPT_DIR/lib/audit-log.sh"
-    AUDIT_AVAILABLE=1
-else
-    AUDIT_AVAILABLE=0
-fi
 
 # Help function
 show_help() {
@@ -145,11 +137,9 @@ fi
 ALLOWLIST_DIR="$TARGET_DIR/.allowlists"
 ALLOWLIST_FILE="$ALLOWLIST_DIR/pii-allowlist"
 
-# Use UTC for consistent timestamps across time zones
-TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+# Initialize toolkit (sets TIMESTAMP, TOOLKIT_VERSION, TOOLKIT_COMMIT)
+init_security_toolkit
 REPO_NAME=$(basename "$TARGET_DIR")
-TOOLKIT_VERSION=$(git -C "$SECURITY_REPO_DIR" describe --tags --always 2>/dev/null || echo "unknown")
-TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 # Files to scan (common text file types)
 INCLUDE_PATTERNS=(
