@@ -136,7 +136,7 @@ echo.
 REM Check for Check-PersonalInfo.ps1
 if exist "%SCRIPT_DIR%scripts\Check-PersonalInfo.ps1" (
     echo [*] Running PII scan...
-    %PWSH% -ExecutionPolicy Bypass -File "%SCRIPT_DIR%scripts\Check-PersonalInfo.ps1" -Path "%TARGET_DIR%"
+    %PWSH% -ExecutionPolicy Bypass -File "%SCRIPT_DIR%scripts\Check-PersonalInfo.ps1" -Target "%TARGET_DIR%"
 ) else (
     echo [!] Check-PersonalInfo.ps1 not found - PII scan skipped
     echo     This script is under development. See Issue #12.
@@ -147,7 +147,7 @@ echo.
 REM Check for Check-Secrets.ps1
 if exist "%SCRIPT_DIR%scripts\Check-Secrets.ps1" (
     echo [*] Running secrets scan...
-    %PWSH% -ExecutionPolicy Bypass -File "%SCRIPT_DIR%scripts\Check-Secrets.ps1" -Path "%TARGET_DIR%"
+    %PWSH% -ExecutionPolicy Bypass -File "%SCRIPT_DIR%scripts\Check-Secrets.ps1" -Target "%TARGET_DIR%"
 ) else (
     echo [!] Check-Secrets.ps1 not found - Secrets scan skipped
     echo     This script is under development. See Issue #13.
