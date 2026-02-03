@@ -226,3 +226,89 @@ jobs:
               exit 1
             fi
           fi
+
+  powershell-syntax:
+    name: PowerShell Syntax Check
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check PowerShell script syntax
+        shell: pwsh
+        run: |
+          $errors = 0
+          Write-Host "Checking PowerShell scripts..."
+
+          # Check scripts directory
+          $ps1Files = Get-ChildItem -Path "scripts" -Filter "*.ps1" -Recurse -ErrorAction SilentlyContinue
+          foreach ($file in $ps1Files) {
+            Write-Host "Checking $($file.FullName)..."
+            $parseErrors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$parseErrors) | Out-Null
+            if ($parseErrors.Count -gt 0) {
+              Write-Host "::error::Syntax error in $($file.Name): $($parseErrors[0].Message)"
+              $errors++
+            }
+          }
+
+          # Check tests directory
+          $testFiles = Get-ChildItem -Path "tests/powershell" -Filter "*.ps1" -Recurse -ErrorAction SilentlyContinue
+          foreach ($file in $testFiles) {
+            Write-Host "Checking $($file.FullName)..."
+            $parseErrors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$parseErrors) | Out-Null
+            if ($parseErrors.Count -gt 0) {
+              Write-Host "::error::Syntax error in $($file.Name): $($parseErrors[0].Message)"
+              $errors++
+            }
+          }
+
+          if ($errors -gt 0) {
+            Write-Host "Found $errors syntax errors"
+            exit 1
+          }
+
+          $totalFiles = ($ps1Files.Count + $testFiles.Count)
+          if ($totalFiles -eq 0) {
+            Write-Host "No PowerShell scripts found (expected during initial development)"
+          } else {
+            Write-Host "All $totalFiles PowerShell scripts passed syntax check"
+          }
+
+  test-windows:
+    name: Tests (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Bash tests via Git Bash
+        shell: bash
+        run: |
+          echo "Running tests on Windows via Git Bash..."
+          echo "Platform: $(uname -s)"
+
+          # Make scripts executable (Git Bash respects this)
+          chmod +x scripts/*.sh tests/*.sh 2>/dev/null || true
+
+          # Run pattern tests (these should work cross-platform)
+          echo "=== Running pattern tests ==="
+          ./tests/test-pii-patterns.sh || exit 1
+          ./tests/test-secrets-patterns.sh || exit 1
+
+          echo ""
+          echo "=== Windows Bash tests passed ==="
+
+      - name: Run PowerShell tests
+        shell: pwsh
+        run: |
+          Write-Host "Running PowerShell tests..."
+
+          # Check if PowerShell test runner exists
+          if (Test-Path "tests/powershell/Run-AllTests.ps1") {
+            & "tests/powershell/Run-AllTests.ps1"
+          } else {
+            Write-Host "PowerShell test runner not found (expected during initial development)"
+            Write-Host "Skipping PowerShell tests"
+          }
