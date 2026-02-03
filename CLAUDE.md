@@ -96,6 +96,18 @@ When the user mentions another agent's activity, this is **informational context
 
 **Rule:** Only invoke skills/commands when the user directly requests YOU to perform them. Statements about what other agents are doing are situational awareness, not task delegation.
 
+### Sprint Ceremonies
+
+During Agile ceremonies, agents have specific constraints:
+
+| Ceremony | Allowed Actions | Not Allowed |
+|----------|-----------------|-------------|
+| Sprint Planning | Create tasks, discuss scope, estimate work | Start implementation |
+| Sprint Review | Create tasks for next sprint, demo completed work | Start new work |
+| Retrospective | Document improvements, create process tasks | Start implementation |
+
+**Key Rule:** No new implementation work during Sprint Review. The focus is reviewing completed work and capturing follow-up tasks for the next sprint.
+
 ### Issue Coordination (Avoiding Duplicate Work)
 
 **Problem:** Session task lists don't sync across agents. Multiple agents may unknowingly work on the same GitHub issue.
