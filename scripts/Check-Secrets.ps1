@@ -112,7 +112,7 @@ $IncludePatterns = @(
     '*.py', '*.js', '*.ts', '*.rb', '*.php', '*.go', '*.rs', '*.java', '*.cs', '*.c', '*.cpp', '*.h',
     '*.yaml', '*.yml', '*.json', '*.xml', '*.toml', '*.ini', '*.conf', '*.config',
     '*.env', '*.env.example', '*.env.local',
-    '*.md', '*.tex'
+    '*.md', '*.tex', '*.txt'
 )
 
 # ============================================================================
