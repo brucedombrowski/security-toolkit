@@ -186,6 +186,41 @@ else
     test_fail "match" "no match"
 fi
 
+test_start "Detect Japanese format (+81 3 1234 5678)"
+if echo "+81 3 1234 5678" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect Chinese format (+86 10 1234 5678)"
+if echo "+86 10 1234 5678" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect Indian format (+91 22 1234 5678)"
+if echo "+91 22 1234 5678" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect Brazilian format (+55 11 91234 5678)"
+if echo "+55 11 91234 5678" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect Mexican format (+52 55 1234 5678)"
+if echo "+52 55 1234 5678" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
 test_start "Reject number without plus (+missing)"
 if echo "44 20 7946 0958" | grep -qE "$INTL_PHONE_PATTERN"; then
     test_fail "no match" "match (false positive)"

@@ -326,6 +326,125 @@ fi
 echo ""
 
 # -----------------------------------------------------------------------------
+# Additional Cloud Provider Tests
+# -----------------------------------------------------------------------------
+echo "--- Additional Cloud Provider Detection ---"
+
+# GCP Service Account Key pattern
+GCP_SERVICE_ACCOUNT='"type":\s*"service_account"'
+
+test_start "Detect GCP service account key"
+if echo '{"type": "service_account", "project_id": "my-project"}' | grep -qE "$GCP_SERVICE_ACCOUNT"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+# Stripe keys (built at runtime to avoid push protection)
+STRIPE_KEY='sk_live_[0-9a-zA-Z]{24,}'
+STRIPE_SUFFIX="abcdefghijklmnopqrstuvwx"
+
+test_start "Detect Stripe secret key"
+if echo "sk_live_${STRIPE_SUFFIX}" | grep -qE "$STRIPE_KEY"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Reject Stripe test key (different prefix)"
+if echo "sk_test_${STRIPE_SUFFIX}" | grep -qE "$STRIPE_KEY"; then
+    test_fail "no match" "match (test key)"
+else
+    test_pass
+fi
+
+# Azure connection strings
+AZURE_CONN='(AccountKey|SharedAccessKey)=[A-Za-z0-9+/=]{40,}'
+
+test_start "Detect Azure storage AccountKey"
+if echo "AccountKey=abcdefghijklmnopqrstuvwxyz0123456789ABCD==" | grep -qE "$AZURE_CONN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect Azure SharedAccessKey"
+if echo "SharedAccessKey=abcdefghijklmnopqrstuvwxyz0123456789AB==" | grep -qE "$AZURE_CONN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+# DigitalOcean tokens (built at runtime to avoid push protection)
+DO_TOKEN='dop_v1_[a-f0-9]{64}'
+DO_HEX="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
+test_start "Detect DigitalOcean personal access token"
+if echo "dop_v1_${DO_HEX}" | grep -qE "$DO_TOKEN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+# Twilio credentials (built at runtime to avoid push protection)
+TWILIO_SID='AC[a-f0-9]{32}'
+TWILIO_HEX="0123456789abcdef0123456789abcdef"
+
+test_start "Detect Twilio Account SID"
+if echo "AC${TWILIO_HEX}" | grep -qE "$TWILIO_SID"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+# NPM tokens
+NPM_TOKEN='npm_[A-Za-z0-9]{36}'
+
+test_start "Detect NPM access token"
+if echo "npm_abcdefghijklmnopqrstuvwxyz0123456789" | grep -qE "$NPM_TOKEN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+echo ""
+
+# -----------------------------------------------------------------------------
+# Edge Cases - Pattern Boundaries
+# -----------------------------------------------------------------------------
+echo "--- Edge Cases - Pattern Boundaries ---"
+
+test_start "AWS key at start of line"
+if echo "AKIAIOSFODNN7EXAMPLE is the key" | grep -qE "$AWS_ACCESS_KEY"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "AWS key at end of line"
+if echo "The key is AKIAIOSFODNN7EXAMPLE" | grep -qE "$AWS_ACCESS_KEY"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "AWS key in JSON value"
+if echo '"aws_key": "AKIAIOSFODNN7EXAMPLE"' | grep -qE "$AWS_ACCESS_KEY"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Private key with Windows line endings"
+if echo -e "-----BEGIN RSA PRIVATE KEY-----\r" | grep -q "BEGIN.*PRIVATE KEY"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+echo ""
+
+# -----------------------------------------------------------------------------
 # False Positive Tests
 # -----------------------------------------------------------------------------
 echo "--- False Positive Prevention ---"
