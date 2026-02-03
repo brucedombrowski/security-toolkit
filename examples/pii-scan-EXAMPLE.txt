@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    8d671a026df4013f...                                       #
+#  Source SHA256:    12345c6d419f8a39...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    d42c54e5d15a5782...                                       #
-#  Redacted:         2026-02-03T12:40:53Z                                       #
+#  Redacted:         2026-02-03T17:25:22Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,7 +19,7 @@
 PII Verification Scan
 =====================
 Timestamp: 2026-02-03T[REDACTED]Z
-Toolkit: Security Verification Toolkit v2.1.1 (322c27e)
+Toolkit: Security Verification Toolkit v2.1.2 (d26484f)
 Target: /Users/[REDACTED]
 Repository: Security
 
