@@ -99,11 +99,13 @@ Describe 'Private Key Detection' {
 Describe 'GitHub Token Detection' {
     Context 'when input contains GitHub tokens' {
         It 'detects ghp_ personal access token format' {
-            'ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh' | Should -Match $script:Patterns.GitHubToken
+            # GitHub PAT tokens have 36 alphanumeric characters after prefix
+            'ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij' | Should -Match $script:Patterns.GitHubToken
         }
 
         It 'detects ghs_ server token format' {
-            'ghs_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh' | Should -Match $script:Patterns.GitHubToken
+            # GitHub server tokens have 36 alphanumeric characters after prefix
+            'ghs_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij' | Should -Match $script:Patterns.GitHubToken
         }
     }
 

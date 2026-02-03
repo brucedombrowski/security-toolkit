@@ -97,9 +97,8 @@ Import-Module Pester -MinimumVersion 5.0 -ErrorAction Stop
 # Build Pester configuration
 $config = New-PesterConfiguration
 
-# Discovery
+# Discovery - Pester auto-discovers *.Tests.ps1 files in the path
 $config.Run.Path = $TestDir
-$config.Filter.FullName = '*.Tests.ps1'
 
 # Output
 if ($CI) {
@@ -133,12 +132,20 @@ Write-Host "  Total:   $($result.TotalCount)"
 Write-Host "  Passed:  $($result.PassedCount)" -ForegroundColor Green
 Write-Host "  Failed:  $($result.FailedCount)" -ForegroundColor $(if ($result.FailedCount -gt 0) { 'Red' } else { 'Green' })
 Write-Host "  Skipped: $($result.SkippedCount)" -ForegroundColor Yellow
+Write-Host "  NotRun:  $($result.NotRunCount)" -ForegroundColor $(if ($result.NotRunCount -gt 0) { 'Yellow' } else { 'Gray' })
 Write-Host ''
 
-if ($result.FailedCount -eq 0) {
-    Write-Host 'All tests passed!' -ForegroundColor Green
-    exit 0
-} else {
+# Determine exit status
+if ($result.FailedCount -gt 0) {
     Write-Host "$($result.FailedCount) test(s) failed" -ForegroundColor Red
     exit 1
+} elseif ($result.NotRunCount -gt 0 -and $result.PassedCount -eq 0) {
+    Write-Host "No tests ran ($($result.NotRunCount) not run)" -ForegroundColor Red
+    exit 1
+} elseif ($result.TotalCount -eq 0) {
+    Write-Host 'No tests found!' -ForegroundColor Red
+    exit 1
+} else {
+    Write-Host 'All tests passed!' -ForegroundColor Green
+    exit 0
 }

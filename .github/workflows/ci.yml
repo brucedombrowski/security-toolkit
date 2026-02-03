@@ -127,6 +127,45 @@ jobs:
             ./tests/test-integration-advanced.sh
           fi
 
+  test-windows:
+    name: PowerShell Tests (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check PowerShell Version
+        shell: pwsh
+        run: |
+          Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+          Write-Host "OS: $([System.Environment]::OSVersion.VersionString)"
+
+      - name: Check Git Availability
+        shell: pwsh
+        run: |
+          # Verify git works (needed for init.ps1)
+          git --version
+          git describe --tags --always 2>$null || Write-Host "No tags found (expected in CI)"
+
+      - name: Install Pester 5.x
+        shell: pwsh
+        run: |
+          $pester = Get-Module -ListAvailable Pester | Sort-Object Version -Descending | Select-Object -First 1
+          if (-not $pester -or $pester.Version.Major -lt 5) {
+            Write-Host "Installing Pester 5.x..."
+            Install-Module Pester -Force -Scope CurrentUser -MinimumVersion 5.0 -SkipPublisherCheck
+          }
+          Import-Module Pester -PassThru
+
+      - name: Run PowerShell Tests
+        shell: pwsh
+        run: |
+          if (Test-Path ./tests/powershell/Invoke-AllTests.ps1) {
+            ./tests/powershell/Invoke-AllTests.ps1 -CI
+          } else {
+            Write-Host "PowerShell test runner not found - skipping"
+          }
+
   security-self-scan:
     name: Security Self-Scan
     runs-on: ubuntu-latest
