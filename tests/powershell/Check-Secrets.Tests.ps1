@@ -181,34 +181,54 @@ Describe 'Integration Test' -Tag 'Integration' {
     }
 
     Context 'when running Check-Secrets.ps1 on test fixtures' {
-        It 'passes on clean fixture file' {
-            @'
-# Configuration file
-debug = true
-log_level = "info"
-timeout = 30
-'@ | Set-Content -Path $script:CleanFile
-
-            # TODO: Once Check-Secrets.ps1 exists:
-            # & "$script:RepoDir/scripts/Check-Secrets.ps1" $script:FixturesDir
-            # $LASTEXITCODE | Should -Be 0
-
-            Test-Path $script:CleanFile | Should -BeTrue
+        BeforeAll {
+            # Create isolated test directory
+            $script:TestScanDir = Join-Path $script:FixturesDir 'secrets-test'
+            if (-not (Test-Path $script:TestScanDir)) {
+                New-Item -ItemType Directory -Path $script:TestScanDir -Force | Out-Null
+            }
         }
 
-        It 'fails on file containing secrets' {
-            @'
-# DO NOT COMMIT - test fixture
-aws_access_key_id = AKIAIOSFODNN7EXAMPLE
-password = "supersecret123"
-'@ | Set-Content -Path $script:SecretsFile
+        AfterAll {
+            # Cleanup test directory
+            if (Test-Path $script:TestScanDir) {
+                Remove-Item $script:TestScanDir -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        }
 
-            # TODO: Once Check-Secrets.ps1 exists:
-            # & "$script:RepoDir/scripts/Check-Secrets.ps1" $script:FixturesDir
-            # $LASTEXITCODE | Should -Be 1
+        It 'passes on clean fixture file' {
+            # Create clean test file using .NET to avoid encoding issues
+            $cleanFile = Join-Path $script:TestScanDir 'clean.txt'
+            [System.IO.File]::WriteAllText($cleanFile, "# Configuration file`r`ndebug = true`r`nlog_level = `"info`"`r`ntimeout = 30")
 
-            $content = Get-Content $script:SecretsFile -Raw
+            Test-Path $cleanFile | Should -BeTrue
+
+            # Run Check-Secrets.ps1 and capture output
+            $output = & "$script:RepoDir/scripts/Check-Secrets.ps1" $script:TestScanDir 2>&1
+            $exitCode = $LASTEXITCODE
+
+            # Verify clean scan passes
+            $exitCode | Should -Be 0
+        }
+
+        It 'detects secrets in file containing credentials' {
+            # Create file with secrets
+            $secretsFile = Join-Path $script:TestScanDir 'has-secrets.txt'
+            [System.IO.File]::WriteAllText($secretsFile, "# DO NOT COMMIT - test fixture`r`naws_access_key_id = AKIAIOSFODNN7EXAMPLE`r`npassword = `"supersecret123`"")
+
+            Test-Path $secretsFile | Should -BeTrue
+
+            # Verify patterns would match (script should detect these)
+            $content = Get-Content $secretsFile -Raw
             $content | Should -Match $script:Patterns.AWSAccessKey
+            $content | Should -Match $script:Patterns.Password
+
+            # Run Check-Secrets.ps1 - should find secrets
+            $output = & "$script:RepoDir/scripts/Check-Secrets.ps1" $script:TestScanDir 2>&1
+            $exitCode = $LASTEXITCODE
+
+            # Should fail due to detected secrets
+            $exitCode | Should -Be 1
         }
     }
 }
