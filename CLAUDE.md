@@ -16,6 +16,8 @@ All changes must maintain:
 
 ## Commands
 
+### Bash (macOS/Linux)
+
 ```bash
 # Run all tests
 ./tests/run-all-tests.sh
@@ -38,6 +40,23 @@ All changes must maintain:
 
 # Upgrade toolkit
 ./scripts/upgrade.sh
+```
+
+### PowerShell (Windows)
+
+```powershell
+# Run all PowerShell tests
+./tests/powershell/Invoke-AllTests.ps1
+
+# Run tests in CI mode
+./tests/powershell/Invoke-AllTests.ps1 -CI
+
+# Run scans (PowerShell equivalents)
+./scripts/Check-PersonalInfo.ps1 -Target C:\path\to\project
+./scripts/Check-Secrets.ps1 -Target C:\path\to\project
+
+# Interactive demo
+.\QuickStart.bat
 ```
 
 **Release Policy:** Only the latest release is kept on GitHub. Old releases are automatically deleted by `release.sh`, but all tags are preserved for version history.
@@ -63,8 +82,14 @@ git worktree add ../security-dev -b dev
 
 When working in multiple terminal tabs (especially with multiple agents), set a descriptive tab title immediately on session start:
 
+**Bash (macOS/Linux):**
 ```bash
 echo -ne "\033]0;Lead Systems Engineer\007"
+```
+
+**PowerShell (Windows):**
+```powershell
+$Host.UI.RawUI.WindowTitle = "Lead Systems Engineer"
 ```
 
 This helps distinguish between agent contexts and worktrees at a glance.
