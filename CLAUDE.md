@@ -69,6 +69,33 @@ echo -ne "\033]0;Lead Systems Engineer\007"
 
 This helps distinguish between agent contexts and worktrees at a glance.
 
+### Agent Identification
+
+When multiple agents are active, **sign off each response with your role** so the user can identify which agent they're talking to:
+
+```
+— Windows Developer
+```
+
+Standard roles for this project:
+- **Lead Software Developer** (LSD) - Code review, architecture decisions, technical leadership
+- **Lead Systems Engineer** (LSE) - Core implementation, architecture
+- **Documentation Engineer** - Docs, README, guides
+- **Windows Developer** - PowerShell scripts, Windows support
+- **QA Engineer** - Testing, validation, coverage
+
+### Multi-Agent Context Awareness
+
+When the user mentions another agent's activity, this is **informational context**, not a request for you to take action:
+
+| User Says | Meaning | Your Action |
+|-----------|---------|-------------|
+| "The LSE is conducting Sprint Review" | Context: another agent is running that meeting | Acknowledge; do NOT invoke `/sprintreview` |
+| "QA is running tests" | Context: another agent is testing | Wait for results or ask how you can help |
+| "Run the sprint review" | Direct request to you | Invoke `/sprintreview` |
+
+**Rule:** Only invoke skills/commands when the user directly requests YOU to perform them. Statements about what other agents are doing are situational awareness, not task delegation.
+
 ### Development Process
 
 1. **All development happens in the dev worktree:**
@@ -178,8 +205,14 @@ Security/
 ├── verification/                # Verification evidence
 │   └── templates/               # LaTeX templates for PDFs
 ├── templates/                   # LaTeX templates for PDFs
-├── tests/                       # Unit tests
+├── tests/
+│   ├── run-all-tests.sh         # Master test runner
+│   ├── test-*-patterns.sh       # Pattern detection tests
+│   ├── test-*.sh                # Script functionality tests
+│   ├── fixtures/                # Temp files created during tests
+│   └── expected/                # Expected outputs (if needed)
 ├── docs/
+│   ├── TESTING.md               # Test architecture and guide
 │   ├── COMPLIANCE.md            # NIST control mapping
 │   ├── MAINTENANCE.md           # Maintenance schedules
 │   ├── THREAT-INTELLIGENCE.md   # CISA KEV, DHS MARs
@@ -503,9 +536,45 @@ Host inventory contains Controlled Unclassified Information (MAC addresses, seri
 - **Required for malware scan**: ClamAV (`clamscan`, `freshclam`)
 - **Optional**: pdflatex, Nmap, Lynis
 
+## Testing
+
+See [docs/TESTING.md](docs/TESTING.md) for comprehensive testing documentation.
+
+### Quick Reference
+
+```bash
+# Run all tests
+./tests/run-all-tests.sh
+
+# Run specific suite
+./tests/test-pii-patterns.sh
+```
+
+### Test Helpers
+
+All test scripts use these standard helpers:
+
+| Function | Purpose |
+|----------|---------|
+| `test_start "name"` | Announce test, increment counter |
+| `test_pass` | Record pass, print green PASS |
+| `test_fail "expected" "got"` | Record fail, print red FAIL with details |
+| `test_known "description"` | Document known limitation (yellow KNOWN) |
+
+### Adding Tests for New Scans
+
+When adding a new scan script, always create a corresponding test:
+
+1. Create `tests/test-<category>-patterns.sh`
+2. Copy helper functions from an existing test
+3. Add positive tests (patterns that SHOULD match)
+4. Add negative tests (patterns that should NOT match)
+5. Add `run_test_suite` entry in `tests/run-all-tests.sh`
+
 ## Key Documentation
 
 - [INSTALLATION.md](INSTALLATION.md) - Platform-specific setup
+- [docs/TESTING.md](docs/TESTING.md) - Test architecture and contributor guide
 - [docs/COMPLIANCE.md](docs/COMPLIANCE.md) - NIST control mapping details
 - [docs/MAINTENANCE.md](docs/MAINTENANCE.md) - Maintenance schedules
 - [docs/THREAT-INTELLIGENCE.md](docs/THREAT-INTELLIGENCE.md) - CISA KEV integration

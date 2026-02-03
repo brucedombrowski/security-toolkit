@@ -30,21 +30,7 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-# Source shared libraries
-AUDIT_AVAILABLE=0
-TIMESTAMPS_AVAILABLE=0
-
-if [ -f "$SCRIPT_DIR/lib/audit-log.sh" ]; then
-    source "$SCRIPT_DIR/lib/audit-log.sh"
-    AUDIT_AVAILABLE=1
-fi
-
-if [ -f "$SCRIPT_DIR/lib/timestamps.sh" ]; then
-    source "$SCRIPT_DIR/lib/timestamps.sh"
-    TIMESTAMPS_AVAILABLE=1
-fi
+source "$SCRIPT_DIR/lib/init.sh"
 
 # Help function
 show_help() {
@@ -116,15 +102,9 @@ fi
 ALLOWLIST_DIR="$TARGET_DIR/.allowlists"
 ALLOWLIST_FILE="$ALLOWLIST_DIR/secrets-allowlist"
 
-# Use standardized timestamps (UTC for consistency across time zones)
-if [ "$TIMESTAMPS_AVAILABLE" -eq 1 ]; then
-    TIMESTAMP=$(get_iso_timestamp)
-else
-    TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
-fi
+# Initialize toolkit (sets TIMESTAMP, TOOLKIT_VERSION, TOOLKIT_COMMIT)
+init_security_toolkit
 REPO_NAME=$(basename "$TARGET_DIR")
-TOOLKIT_VERSION=$(git -C "$SECURITY_REPO_DIR" describe --tags --always 2>/dev/null || echo "unknown")
-TOOLKIT_COMMIT=$(git -C "$SECURITY_REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 FOUND_ISSUES=0
 ACCEPTED_COUNT=0

@@ -19,16 +19,10 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/lib/init.sh"
 
-# Source toolkit info library
-if [ -f "$SCRIPT_DIR/lib/toolkit-info.sh" ]; then
-    source "$SCRIPT_DIR/lib/toolkit-info.sh"
-    init_toolkit_info "$SECURITY_REPO_DIR"
-fi
-
-# Use UTC for consistent timestamps across time zones
-TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+# Initialize toolkit (sets TIMESTAMP, TOOLKIT_VERSION, TOOLKIT_COMMIT)
+init_security_toolkit
 
 echo "Host OS Security Verification"
 echo "=============================="

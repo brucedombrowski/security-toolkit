@@ -53,6 +53,7 @@ test_known() {
 # PII regex patterns (must match check-pii.sh)
 IPV4_PATTERN='[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
 PHONE_PATTERN='\(?[0-9]{3}\)?[-. ]?[0-9]{3}[-. ]?[0-9]{4}'
+INTL_PHONE_PATTERN='\+[0-9]{1,3}[ .-]?[0-9]{1,4}[ .-]?[0-9]{1,4}[ .-]?[0-9]{1,4}[ .-]?[0-9]{0,4}'
 SSN_PATTERN='[0-9]{3}-[0-9]{2}-[0-9]{4}'
 CREDIT_CARD_PATTERN='[0-9]{4}[-. ]?[0-9]{4}[-. ]?[0-9]{4}[-. ]?[0-9]{4}'
 
@@ -139,6 +140,62 @@ fi
 echo ""
 
 # -----------------------------------------------------------------------------
+# International Phone Number Tests
+# -----------------------------------------------------------------------------
+echo "--- International Phone Number Detection ---"
+
+test_start "Detect UK format (+44 20 7946 0958)"
+if echo "+44 20 7946 0958" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect German format (+49 30 12345678)"
+if echo "+49 30 12345678" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect US international format (+1 555 123 4567)"
+if echo "+1 555 123 4567" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect compact format (+14155551234)"
+if echo "+14155551234" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect dotted format (+33.1.23.45.67.89)"
+if echo "+33.1.23.45.67.89" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Detect Australian format (+61 2 1234 5678)"
+if echo "+61 2 1234 5678" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_pass
+else
+    test_fail "match" "no match"
+fi
+
+test_start "Reject number without plus (+missing)"
+if echo "44 20 7946 0958" | grep -qE "$INTL_PHONE_PATTERN"; then
+    test_fail "no match" "match (false positive)"
+else
+    test_pass
+fi
+
+echo ""
+
+# -----------------------------------------------------------------------------
 # SSN Tests
 # -----------------------------------------------------------------------------
 echo "--- Social Security Number Detection ---"
@@ -209,6 +266,34 @@ fi
 
 test_known "Version number (6.0.0.0) matches IPv4 pattern"
 # This will match IPv4 pattern - this is a known limitation handled via allowlist
+
+test_start "Reject date format (2026-01-15)"
+if echo "2026-01-15" | grep -qE "$SSN_PATTERN"; then
+    test_fail "no match" "match (false positive)"
+else
+    test_pass
+fi
+
+test_start "Reject timestamp (12:34:56)"
+if echo "12:34:56" | grep -qE "$PHONE_PATTERN"; then
+    test_fail "no match" "match (false positive)"
+else
+    test_pass
+fi
+
+test_start "Reject short number sequence (12345)"
+if echo "12345" | grep -qE "$CREDIT_CARD_PATTERN"; then
+    test_fail "no match" "match (false positive)"
+else
+    test_pass
+fi
+
+test_start "Reject port number in URL (localhost:8080)"
+if echo "localhost:8080" | grep -qE "$PHONE_PATTERN"; then
+    test_fail "no match" "match (false positive)"
+else
+    test_pass
+fi
 
 echo ""
 

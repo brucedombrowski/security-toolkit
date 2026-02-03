@@ -33,6 +33,7 @@ Results are saved in `.scans/` directory of your target project.
 |----------|-------------|
 | [INSTALLATION.md](INSTALLATION.md) | Setup and prerequisites |
 | [CLAUDE.md](CLAUDE.md) | AI agent instructions and architecture |
+| [docs/TESTING.md](docs/TESTING.md) | Test architecture and contributor guide |
 | [docs/COMPLIANCE.md](docs/COMPLIANCE.md) | NIST control mapping |
 | [docs/MAINTENANCE.md](docs/MAINTENANCE.md) | Maintenance schedules and procedures |
 | [SECURITY.md](SECURITY.md) | Vulnerability reporting |

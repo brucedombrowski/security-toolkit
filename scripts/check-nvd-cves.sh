@@ -31,12 +31,9 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SECURITY_REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/lib/init.sh"
 
-# Source libraries
-source "$SCRIPT_DIR/lib/audit-log.sh" 2>/dev/null || AUDIT_AVAILABLE=0
-source "$SCRIPT_DIR/lib/timestamps.sh" 2>/dev/null || true
-source "$SCRIPT_DIR/lib/toolkit-info.sh" 2>/dev/null || true
+# Source NVD-specific libraries (not included in init.sh)
 source "$SCRIPT_DIR/lib/nvd/api.sh"
 source "$SCRIPT_DIR/lib/nvd/matcher.sh"
 
@@ -176,9 +173,9 @@ if [ -z "$INVENTORY_FILE" ] || [ ! -f "$INVENTORY_FILE" ]; then
     fi
 fi
 
-# Initialize
-TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
-FILENAME_TS=$(date -u "+%Y-%m-%d-T%H%M%SZ")
+# Initialize toolkit (sets TIMESTAMP, TOOLKIT_VERSION, TOOLKIT_COMMIT)
+init_security_toolkit
+FILENAME_TS=$(get_filename_timestamp)
 OUTPUT_DIR="$TARGET_DIR/.scans"
 OUTPUT_FILE="$OUTPUT_DIR/nvd-cve-scan-${FILENAME_TS}.txt"
 

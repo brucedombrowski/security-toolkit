@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-02-03
+
+### Added
+
+- **Testing Documentation** (`docs/TESTING.md`)
+  - Test architecture and contributor guide
+  - Test helper function reference
+  - Guidelines for adding new tests
+
+- **Agent Role Management** (`scripts/lib/agent.sh`)
+  - Role assignment helper for multi-agent sessions
+  - Terminal tab naming automation
+  - Environment variable exports for scripts
+
+- **Expanded Test Coverage**
+  - `tests/test-containers.sh` - Container scanning tests
+  - `tests/test-edge-cases.sh` - Edge case coverage
+  - Enhanced PII and secrets pattern tests
+  - 14 → 16 test suites (+746 lines)
+
+### Changed
+
+- **Refactored All Scan Scripts**
+  - Applied `lib/init.sh` to remaining 6 scripts
+  - Net reduction of ~80 lines of boilerplate
+
+- **Multi-Agent Context Awareness** (`CLAUDE.md`)
+  - Added rules for distinguishing task delegation from status updates
+  - Improved agent coordination guidelines
+
+### Fixed
+
+- **GitHub Push Protection**
+  - Obfuscated test tokens to avoid false positives in `test-secrets-patterns.sh`
+
 ## [2.1.0] - 2026-02-02
 
 *Multi-agent integration release - first version developed collaboratively by multiple AI agents.*
