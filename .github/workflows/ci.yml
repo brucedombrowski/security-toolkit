@@ -80,7 +80,17 @@ jobs:
       - name: Update ClamAV database
         run: |
           sudo systemctl stop clamav-freshclam || true
-          sudo freshclam || echo "ClamAV update failed (non-critical)"
+          # Retry freshclam up to 3 times (mirrors can be slow/unavailable)
+          for i in 1 2 3; do
+            echo "Attempt $i: Updating ClamAV database..."
+            if sudo freshclam --stdout 2>&1; then
+              echo "ClamAV database updated successfully"
+              break
+            fi
+            [ $i -lt 3 ] && sleep 5
+          done
+          # Verify database exists (tests will skip gracefully if not)
+          ls -la /var/lib/clamav/*.cvd 2>/dev/null || echo "Warning: ClamAV database may not be available"
 
       - name: Make scripts executable
         run: chmod +x scripts/*.sh tests/*.sh
