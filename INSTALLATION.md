@@ -16,16 +16,20 @@
 - **macOS:** 10.15+ (Catalina or later)
   - Intel (x86_64) and Apple Silicon (ARM64) supported
 - **Linux:** Ubuntu 18.04+, CentOS 7+, Debian 10+
+- **Windows:** Windows 10/11, Windows Server 2016+
+  - PowerShell 5.1+ (built-in) or PowerShell 7+
+  - Native PowerShell scripts for Windows-specific scans
 - **Other:** Any POSIX-compatible system with bash 4.0+
 
 ### Optional Dependencies
 
 | Tool | Purpose | Platform | Status |
 |------|---------|----------|--------|
-| ClamAV | Malware scanning | macOS, Linux | Optional but recommended |
+| ClamAV | Malware scanning | macOS, Linux, Windows | Optional but recommended |
 | pdflatex | PDF attestation generation | macOS, Linux | Optional (reports work without) |
-| Nmap | Network scanning | macOS, Linux | Optional |
+| Nmap | Network scanning | macOS, Linux, Windows | Optional |
 | Lynis | System auditing | macOS, Linux | Optional |
+| Git for Windows | Version tracking, bash emulation | Windows | Recommended |
 
 ## Installation Steps
 
@@ -175,6 +179,112 @@ sudo systemctl enable clamav-daemon
 clamscan --version
 
 # Test toolkit
+./scripts/check-pii.sh ./README.md
+```
+
+### Windows Setup
+
+Windows users have two options:
+1. **PowerShell scripts** (native) - For host inventory and future scan scripts
+2. **Git Bash** - For running the full bash-based toolkit
+
+#### Option A: PowerShell Scripts (Native Windows)
+
+PowerShell scripts run natively without additional dependencies.
+
+**1. Clone the Repository**
+
+```powershell
+# Using Git for Windows (if installed)
+git clone https://github.com/brucedombrowski/Security.git
+cd Security
+
+# Or download and extract the ZIP from GitHub
+```
+
+**2. Set Execution Policy (if needed)**
+
+```powershell
+# Check current policy
+Get-ExecutionPolicy
+
+# If "Restricted", allow local scripts (run as Administrator)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+**3. Run Host Inventory**
+
+```powershell
+# Collect system inventory (CUI-sensitive output)
+.\scripts\Collect-HostInventory.ps1
+
+# Output to console only (no file)
+.\scripts\Collect-HostInventory.ps1 -NoFile
+
+# Specify output location
+.\scripts\Collect-HostInventory.ps1 -OutputFile "C:\Scans\inventory.txt"
+```
+
+**4. Install Optional Tools**
+
+```powershell
+# Install ClamAV via winget (Windows 10/11)
+winget install ClamAV.ClamAV
+
+# Or download from: https://www.clamav.net/downloads#otherversions
+
+# Install Git for Windows (includes bash)
+winget install Git.Git
+
+# Install Nmap
+winget install Nmap.Nmap
+```
+
+#### Option B: Git Bash (Full Toolkit)
+
+Git Bash provides a Unix-like environment for running bash scripts.
+
+**1. Install Git for Windows**
+
+Download from https://git-scm.com/download/win or:
+```powershell
+winget install Git.Git
+```
+
+**2. Open Git Bash and Clone**
+
+```bash
+# In Git Bash terminal
+git clone https://github.com/brucedombrowski/Security.git
+cd Security
+
+# Scripts are already executable in Git Bash
+./scripts/run-all-scans.sh --help
+```
+
+**3. Install ClamAV for Windows**
+
+Download the Windows installer from https://www.clamav.net/downloads
+
+After installation:
+```bash
+# Update virus definitions (run as Administrator)
+freshclam
+
+# Verify installation
+clamscan --version
+```
+
+#### Windows Verification
+
+```powershell
+# Check PowerShell version
+$PSVersionTable.PSVersion
+
+# Test PowerShell script
+.\scripts\Collect-HostInventory.ps1 -NoFile
+
+# If using Git Bash, open Git Bash and run:
 ./scripts/check-pii.sh ./README.md
 ```
 
@@ -330,6 +440,54 @@ head -1 scripts/run-all-scans.sh
 chmod +x scripts/*.sh
 ```
 
+### Issue: PowerShell "cannot be loaded because running scripts is disabled"
+
+**Solution:** Change execution policy
+```powershell
+# Check current policy
+Get-ExecutionPolicy
+
+# Allow local scripts (run as Administrator)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Or for current session only
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+```
+
+### Issue: PowerShell script shows "requires elevation"
+
+**Solution:** Run PowerShell as Administrator
+
+Some inventory sections (Windows Defender status, Hyper-V, IIS) require elevated privileges. The script will still collect available information without elevation, noting what was skipped.
+
+```powershell
+# Right-click PowerShell -> "Run as Administrator"
+# Or from elevated prompt:
+.\scripts\Collect-HostInventory.ps1
+```
+
+### Issue: Git Bash scripts show Windows line ending errors
+
+**Solution:** Configure Git to handle line endings
+```bash
+# In Git Bash
+git config --global core.autocrlf input
+
+# Re-clone or reset the repository
+git checkout -- .
+```
+
+### Issue: ClamAV not found in Git Bash
+
+**Solution:** Add ClamAV to PATH
+```bash
+# Add to ~/.bashrc or run directly
+export PATH="$PATH:/c/Program Files/ClamAV"
+
+# Verify
+clamscan --version
+```
+
 ## Upgrading
 
 ### Using the Upgrade Script
@@ -411,5 +569,5 @@ After successful installation:
 
 ---
 
-**Last Updated:** January 30, 2026
-**Tested On:** macOS 13+, Ubuntu 20.04+, CentOS 7+
+**Last Updated:** February 3, 2026
+**Tested On:** macOS 13+, Ubuntu 20.04+, CentOS 7+, Windows 10/11, Windows Server 2019+
