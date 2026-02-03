@@ -1,0 +1,113 @@
+name: Sprint Review
+description: Review sprint accomplishments and gather retrospective feedback
+title: "Sprint [VERSION] Review"
+labels: ["sprint", "review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Sprint Review Meeting
+
+        Use this template to review a completed sprint. Replace `[VERSION]` in the title with the sprint version (e.g., "Sprint 2.1.3 Review").
+
+  - type: input
+    id: sprint-version
+    attributes:
+      label: Sprint Version
+      description: The version being reviewed
+      placeholder: "2.1.3"
+    validations:
+      required: true
+
+  - type: input
+    id: sprint-period
+    attributes:
+      label: Sprint Period
+      description: Date range of the sprint
+      placeholder: "Feb 3-5, 2026"
+    validations:
+      required: true
+
+  - type: input
+    id: release-version
+    attributes:
+      label: Version Released
+      description: The version released (or "pending" if not yet released)
+      placeholder: "v2.1.3"
+
+  - type: textarea
+    id: delivered
+    attributes:
+      label: Delivered (Merged PRs)
+      description: List all PRs merged during this sprint
+      value: |
+        | PR | Description | Owner | NIST Control |
+        |----|-------------|-------|--------------|
+        | | | | |
+    validations:
+      required: true
+
+  - type: textarea
+    id: closed-issues
+    attributes:
+      label: Closed Issues
+      description: List all issues closed during this sprint
+      value: |
+        - #XX: Description
+
+  - type: textarea
+    id: carry-forward
+    attributes:
+      label: Carry Forward
+      description: Items not completed that move to next sprint
+      value: |
+        | Item | Reason | Next Sprint Priority |
+        |------|--------|---------------------|
+        | | | |
+
+  - type: textarea
+    id: agent-status
+    attributes:
+      label: Agent Status Reports
+      description: Instructions for agents to post their status
+      value: |
+        **Instructions:** Each agent should comment below with:
+        1. Your role
+        2. What you worked on this sprint
+        3. PRs/Issues touched
+        4. Any blockers encountered
+        5. Suggestions for next sprint
+
+        **Retrospective Questions (all agents answer):**
+        1. What went well this sprint?
+        2. What could improve?
+        3. Any coordination issues between agents?
+        4. Feedback on the workflow?
+
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Sprint Metrics
+      description: Quantitative summary of the sprint
+      value: |
+        | Metric | Count |
+        |--------|-------|
+        | PRs Merged | |
+        | Issues Closed | |
+        | Tests Added | |
+        | Release | |
+
+  - type: textarea
+    id: retrospective
+    attributes:
+      label: Retrospective Summary
+      description: Consolidated feedback from all agents
+      value: |
+        ### What Went Well
+        -
+
+        ### What Could Improve
+        -
+
+        ### Action Items for Next Sprint
+        -

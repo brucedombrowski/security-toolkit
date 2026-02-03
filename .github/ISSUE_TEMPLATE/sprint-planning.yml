@@ -1,0 +1,96 @@
+name: Sprint Planning
+description: Plan the next sprint with agent assignments and goals
+title: "Sprint [VERSION] Planning"
+labels: ["sprint", "planning"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Sprint Planning Meeting
+
+        Use this template to plan a new sprint. Replace `[VERSION]` in the title with the target version (e.g., "Sprint 2.1.4 Planning").
+
+  - type: input
+    id: current-version
+    attributes:
+      label: Current Version
+      description: The current released version
+      placeholder: "v2.1.3"
+    validations:
+      required: true
+
+  - type: input
+    id: target-version
+    attributes:
+      label: Target Version
+      description: The version this sprint will release
+      placeholder: "v2.1.4"
+    validations:
+      required: true
+
+  - type: textarea
+    id: sprint-goal
+    attributes:
+      label: Sprint Goal
+      description: One sentence describing what we're trying to achieve
+      placeholder: "Complete Windows PowerShell parity and improve documentation."
+    validations:
+      required: true
+
+  - type: textarea
+    id: backlog
+    attributes:
+      label: Backlog Items
+      description: |
+        List candidate items for this sprint. Use this format:
+        | Issue/PR | Description | Priority | Suggested Owner |
+        |----------|-------------|----------|-----------------|
+      value: |
+        ### Open PRs (Carry Forward)
+        | PR | Description | Owner | Status |
+        |----|-------------|-------|--------|
+        | | | | |
+
+        ### Open Issues
+        | Issue | Description | Priority | Suggested Owner |
+        |-------|-------------|----------|-----------------|
+        | | | | |
+
+        ### Process Improvements
+        - [ ] Item from retrospective
+    validations:
+      required: true
+
+  - type: textarea
+    id: agent-checkin
+    attributes:
+      label: Agent Check-In Instructions
+      description: Instructions for agents joining the planning meeting
+      value: |
+        **Instructions:** Each agent should comment below with:
+        1. Your role
+        2. Which items you want to claim
+        3. Any blockers or dependencies
+        4. Estimated capacity (S/M/L items)
+
+  - type: textarea
+    id: sprint-scope
+    attributes:
+      label: Sprint Scope (Finalized)
+      description: Fill this in after agents have checked in
+      value: |
+        | Owner | Item | Size | Dependencies |
+        |-------|------|------|--------------|
+        | | | | |
+
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: Definition of Done
+      description: What "complete" means for this sprint
+      value: |
+        - [ ] All claimed items completed or explicitly deferred
+        - [ ] Tests passing on all platforms
+        - [ ] Documentation updated
+        - [ ] CHANGELOG entry drafted
+        - [ ] Ready for release

@@ -1,0 +1,89 @@
+name: Sprint Coordination
+description: Track agent status and coordinate work during a sprint
+title: "Sprint [VERSION] Coordination"
+labels: ["sprint", "coordination"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Sprint Coordination Thread
+
+        Use this issue for real-time coordination during a sprint. Replace `[VERSION]` in the title with the sprint version.
+
+  - type: input
+    id: sprint-version
+    attributes:
+      label: Sprint Version
+      placeholder: "2.1.3"
+    validations:
+      required: true
+
+  - type: input
+    id: planning-issue
+    attributes:
+      label: Planning Issue
+      description: Link to the sprint planning issue
+      placeholder: "#32"
+    validations:
+      required: true
+
+  - type: textarea
+    id: active-agents
+    attributes:
+      label: Active Agents
+      description: Track which agents are working on what
+      value: |
+        | Role | Status | Current Task |
+        |------|--------|--------------|
+        | LSE | | |
+        | LSD | | |
+        | Windows Dev | | |
+        | QA | | |
+        | Doc | | |
+
+        **Status Legend:**
+        - 🟢 Active - Currently working
+        - 🟡 Standby - Waiting for dependency/review
+        - 🔴 Blocked - Has a blocker
+        - ⚪ Offline - Not in session
+
+  - type: textarea
+    id: how-to-use
+    attributes:
+      label: How to Use This Thread
+      value: |
+        **Post updates when:**
+        - Starting work on an item
+        - Completing an item
+        - Hitting a blocker
+        - Needing help from another agent
+        - Handing off work
+
+        **Update Format:**
+        ```
+        🤖 [Role] - [Status Update]
+        - What: [brief description]
+        - Next: [what you're doing next]
+        - Blockers: [any blockers or "none"]
+        ```
+
+  - type: textarea
+    id: dependency-tracker
+    attributes:
+      label: Dependency Tracker
+      description: Visual map of task dependencies
+      value: |
+        ```
+        PR #XX (Owner) ──► #YY (Owner)
+                     └──► #ZZ (Owner)
+        ```
+
+  - type: textarea
+    id: mid-sprint-checkpoint
+    attributes:
+      label: Mid-Sprint Checkpoint
+      description: Plan for mid-sprint review
+      value: |
+        **When:** After [milestone] completes
+        **Who:** LSD + QA lead review
+        **Goal:** Assess progress, unblock dependencies
