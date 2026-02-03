@@ -96,6 +96,45 @@ When the user mentions another agent's activity, this is **informational context
 
 **Rule:** Only invoke skills/commands when the user directly requests YOU to perform them. Statements about what other agents are doing are situational awareness, not task delegation.
 
+### Issue Coordination (Avoiding Duplicate Work)
+
+**Problem:** Session task lists don't sync across agents. Multiple agents may unknowingly work on the same GitHub issue.
+
+**Solution:** Use GitHub itself as the coordination mechanism.
+
+**Before starting work on a GitHub issue:**
+
+1. **Check if claimed:**
+   ```bash
+   gh issue view <NUMBER> --json assignees,comments
+   ```
+
+2. **Claim the issue:**
+   ```bash
+   # Add a comment to signal you're working on it
+   gh issue comment <NUMBER> --body "🤖 [Role] claiming this issue"
+
+   # Optionally assign (if you have permissions)
+   gh issue edit <NUMBER> --add-assignee @me
+   ```
+
+3. **When complete:**
+   ```bash
+   # Close via PR with "Closes #<NUMBER>" in the PR body
+   # Or close directly if no code changes needed
+   gh issue close <NUMBER> --comment "Completed in PR #<PR_NUMBER>"
+   ```
+
+**Coordination signals:**
+| GitHub State | Meaning |
+|--------------|---------|
+| Unassigned, no comments | Available to claim |
+| Comment "🤖 ... claiming" | Another agent is working on it |
+| Assigned to someone | Claimed (check with user if stale) |
+| Linked to open PR | In progress, check PR for status |
+
+**If you find a conflict:** Stop, inform the user, and ask how to proceed.
+
 ### Development Process
 
 1. **All development happens in the dev worktree:**
