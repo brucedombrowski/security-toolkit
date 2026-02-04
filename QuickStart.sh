@@ -287,19 +287,18 @@ run_scans() {
             print_step "Malware Scan (this may take a while)..."
             echo ""
             # Run malware scan with visible output so user sees progress
-            # Don't redirect to /dev/null - user needs to see scan activity
-            if "$SCRIPTS_DIR/check-malware.sh" "$TARGET_DIR"; then
+            # Capture exit code before if-test (can't use $? inside else block)
+            local malware_exit=0
+            "$SCRIPTS_DIR/check-malware.sh" "$TARGET_DIR" || malware_exit=$?
+            if [ "$malware_exit" -eq 0 ]; then
                 print_success "Malware scan passed"
                 ((passed++))
+            elif [ "$malware_exit" -eq 2 ]; then
+                print_warning "Malware scan skipped (dependency missing)"
+                ((skipped++))
             else
-                local exit_code=$?
-                if [ "$exit_code" -eq 2 ]; then
-                    print_warning "Malware scan skipped (dependency missing)"
-                    ((skipped++))
-                else
-                    print_warning "Malware scan found potential issues"
-                    ((failed++))
-                fi
+                print_warning "Malware scan found potential issues"
+                ((failed++))
             fi
             echo ""
         else
