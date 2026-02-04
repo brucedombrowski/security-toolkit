@@ -1138,7 +1138,8 @@ run_remote_ssh_scans() {
 
             echo "  Lynis audit running (this takes a few minutes)..."
             # Run Lynis in background, tail output for progress
-            ssh_cmd_sudo "sudo lynis audit system --quick" > "$lynis_file" 2>&1 &
+            # Use ssh_cmd (no TTY) since sudo password should be cached
+            ssh_cmd "sudo lynis audit system --quick" > "$lynis_file" 2>&1 &
             local lynis_pid=$!
 
             # Show progress while Lynis runs
@@ -1173,7 +1174,8 @@ run_remote_ssh_scans() {
                     # Now run the audit
                     local lynis_file="$output_dir/remote-lynis-$timestamp.txt"
                     echo "  Running Lynis audit..."
-                    ssh_cmd_sudo "sudo lynis audit system --quick" > "$lynis_file" 2>&1 &
+                    # Use ssh_cmd (no TTY) since sudo password just entered for install
+                    ssh_cmd "sudo lynis audit system --quick" > "$lynis_file" 2>&1 &
                     local lynis_pid=$!
 
                     sleep 2
