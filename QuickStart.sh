@@ -745,7 +745,10 @@ select_remote_config_cli() {
 }
 
 select_remote_config() {
-    if use_tui; then
+    # Skip prompts if all values set from config
+    if [ -n "$REMOTE_HOST" ] && [ -n "$REMOTE_USER" ] && [ -n "$PROJECT_NAME" ]; then
+        echo "Remote config from file:"
+    elif use_tui; then
         select_remote_config_tui
     else
         select_remote_config_cli
@@ -753,6 +756,7 @@ select_remote_config() {
     echo ""
     print_success "Target: $REMOTE_HOST"
     [ -n "$REMOTE_USER" ] && print_success "User: $REMOTE_USER"
+    [ -n "$PROJECT_NAME" ] && print_success "Project: $PROJECT_NAME"
     echo ""
 }
 
@@ -1014,14 +1018,18 @@ select_remote_scans() {
             exit 1
         fi
 
-        if use_tui; then
+        if [ "$SKIP_SCAN_SELECTION" = "true" ]; then
+            echo "Using scan selections from config file"
+        elif use_tui; then
             select_remote_scans_ssh_tui
         else
             select_remote_scans_ssh_cli
         fi
     else
         # Uncredentialed = Nmap only
-        if use_tui; then
+        if [ "$SKIP_SCAN_SELECTION" = "true" ]; then
+            echo "Using scan selections from config file"
+        elif use_tui; then
             select_remote_scans_nmap_tui
         else
             select_remote_scans_nmap_cli
@@ -2113,9 +2121,18 @@ main() {
     check_dependencies
 
     # New menu flow: Environment -> Auth -> Config -> Scans
-    select_scan_environment
+    # Skip prompts if set from config file
+    if [ -z "$SCAN_MODE" ]; then
+        select_scan_environment
+    else
+        echo "Scan mode: $SCAN_MODE (from config)"
+    fi
 
-    select_auth_mode
+    if [ -z "$AUTH_MODE" ]; then
+        select_auth_mode
+    else
+        echo "Auth mode: $AUTH_MODE (from config)"
+    fi
 
     if [ "$SCAN_MODE" = "local" ]; then
         select_local_config
