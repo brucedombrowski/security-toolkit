@@ -90,14 +90,15 @@ fi
 print_banner() {
     echo ""
     echo -e "${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC}${BOLD}            Security Toolkit - QuickStart Demo                 ${NC}${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}${BOLD}            Security Toolkit - QuickStart                       ${NC}${CYAN}║${NC}"
     echo -e "${CYAN}║${NC}                      Version: ${TOOLKIT_VERSION}                            ${CYAN}║${NC}"
     echo -e "${CYAN}╠════════════════════════════════════════════════════════════════╣${NC}"
-    echo -e "${CYAN}║${NC}  Scan your projects for:                                       ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}    • PII (Social Security Numbers, Phone Numbers, etc.)        ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}    • Secrets (API Keys, Passwords, Tokens)                     ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}    • Malware (via ClamAV)                                      ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}    • Known Exploited Vulnerabilities (CISA KEV)                ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}  Security verification for local and remote systems:           ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}    • PII Detection (SSN, Phone Numbers, etc.)                  ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}    • Secrets Scanning (API Keys, Passwords, Tokens)            ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}    • Malware Detection (ClamAV)                                ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}    • Vulnerability Assessment (Lynis, Nmap)                    ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}    • CISA KEV Cross-Reference                                  ${CYAN}║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
@@ -294,35 +295,75 @@ offer_install() {
 }
 
 # ============================================================================
-# Dependency Check
+# Dependency Check (Categorized by Use Case)
 # ============================================================================
+
+# Dependencies categorized by scan type
+declare_dependency_categories() {
+    # General (always needed)
+    DEPS_GENERAL_CMD=("bash" "grep" "git")
+    DEPS_GENERAL_NAME=("Bash" "grep" "Git")
+    DEPS_GENERAL_DESC=("Shell interpreter" "Pattern matching" "Version control")
+
+    # Local scanning
+    DEPS_LOCAL_CMD=("clamscan" "lynis")
+    DEPS_LOCAL_NAME=("ClamAV" "Lynis")
+    DEPS_LOCAL_DESC=("Malware detection" "Security auditing")
+    DEPS_LOCAL_PKG=("clamav" "lynis")
+
+    # Remote scanning
+    DEPS_REMOTE_CMD=("nmap" "ssh")
+    DEPS_REMOTE_NAME=("Nmap" "SSH")
+    DEPS_REMOTE_DESC=("Network vulnerability scanning" "Remote host access")
+    DEPS_REMOTE_PKG=("nmap" "openssh")
+
+    # UI enhancement
+    DEPS_UI_CMD=("dialog")
+    DEPS_UI_NAME=("dialog")
+    DEPS_UI_DESC=("TUI menus")
+    DEPS_UI_PKG=("dialog")
+}
 
 check_dependencies() {
     print_step "Checking dependencies..."
     echo ""
 
+    declare_dependency_categories
+
     local all_good=true
-    local missing_optional=()
+    local missing_local=()
+    local missing_remote=()
+    local missing_ui=()
     local pkg_mgr
     pkg_mgr=$(detect_package_manager)
 
-    # Required
-    check_dependency "bash" "Bash" "Required" || all_good=false
-    check_dependency "grep" "grep" "Required" || all_good=false
-    check_dependency "git" "Git" "Required for version info" || all_good=false
+    # Check required (General)
+    echo -e "${BOLD}[General - Required]${NC}"
+    for i in "${!DEPS_GENERAL_CMD[@]}"; do
+        check_dependency "${DEPS_GENERAL_CMD[$i]}" "${DEPS_GENERAL_NAME[$i]}" "${DEPS_GENERAL_DESC[$i]}" || all_good=false
+    done
+    echo ""
 
-    # Optional but recommended - track missing ones
-    if ! check_dependency "clamscan" "ClamAV" "Install for malware scanning"; then
-        missing_optional+=("clamav")
-    fi
-    if ! check_dependency "lynis" "Lynis" "Install for security auditing"; then
-        missing_optional+=("lynis")
-    fi
-    if ! check_dependency "nmap" "Nmap" "Install for vulnerability scanning"; then
-        missing_optional+=("nmap")
-    fi
+    # Check local scanning dependencies
+    echo -e "${BOLD}[Local Scanning]${NC}"
+    for i in "${!DEPS_LOCAL_CMD[@]}"; do
+        if ! check_dependency "${DEPS_LOCAL_CMD[$i]}" "${DEPS_LOCAL_NAME[$i]}" "${DEPS_LOCAL_DESC[$i]}"; then
+            missing_local+=("${DEPS_LOCAL_PKG[$i]}")
+        fi
+    done
+    echo ""
 
-    # TUI status
+    # Check remote scanning dependencies
+    echo -e "${BOLD}[Remote Scanning]${NC}"
+    for i in "${!DEPS_REMOTE_CMD[@]}"; do
+        if ! check_dependency "${DEPS_REMOTE_CMD[$i]}" "${DEPS_REMOTE_NAME[$i]}" "${DEPS_REMOTE_DESC[$i]}"; then
+            missing_remote+=("${DEPS_REMOTE_PKG[$i]}")
+        fi
+    done
+    echo ""
+
+    # Check UI dependencies
+    echo -e "${BOLD}[User Interface]${NC}"
     if [ -n "$TUI_CMD" ]; then
         if [ "$FORCE_CLI" = true ]; then
             print_success "$TUI_CMD found (TUI disabled via --no-tui)"
@@ -331,9 +372,8 @@ check_dependencies() {
         fi
     else
         print_warning "dialog/whiptail not found - using CLI mode"
-        missing_optional+=("dialog")
+        missing_ui+=("dialog")
     fi
-
     echo ""
 
     if [ "$all_good" = false ]; then
@@ -341,15 +381,42 @@ check_dependencies() {
         exit 1
     fi
 
-    # Offer to install missing optional dependencies
-    if [ ${#missing_optional[@]} -gt 0 ] && [ -n "$pkg_mgr" ] && [ -t 0 ]; then
-        offer_install "$pkg_mgr" "${missing_optional[@]}"
+    # Offer to install missing dependencies by category
+    if [ -n "$pkg_mgr" ] && [ -t 0 ]; then
+        local total_missing=()
+        [ ${#missing_local[@]} -gt 0 ] && total_missing+=("${missing_local[@]}")
+        [ ${#missing_remote[@]} -gt 0 ] && total_missing+=("${missing_remote[@]}")
+        [ ${#missing_ui[@]} -gt 0 ] && total_missing+=("${missing_ui[@]}")
 
-        # Re-check TUI after potential install
-        if command -v dialog &>/dev/null; then
-            TUI_CMD="dialog"
-        elif command -v whiptail &>/dev/null; then
-            TUI_CMD="whiptail"
+        if [ ${#total_missing[@]} -gt 0 ]; then
+            echo -e "${BOLD}Missing optional dependencies:${NC}"
+            [ ${#missing_local[@]} -gt 0 ] && echo "  Local:  ${missing_local[*]}"
+            [ ${#missing_remote[@]} -gt 0 ] && echo "  Remote: ${missing_remote[*]}"
+            [ ${#missing_ui[@]} -gt 0 ] && echo "  UI:     ${missing_ui[*]}"
+            echo ""
+
+            echo "Install options:"
+            echo "  1) All missing packages"
+            echo "  2) Local scanning only (${missing_local[*]:-none})"
+            echo "  3) Remote scanning only (${missing_remote[*]:-none})"
+            echo "  4) None (skip)"
+            echo ""
+            echo -n "Select [1-4]: "
+            read -r install_choice
+
+            case "$install_choice" in
+                1) offer_install "$pkg_mgr" "${total_missing[@]}" ;;
+                2) [ ${#missing_local[@]} -gt 0 ] && offer_install "$pkg_mgr" "${missing_local[@]}" ;;
+                3) [ ${#missing_remote[@]} -gt 0 ] && offer_install "$pkg_mgr" "${missing_remote[@]}" ;;
+                *) echo "Skipping installation." ;;
+            esac
+
+            # Re-check TUI after potential install
+            if command -v dialog &>/dev/null; then
+                TUI_CMD="dialog"
+            elif command -v whiptail &>/dev/null; then
+                TUI_CMD="whiptail"
+            fi
         fi
     fi
 
@@ -358,7 +425,275 @@ check_dependencies() {
 }
 
 # ============================================================================
-# Target Selection
+# Menu Configuration Variables
+# ============================================================================
+
+SCAN_MODE=""          # "local" or "remote"
+AUTH_MODE=""          # "credentialed" or "uncredentialed"
+PRIVILEGE_LEVEL=""    # "admin" or "standard"
+SCAN_SCOPE=""         # "full" or "directory"
+REMOTE_HOST=""        # Remote hostname/IP
+REMOTE_USER=""        # Remote username (for credentialed)
+
+# ============================================================================
+# Level 1: Scan Environment Selection
+# ============================================================================
+
+select_scan_environment_tui() {
+    local choice
+    choice=$(tui_menu "Scan Environment" "Select scan environment:" 12 70 2 \
+        "local" "Local Scan - Scan this machine or local directories" \
+        "remote" "Remote Scan - Scan a remote host over the network")
+
+    if [ -z "$choice" ]; then
+        print_error "Cancelled"
+        exit 1
+    fi
+    SCAN_MODE="$choice"
+}
+
+select_scan_environment_cli() {
+    echo -e "${BOLD}Select Scan Environment${NC}"
+    echo ""
+    echo "  1) Local Scan  - Scan this machine or local directories"
+    echo "  2) Remote Scan - Scan a remote host over the network"
+    echo ""
+    echo -n "Select [1-2]: "
+    read -r choice
+
+    case "$choice" in
+        1) SCAN_MODE="local" ;;
+        2) SCAN_MODE="remote" ;;
+        *)
+            print_error "Invalid selection"
+            exit 1
+            ;;
+    esac
+}
+
+select_scan_environment() {
+    if use_tui; then
+        select_scan_environment_tui
+    else
+        select_scan_environment_cli
+    fi
+    echo ""
+}
+
+# ============================================================================
+# Level 2: Authentication Mode
+# ============================================================================
+
+select_auth_mode_tui() {
+    local desc_cred desc_uncred
+    if [ "$SCAN_MODE" = "local" ]; then
+        desc_cred="Run with elevated privileges (sudo) for deeper checks"
+        desc_uncred="Run as current user (limited access to system files)"
+    else
+        desc_cred="SSH with credentials for authenticated scanning"
+        desc_uncred="Network-only scan (port scan, service detection)"
+    fi
+
+    local choice
+    choice=$(tui_menu "Authentication Mode" "Select authentication level:" 12 70 2 \
+        "cred" "Credentialed - $desc_cred" \
+        "uncred" "Uncredentialed - $desc_uncred")
+
+    if [ -z "$choice" ]; then
+        print_error "Cancelled"
+        exit 1
+    fi
+    [ "$choice" = "cred" ] && AUTH_MODE="credentialed" || AUTH_MODE="uncredentialed"
+}
+
+select_auth_mode_cli() {
+    echo -e "${BOLD}Select Authentication Mode${NC}"
+    echo ""
+    if [ "$SCAN_MODE" = "local" ]; then
+        echo "  1) Credentialed   - Run with sudo for deeper system checks"
+        echo "  2) Uncredentialed - Run as current user (limited access)"
+    else
+        echo "  1) Credentialed   - SSH login for authenticated scanning"
+        echo "  2) Uncredentialed - Network-only scan (no login required)"
+    fi
+    echo ""
+    echo -n "Select [1-2]: "
+    read -r choice
+
+    case "$choice" in
+        1) AUTH_MODE="credentialed" ;;
+        2) AUTH_MODE="uncredentialed" ;;
+        *)
+            print_error "Invalid selection"
+            exit 1
+            ;;
+    esac
+}
+
+select_auth_mode() {
+    if use_tui; then
+        select_auth_mode_tui
+    else
+        select_auth_mode_cli
+    fi
+    echo ""
+}
+
+# ============================================================================
+# Level 3: Local Configuration (Privilege & Scope)
+# ============================================================================
+
+select_local_config_tui() {
+    # Scope selection
+    local choice
+    choice=$(tui_menu "Scan Scope" "What do you want to scan?" 14 70 3 \
+        "full" "Full Machine - Complete system audit (slower)" \
+        "home" "Home Directory - User files and configs" \
+        "dir" "Specific Directory - Choose a folder to scan")
+
+    if [ -z "$choice" ]; then
+        print_error "Cancelled"
+        exit 1
+    fi
+
+    case "$choice" in
+        full)
+            SCAN_SCOPE="full"
+            TARGET_DIR="/"
+            ;;
+        home)
+            SCAN_SCOPE="directory"
+            TARGET_DIR="$HOME"
+            ;;
+        dir)
+            SCAN_SCOPE="directory"
+            TARGET_DIR=$(tui_input "Target Directory" "Enter directory path:" "$(pwd)")
+            if [ -z "$TARGET_DIR" ]; then
+                print_error "Cancelled"
+                exit 1
+            fi
+            ;;
+    esac
+
+    # Expand ~ if used
+    TARGET_DIR="${TARGET_DIR/#\~/$HOME}"
+
+    # Validate path
+    if [ ! -d "$TARGET_DIR" ]; then
+        tui_msgbox "Error" "Directory not found: $TARGET_DIR"
+        exit 1
+    fi
+}
+
+select_local_config_cli() {
+    echo -e "${BOLD}Select Scan Scope${NC}"
+    echo ""
+    echo "  1) Full Machine      - Complete system audit (slower)"
+    echo "  2) Home Directory    - User files and configs (~)"
+    echo "  3) Specific Directory - Choose a folder"
+    echo ""
+    echo -n "Select [1-3]: "
+    read -r choice
+
+    case "$choice" in
+        1)
+            SCAN_SCOPE="full"
+            TARGET_DIR="/"
+            ;;
+        2)
+            SCAN_SCOPE="directory"
+            TARGET_DIR="$HOME"
+            ;;
+        3)
+            SCAN_SCOPE="directory"
+            echo ""
+            echo -n "Enter directory path: "
+            read -r TARGET_DIR
+            ;;
+        *)
+            print_error "Invalid selection"
+            exit 1
+            ;;
+    esac
+
+    # Expand ~ if used
+    TARGET_DIR="${TARGET_DIR/#\~/$HOME}"
+
+    # Validate path
+    if [ ! -d "$TARGET_DIR" ]; then
+        print_error "Directory not found: $TARGET_DIR"
+        exit 1
+    fi
+}
+
+select_local_config() {
+    if use_tui; then
+        select_local_config_tui
+    else
+        select_local_config_cli
+    fi
+    echo ""
+    print_success "Target: $TARGET_DIR"
+    echo ""
+}
+
+# ============================================================================
+# Level 3: Remote Configuration
+# ============================================================================
+
+select_remote_config_tui() {
+    REMOTE_HOST=$(tui_input "Remote Host" "Enter hostname or IP address:" "")
+    if [ -z "$REMOTE_HOST" ]; then
+        print_error "Cancelled"
+        exit 1
+    fi
+
+    if [ "$AUTH_MODE" = "credentialed" ]; then
+        REMOTE_USER=$(tui_input "SSH Username" "Enter username for $REMOTE_HOST:" "$(whoami)")
+        if [ -z "$REMOTE_USER" ]; then
+            REMOTE_USER="$(whoami)"
+        fi
+        # Note: We don't prompt for password here - let SSH handle it securely
+        tui_msgbox "SSH Authentication" "You will be prompted for SSH credentials when connecting.\n\nEnsure you have SSH access to $REMOTE_USER@$REMOTE_HOST"
+    fi
+
+    TARGET_DIR="$REMOTE_HOST"
+}
+
+select_remote_config_cli() {
+    echo -n "Enter remote hostname or IP: "
+    read -r REMOTE_HOST
+
+    if [ -z "$REMOTE_HOST" ]; then
+        print_error "Hostname required"
+        exit 1
+    fi
+
+    if [ "$AUTH_MODE" = "credentialed" ]; then
+        echo -n "Enter SSH username [$USER]: "
+        read -r REMOTE_USER
+        [ -z "$REMOTE_USER" ] && REMOTE_USER="$USER"
+        echo ""
+        echo "Note: You will be prompted for SSH credentials when connecting."
+    fi
+
+    TARGET_DIR="$REMOTE_HOST"
+}
+
+select_remote_config() {
+    if use_tui; then
+        select_remote_config_tui
+    else
+        select_remote_config_cli
+    fi
+    echo ""
+    print_success "Target: $REMOTE_HOST"
+    [ -n "$REMOTE_USER" ] && print_success "User: $REMOTE_USER"
+    echo ""
+}
+
+# ============================================================================
+# Legacy Target Selection (kept for compatibility)
 # ============================================================================
 
 select_target_tui() {
@@ -845,7 +1180,30 @@ print_summary() {
 main() {
     print_banner
     check_dependencies
-    select_target
+
+    # New menu flow: Environment -> Auth -> Config -> Scans
+    select_scan_environment
+
+    select_auth_mode
+
+    if [ "$SCAN_MODE" = "local" ]; then
+        select_local_config
+        # Set privilege level based on auth mode
+        if [ "$AUTH_MODE" = "credentialed" ]; then
+            PRIVILEGE_LEVEL="admin"
+            LYNIS_PRIVILEGED=true
+        else
+            PRIVILEGE_LEVEL="standard"
+            LYNIS_PRIVILEGED=false
+        fi
+    else
+        select_remote_config
+        if [ "$AUTH_MODE" = "uncredentialed" ]; then
+            print_warning "Remote uncredentialed scan: Only network-based checks available"
+            echo ""
+        fi
+    fi
+
     select_scans
     run_scans
     print_summary
