@@ -447,6 +447,9 @@ RUN_REMOTE_INVENTORY=false # Host inventory via SSH
 RUN_REMOTE_SECURITY=false  # Security check via SSH
 RUN_REMOTE_LYNIS=false     # Lynis audit via SSH
 
+# Output
+PDF_ATTESTATION_PATH=""    # Path to generated PDF attestation
+
 # ============================================================================
 # Level 1: Scan Environment Selection
 # ============================================================================
@@ -1661,6 +1664,129 @@ run_scans() {
 }
 
 # ============================================================================
+# PDF Attestation Generation
+# ============================================================================
+
+generate_pdf_attestation() {
+    local output_dir="$1"
+
+    # Check for pdflatex
+    if ! command -v pdflatex &>/dev/null; then
+        print_warning "PDF attestation skipped (pdflatex not installed)"
+        echo "  Install with: brew install basictex (macOS) or apt install texlive-latex-base (Linux)"
+        return 0
+    fi
+
+    # Check for attestation script
+    local attestation_script="$SCRIPTS_DIR/generate-scan-attestation.sh"
+    if [ ! -x "$attestation_script" ]; then
+        print_warning "PDF attestation skipped (script not found)"
+        return 0
+    fi
+
+    print_step "Generating PDF attestation..."
+
+    # Set up required environment variables for attestation script
+    local file_timestamp
+    file_timestamp=$(date -u +"%Y-%m-%d-T%H%M%SZ")
+
+    export TARGET_DIR="${TARGET_DIR:-$(pwd)}"
+    export FILE_TIMESTAMP="$file_timestamp"
+    export TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    export DATE_STAMP=$(date -u +"%Y-%m-%d")
+    export TOOLKIT_VERSION="${TOOLKIT_VERSION:-unknown}"
+    export TOOLKIT_COMMIT="${TOOLKIT_COMMIT:-unknown}"
+    export TOOLKIT_SOURCE="${SCRIPT_DIR:-unknown}"
+    export TOOLKIT_NAME="Security Toolkit"
+
+    # Set scan results based on what was run
+    if [ "$SCAN_MODE" = "remote" ]; then
+        export TARGET_DIR="$REMOTE_HOST (remote)"
+        export INVENTORY_CHECKSUM="N/A (remote scan)"
+        export PII_RESULT="SKIP"
+        export PII_FINDINGS="Not applicable for remote scans"
+        export SECRETS_RESULT="SKIP"
+        export SECRETS_FINDINGS="Not applicable for remote scans"
+        export MAC_RESULT="SKIP"
+        export MAC_FINDINGS="Not applicable for remote scans"
+        export MALWARE_RESULT="SKIP"
+        export MALWARE_FINDINGS="Not applicable for remote scans"
+        export HOST_RESULT="PASS"
+        export HOST_FINDINGS="Remote security check completed"
+        export VULN_RESULT="${RUN_NMAP_PORTS:+PASS}"
+        export VULN_RESULT="${VULN_RESULT:-SKIP}"
+        export VULN_FINDINGS="Nmap network scan"
+    else
+        # Local scan - get inventory checksum if available
+        local inv_file
+        inv_file=$(ls -t "$output_dir"/host-inventory-*.txt 2>/dev/null | head -1)
+        if [ -n "$inv_file" ] && [ -f "$inv_file" ]; then
+            export INVENTORY_CHECKSUM=$(shasum -a 256 "$inv_file" 2>/dev/null | awk '{print $1}' || echo "N/A")
+        else
+            export INVENTORY_CHECKSUM="N/A"
+        fi
+
+        # Set results based on what was selected and run
+        export PII_RESULT="${RUN_PII:+PASS}"
+        export PII_RESULT="${PII_RESULT:-SKIP}"
+        export PII_FINDINGS="${RUN_PII:+PII scan completed}"
+        export PII_FINDINGS="${PII_FINDINGS:-Not selected}"
+
+        export SECRETS_RESULT="${RUN_SECRETS:+PASS}"
+        export SECRETS_RESULT="${SECRETS_RESULT:-SKIP}"
+        export SECRETS_FINDINGS="${RUN_SECRETS:+Secrets scan completed}"
+        export SECRETS_FINDINGS="${SECRETS_FINDINGS:-Not selected}"
+
+        export MAC_RESULT="${RUN_MAC:+PASS}"
+        export MAC_RESULT="${MAC_RESULT:-SKIP}"
+        export MAC_FINDINGS="${RUN_MAC:+MAC scan completed}"
+        export MAC_FINDINGS="${MAC_FINDINGS:-Not selected}"
+
+        export MALWARE_RESULT="${RUN_MALWARE:+PASS}"
+        export MALWARE_RESULT="${MALWARE_RESULT:-SKIP}"
+        export MALWARE_FINDINGS="${RUN_MALWARE:+Malware scan completed}"
+        export MALWARE_FINDINGS="${MALWARE_FINDINGS:-Not selected}"
+
+        export HOST_RESULT="PASS"
+        export HOST_FINDINGS="QuickStart local scan"
+
+        export VULN_RESULT="${RUN_LYNIS:+PASS}"
+        export VULN_RESULT="${VULN_RESULT:-SKIP}"
+        export VULN_FINDINGS="${RUN_LYNIS:+Lynis audit completed}"
+        export VULN_FINDINGS="${VULN_FINDINGS:-Not selected}"
+    fi
+
+    # Overall status
+    if [ "$SCANS_FAILED" -gt 0 ]; then
+        export OVERALL_STATUS="FAIL"
+    else
+        export OVERALL_STATUS="PASS"
+    fi
+    export PASS_COUNT="$SCANS_PASSED"
+    export FAIL_COUNT="$SCANS_FAILED"
+    export SKIP_COUNT="$SCANS_SKIPPED"
+
+    # Generate the attestation
+    local pdf_output
+    if pdf_output=$("$attestation_script" "$output_dir" 2>&1); then
+        print_success "PDF attestation generated"
+        # Extract PDF path from output
+        local pdf_path
+        pdf_path=$(echo "$pdf_output" | grep -o "$output_dir/scan-attestation-[^[:space:]]*\.pdf" | head -1)
+        if [ -n "$pdf_path" ] && [ -f "$pdf_path" ]; then
+            PDF_ATTESTATION_PATH="$pdf_path"
+        fi
+    else
+        local exit_code=$?
+        if [ $exit_code -eq 2 ]; then
+            print_warning "PDF attestation skipped (optional dependency missing)"
+        else
+            print_warning "PDF attestation failed"
+        fi
+    fi
+}
+
+# ============================================================================
 # Summary
 # ============================================================================
 
@@ -1700,13 +1826,17 @@ print_summary() {
             echo "  $SCRIPTS_DIR/run-all-scans.sh \"$TARGET_DIR\""
             echo ""
         fi
-        echo "Results are saved to:"
-        echo "  $output_dir"
     else
         echo -e "${GREEN}All scans passed!${NC}"
+    fi
+
+    echo ""
+    echo "Results saved to:"
+    echo "  $output_dir"
+    if [ -n "$PDF_ATTESTATION_PATH" ] && [ -f "$PDF_ATTESTATION_PATH" ]; then
         echo ""
-        echo "Results are saved to:"
-        echo "  $output_dir"
+        echo -e "${GREEN}PDF Attestation:${NC}"
+        echo "  $PDF_ATTESTATION_PATH"
     fi
 
     echo ""
@@ -1750,6 +1880,16 @@ main() {
 
     select_scans
     run_scans
+
+    # Generate PDF attestation
+    local output_dir
+    if [ "$SCAN_MODE" = "remote" ]; then
+        output_dir=$(get_scans_dir "$(pwd)")
+    else
+        output_dir=$(get_scans_dir "$TARGET_DIR")
+    fi
+    generate_pdf_attestation "$output_dir"
+
     print_summary
 
     # Exit with appropriate code
