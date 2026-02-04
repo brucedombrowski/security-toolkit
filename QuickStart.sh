@@ -813,7 +813,16 @@ ssh_cmd() {
     if [ -n "$SSH_OPTS" ]; then
         ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" "$@"
     else
-        ssh_cmd "$@"
+        ssh "$REMOTE_USER@$REMOTE_HOST" "$@"
+    fi
+}
+
+# Run SSH command with TTY allocation (needed for sudo password prompts)
+ssh_cmd_sudo() {
+    if [ -n "$SSH_OPTS" ]; then
+        ssh -t $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" "$@"
+    else
+        ssh -t "$REMOTE_USER@$REMOTE_HOST" "$@"
     fi
 }
 
@@ -1128,7 +1137,7 @@ run_remote_ssh_scans() {
             local lynis_file="$output_dir/remote-lynis-$timestamp.txt"
 
             echo "  Note: Lynis running on remote host (may take a while)..."
-            if ssh_cmd "sudo lynis audit system --quick 2>&1" > "$lynis_file" 2>&1; then
+            if ssh_cmd_sudo "sudo lynis audit system --quick" > "$lynis_file" 2>&1; then
                 print_success "Remote Lynis audit saved: $lynis_file"
                 ((passed++))
             else
@@ -1141,12 +1150,12 @@ run_remote_ssh_scans() {
             read -r install_ans
             if [[ "$install_ans" =~ ^[Yy] ]]; then
                 echo "  Installing Lynis on remote host..."
-                if ssh_cmd "sudo apt install -y lynis 2>&1" | tail -5; then
+                if ssh_cmd_sudo "sudo apt install -y lynis" 2>&1 | tail -5; then
                     print_success "Lynis installed"
                     # Now run the audit
                     local lynis_file="$output_dir/remote-lynis-$timestamp.txt"
                     echo "  Running Lynis audit..."
-                    if ssh_cmd "sudo lynis audit system --quick 2>&1" > "$lynis_file" 2>&1; then
+                    if ssh_cmd_sudo "sudo lynis audit system --quick" > "$lynis_file" 2>&1; then
                         print_success "Remote Lynis audit saved: $lynis_file"
                         ((passed++))
                     else
@@ -1214,10 +1223,10 @@ run_remote_ssh_scans() {
             read -r install_ans
             if [[ "$install_ans" =~ ^[Yy] ]]; then
                 echo "  Installing ClamAV on remote host..."
-                if ssh_cmd "sudo apt install -y clamav 2>&1" | tail -5; then
+                if ssh_cmd_sudo "sudo apt install -y clamav" 2>&1 | tail -5; then
                     print_success "ClamAV installed"
                     echo "  Updating virus database (this may take a minute)..."
-                    ssh_cmd "sudo freshclam 2>&1" | tail -3 || true
+                    ssh_cmd_sudo "sudo freshclam" 2>&1 | tail -3 || true
                     # Now run the scan
                     {
                         echo "Remote Malware Scan (ClamAV)"
