@@ -449,6 +449,8 @@ RUN_REMOTE_LYNIS=false     # Lynis audit via SSH
 
 # Output
 PDF_ATTESTATION_PATH=""    # Path to generated PDF attestation
+SCAN_OUTPUT_DIR=""         # Unique output directory for this scan session
+SCAN_SESSION_ID=""         # Unique identifier for this scan session
 
 # ============================================================================
 # Level 1: Scan Environment Selection
@@ -712,6 +714,39 @@ select_remote_config() {
 }
 
 # ============================================================================
+# Scan Session Management
+# ============================================================================
+
+# Create unique output directory for this scan session
+init_scan_session() {
+    local base_dir="$1"
+    local target_name="$2"
+
+    # Generate session ID: Scan<YYYYMMDDHHMMSS>
+    local timestamp
+    timestamp=$(date -u +"%Y%m%d%H%M%S")
+
+    SCAN_SESSION_ID="Scan${timestamp}"
+    SCAN_OUTPUT_DIR="$base_dir/.scans/$SCAN_SESSION_ID"
+
+    # Create the directory
+    mkdir -p "$SCAN_OUTPUT_DIR"
+    chmod 700 "$SCAN_OUTPUT_DIR"
+
+    # Write session metadata
+    {
+        echo "Session: $SCAN_SESSION_ID"
+        echo "Started: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+        echo "Target: $target_name"
+        echo "Mode: $SCAN_MODE"
+        echo "Auth: $AUTH_MODE"
+    } > "$SCAN_OUTPUT_DIR/session.txt"
+
+    print_success "Scan session: $SCAN_SESSION_ID"
+    echo ""
+}
+
+# ============================================================================
 # Remote Scan Selection
 # ============================================================================
 
@@ -933,9 +968,8 @@ run_remote_ssh_scans() {
     local failed=0
     local skipped=0
 
-    local output_dir
-    output_dir=$(get_scans_dir "$(pwd)")
-    mkdir -p "$output_dir"
+    # Use the session output directory
+    local output_dir="$SCAN_OUTPUT_DIR"
 
     local timestamp
     timestamp=$(date -u +"%Y-%m-%dT%H%M%SZ")
@@ -1177,9 +1211,8 @@ run_remote_nmap_scans() {
     local failed=0
     local skipped=0
 
-    local output_dir
-    output_dir=$(get_scans_dir "$(pwd)")
-    mkdir -p "$output_dir"
+    # Use the session output directory
+    local output_dir="$SCAN_OUTPUT_DIR"
 
     local timestamp
     timestamp=$(date -u +"%Y-%m-%dT%H%M%SZ")
@@ -1810,14 +1843,6 @@ print_summary() {
     echo -e "  ${BLUE}Skipped:${NC} $SCANS_SKIPPED"
     echo ""
 
-    # Determine output directory
-    local output_dir
-    if [ "$SCAN_MODE" = "remote" ]; then
-        output_dir=$(get_scans_dir "$(pwd)")
-    else
-        output_dir="$TARGET_DIR/.scans/"
-    fi
-
     if [ "$SCANS_FAILED" -gt 0 ]; then
         echo -e "${YELLOW}Some scans found potential issues.${NC}"
         echo ""
@@ -1832,7 +1857,7 @@ print_summary() {
 
     echo ""
     echo "Results saved to:"
-    echo "  $output_dir"
+    echo "  $SCAN_OUTPUT_DIR"
     if [ -n "$PDF_ATTESTATION_PATH" ] && [ -f "$PDF_ATTESTATION_PATH" ]; then
         echo ""
         echo -e "${GREEN}PDF Attestation:${NC}"
@@ -1879,17 +1904,21 @@ main() {
     fi
 
     select_scans
-    run_scans
 
-    # Generate PDF attestation
-    local output_dir
+    # Initialize unique scan session directory
+    local base_dir
+    local target_name
     if [ "$SCAN_MODE" = "remote" ]; then
-        output_dir=$(get_scans_dir "$(pwd)")
+        base_dir="$(pwd)"
+        target_name="$REMOTE_HOST"
     else
-        output_dir=$(get_scans_dir "$TARGET_DIR")
+        base_dir="$TARGET_DIR"
+        target_name=$(basename "$TARGET_DIR")
     fi
-    generate_pdf_attestation "$output_dir"
+    init_scan_session "$base_dir" "$target_name"
 
+    run_scans
+    generate_pdf_attestation "$SCAN_OUTPUT_DIR"
     print_summary
 
     # Exit with appropriate code
