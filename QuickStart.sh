@@ -330,6 +330,7 @@ run_scans() {
                     ((failed++))
                 fi
             fi
+            echo ""
         else
             print_warning "Skipping malware scan (ClamAV not installed)"
             ((skipped++))
