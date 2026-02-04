@@ -14,11 +14,48 @@
 set -eu
 
 # ============================================================================
+# Command-line Arguments
+# ============================================================================
+
+FORCE_CLI=false
+for arg in "$@"; do
+    case "$arg" in
+        --no-tui|--cli)
+            FORCE_CLI=true
+            ;;
+        -h|--help)
+            echo "Usage: ./QuickStart.sh [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --no-tui, --cli    Force CLI mode (disable TUI even if available)"
+            echo "  -h, --help         Show this help message"
+            echo ""
+            echo "Interactive demo for the Security Toolkit."
+            echo "If dialog or whiptail is installed, a TUI interface is used."
+            exit 0
+            ;;
+    esac
+done
+
+# ============================================================================
 # Configuration
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+
+# TUI detection (dialog or whiptail)
+TUI_CMD=""
+if command -v dialog &>/dev/null; then
+    TUI_CMD="dialog"
+elif command -v whiptail &>/dev/null; then
+    TUI_CMD="whiptail"
+fi
+
+# Check if TUI should be used (available, terminal is interactive, and not forced CLI)
+use_tui() {
+    [ "$FORCE_CLI" = false ] && [ -n "$TUI_CMD" ] && [ -t 0 ] && [ -t 1 ]
+}
 
 # Colors (disabled if not a terminal)
 if [ -t 1 ]; then
@@ -73,6 +110,96 @@ print_error() {
     echo -e "${RED}✗${NC} $1"
 }
 
+# ============================================================================
+# TUI Functions (dialog/whiptail)
+# ============================================================================
+
+# Show a TUI menu and return the selected option
+# Usage: tui_menu "title" "prompt" height width menu_height "tag1" "item1" "tag2" "item2" ...
+tui_menu() {
+    local title="$1"
+    local prompt="$2"
+    local height="$3"
+    local width="$4"
+    local menu_height="$5"
+    shift 5
+
+    local result
+    result=$($TUI_CMD --title "$title" --menu "$prompt" "$height" "$width" "$menu_height" "$@" 3>&1 1>&2 2>&3)
+    local exit_code=$?
+
+    if [ $exit_code -ne 0 ]; then
+        # User cancelled
+        echo ""
+        return 1
+    fi
+
+    echo "$result"
+    return 0
+}
+
+# Show a TUI input box
+# Usage: tui_input "title" "prompt" default_value
+tui_input() {
+    local title="$1"
+    local prompt="$2"
+    local default="$3"
+
+    local result
+    result=$($TUI_CMD --title "$title" --inputbox "$prompt" 10 60 "$default" 3>&1 1>&2 2>&3)
+    local exit_code=$?
+
+    if [ $exit_code -ne 0 ]; then
+        echo ""
+        return 1
+    fi
+
+    echo "$result"
+    return 0
+}
+
+# Show a TUI checklist for multiple selections
+# Usage: tui_checklist "title" "prompt" height width list_height "tag1" "item1" "on/off" ...
+tui_checklist() {
+    local title="$1"
+    local prompt="$2"
+    local height="$3"
+    local width="$4"
+    local list_height="$5"
+    shift 5
+
+    local result
+    result=$($TUI_CMD --title "$title" --checklist "$prompt" "$height" "$width" "$list_height" "$@" 3>&1 1>&2 2>&3)
+    local exit_code=$?
+
+    if [ $exit_code -ne 0 ]; then
+        echo ""
+        return 1
+    fi
+
+    echo "$result"
+    return 0
+}
+
+# Show a TUI yes/no dialog
+# Usage: tui_yesno "title" "prompt"
+tui_yesno() {
+    local title="$1"
+    local prompt="$2"
+
+    $TUI_CMD --title "$title" --yesno "$prompt" 10 60
+    return $?
+}
+
+# Show a TUI message box
+# Usage: tui_msgbox "title" "message"
+tui_msgbox() {
+    local title="$1"
+    local message="$2"
+
+    $TUI_CMD --title "$title" --msgbox "$message" 12 70
+}
+
 check_dependency() {
     local cmd="$1"
     local name="$2"
@@ -106,6 +233,17 @@ check_dependencies() {
     check_dependency "clamscan" "ClamAV" "Install for malware scanning (brew install clamav)" || true
     check_dependency "nmap" "Nmap" "Install for vulnerability scanning (brew install nmap)" || true
 
+    # TUI status
+    if [ -n "$TUI_CMD" ]; then
+        if [ "$FORCE_CLI" = true ]; then
+            print_success "$TUI_CMD found (TUI disabled via --no-tui)"
+        else
+            print_success "$TUI_CMD found (TUI enabled)"
+        fi
+    else
+        print_warning "dialog/whiptail not found - using CLI mode (brew install dialog)"
+    fi
+
     echo ""
 
     if [ "$all_good" = false ]; then
@@ -121,7 +259,54 @@ check_dependencies() {
 # Target Selection
 # ============================================================================
 
-select_target() {
+select_target_tui() {
+    local choice
+    choice=$(tui_menu "Target Selection" "What would you like to scan?" 15 70 4 \
+        "1" "Local directory - Scan a specific folder" \
+        "2" "Current directory - $(pwd)" \
+        "3" "Home directory - Scan entire home (slower)" \
+        "4" "Custom path - Enter a specific path")
+
+    if [ -z "$choice" ]; then
+        print_error "Cancelled"
+        exit 1
+    fi
+
+    case "$choice" in
+        1)
+            TARGET_DIR=$(tui_input "Directory Path" "Enter directory path to scan:" "$(pwd)")
+            if [ -z "$TARGET_DIR" ]; then
+                print_error "Cancelled"
+                exit 1
+            fi
+            ;;
+        2)
+            TARGET_DIR="$(pwd)"
+            ;;
+        3)
+            TARGET_DIR="$HOME"
+            tui_msgbox "Note" "Scanning home directory may take a while..."
+            ;;
+        4)
+            TARGET_DIR=$(tui_input "Custom Path" "Enter full path to scan:" "")
+            if [ -z "$TARGET_DIR" ]; then
+                print_error "Cancelled"
+                exit 1
+            fi
+            ;;
+    esac
+
+    # Expand ~ if used
+    TARGET_DIR="${TARGET_DIR/#\~/$HOME}"
+
+    # Validate path
+    if [ ! -d "$TARGET_DIR" ]; then
+        tui_msgbox "Error" "Directory not found: $TARGET_DIR"
+        exit 1
+    fi
+}
+
+select_target_cli() {
     echo -e "${BOLD}What would you like to scan?${NC}"
     echo ""
     echo "  1) Local directory    - Scan a specific folder (e.g., a project)"
@@ -171,11 +356,97 @@ select_target() {
     echo ""
 }
 
+select_target() {
+    if use_tui; then
+        select_target_tui
+        echo ""
+        print_success "Target: $TARGET_DIR"
+        echo ""
+    else
+        select_target_cli
+    fi
+}
+
 # ============================================================================
 # Scan Selection
 # ============================================================================
 
-select_scans() {
+select_scans_tui() {
+    local choice
+    choice=$(tui_menu "Scan Selection" "Which scans would you like to run?" 16 70 5 \
+        "1" "Quick scan - PII + Secrets only (fastest)" \
+        "2" "Standard scan - PII + Secrets + MAC addresses" \
+        "3" "Full scan - All scans including malware" \
+        "4" "System malware - Full system malware scan only" \
+        "5" "Custom - Select individual scans")
+
+    if [ -z "$choice" ]; then
+        print_error "Cancelled"
+        exit 1
+    fi
+
+    RUN_PII=false
+    RUN_SECRETS=false
+    RUN_MAC=false
+    RUN_MALWARE=false
+    RUN_KEV=false
+    MALWARE_FULL_SYSTEM=false
+
+    case "$choice" in
+        1)
+            RUN_PII=true
+            RUN_SECRETS=true
+            ;;
+        2)
+            RUN_PII=true
+            RUN_SECRETS=true
+            RUN_MAC=true
+            ;;
+        3)
+            RUN_PII=true
+            RUN_SECRETS=true
+            RUN_MAC=true
+            RUN_MALWARE=true
+            RUN_KEV=true
+            ;;
+        4)
+            RUN_MALWARE=true
+            MALWARE_FULL_SYSTEM=true
+            tui_msgbox "System Malware Scan" "This scan will check:\n\n- Home directory (~)\n- Applications (/Applications)\n- Temp files (/tmp)\n\nThis may take several minutes."
+            ;;
+        5)
+            # Custom scan selection via checklist
+            local selections
+            selections=$(tui_checklist "Custom Scan Selection" "Select scans to run (space to toggle):" 18 70 6 \
+                "pii" "PII detection (SSN, phone, etc.)" "on" \
+                "secrets" "Secrets detection (API keys, passwords)" "on" \
+                "mac" "MAC address scan" "off" \
+                "malware" "Malware scan (requires ClamAV)" "off" \
+                "kev" "CISA KEV vulnerability check" "off")
+
+            if [ -z "$selections" ]; then
+                print_error "No scans selected"
+                exit 1
+            fi
+
+            # Parse selections (dialog returns quoted strings)
+            [[ "$selections" =~ pii ]] && RUN_PII=true
+            [[ "$selections" =~ secrets ]] && RUN_SECRETS=true
+            [[ "$selections" =~ mac ]] && RUN_MAC=true
+            [[ "$selections" =~ malware ]] && RUN_MALWARE=true
+            [[ "$selections" =~ kev ]] && RUN_KEV=true
+
+            # If malware selected, ask about full system
+            if [ "$RUN_MALWARE" = true ]; then
+                if tui_yesno "Full System Scan" "Scan full system (not just target directory)?"; then
+                    MALWARE_FULL_SYSTEM=true
+                fi
+            fi
+            ;;
+    esac
+}
+
+select_scans_cli() {
     echo -e "${BOLD}Which scans would you like to run?${NC}"
     echo ""
     echo "  1) Quick scan     - PII + Secrets only (fastest)"
@@ -248,6 +519,15 @@ select_scans() {
     esac
 
     echo ""
+}
+
+select_scans() {
+    if use_tui; then
+        select_scans_tui
+        echo ""
+    else
+        select_scans_cli
+    fi
 }
 
 # ============================================================================
@@ -340,11 +620,20 @@ run_scans() {
     # KEV Check
     if [ "$RUN_KEV" = true ]; then
         print_step "CISA KEV Check..."
-        if "$SCRIPTS_DIR/check-kev.sh" "$TARGET_DIR" > /dev/null 2>&1; then
-            print_success "KEV check passed"
+        # Note: check-kev.sh expects a scan file, not a directory.
+        # Call without args to use most recent scan in .scans/
+        local kev_exit=0
+        "$SCRIPTS_DIR/check-kev.sh" > /dev/null 2>&1 || kev_exit=$?
+        if [ "$kev_exit" -eq 0 ]; then
+            print_success "KEV check passed (no known exploited vulnerabilities)"
             ((passed++))
+        elif [ "$kev_exit" -eq 2 ]; then
+            # Exit code 2 = error (no scan file, missing deps, etc.)
+            print_warning "KEV check skipped (no vulnerability scan file found)"
+            ((skipped++))
         else
-            print_warning "KEV check found potential issues"
+            # Exit code 1 = KEV matches found
+            print_warning "KEV check found known exploited vulnerabilities"
             ((failed++))
         fi
     fi
