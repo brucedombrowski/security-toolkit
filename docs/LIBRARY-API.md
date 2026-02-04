@@ -357,13 +357,92 @@ Functions return exit codes:
 
 ---
 
+## PowerShell Libraries
+
+The toolkit includes PowerShell equivalents of core Bash libraries for Windows compatibility.
+
+### lib/init.ps1
+
+PowerShell equivalent of init.sh - centralized boilerplate for all toolkit scripts.
+
+**Usage:**
+```powershell
+$script:SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
+. "$script:SCRIPT_DIR\lib\init.ps1"
+Initialize-SecurityToolkit
+```
+
+**Variables (after dot-sourcing):**
+
+| Variable | Description |
+|----------|-------------|
+| `$script:SCRIPT_DIR` | Directory containing the calling script |
+| `$script:SECURITY_REPO_DIR` | Root of the security toolkit repository |
+| `$script:LIB_DIR` | Directory containing library files |
+| `$script:AUDIT_AVAILABLE` | `$true` if audit-log.ps1 is loaded |
+| `$script:TIMESTAMPS_AVAILABLE` | `$true` if timestamps.ps1 is loaded |
+| `$script:PROGRESS_AVAILABLE` | `$true` if progress.ps1 is loaded |
+| `$script:TOOLKIT_AVAILABLE` | `$true` if toolkit-info.ps1 is loaded |
+| `$script:TIMESTAMP` | Current ISO 8601 UTC timestamp |
+| `$script:TOOLKIT_VERSION` | Toolkit version (from git tag or config) |
+| `$script:TOOLKIT_COMMIT` | Toolkit commit hash (short) |
+
+**Functions:**
+
+| Function | Description |
+|----------|-------------|
+| `Initialize-SecurityToolkit` | Initialize toolkit environment (timestamp, version, commit) |
+| `Get-TargetDirectory` | Parse target directory from arguments or use default |
+| `Write-ScriptHeader` | Print script header with consistent formatting |
+| `Write-LibraryStatus` | Print which libraries are loaded (for debugging) |
+| `Write-Pass` | Write success message in green |
+| `Write-Fail` | Write failure message in red |
+| `Write-WarningMessage` | Write warning message in yellow |
+| `Write-Info` | Write info message in cyan |
+| `Test-CIEnvironment` | Detect if running in a CI/CD environment |
+
+**Example:**
+```powershell
+$script:SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
+. "$script:SCRIPT_DIR\lib\init.ps1"
+Initialize-SecurityToolkit
+
+$TargetDir = Get-TargetDirectory $args
+Write-ScriptHeader -Name "Security Scan" -Target $TargetDir
+```
+
+### PowerShell Script Inventory
+
+| Script | Description | Bash Equivalent |
+|--------|-------------|-----------------|
+| `Check-PersonalInfo.ps1` | PII detection (SSN, phone, etc.) | `check-pii.sh` |
+| `Check-Secrets.ps1` | Secrets/credentials detection | `check-secrets.sh` |
+| `Collect-HostInventory.ps1` | Windows system inventory (CM-8) | `collect-host-inventory.sh` |
+
+**Test Files:**
+- `tests/powershell/Invoke-AllTests.ps1` - Master test runner
+- `tests/powershell/Init-Lib.Tests.ps1` - init.ps1 unit tests
+- `tests/powershell/Check-Secrets.Tests.ps1` - Check-Secrets tests
+- `tests/powershell/Check-PersonalInfo.Tests.ps1` - Check-PersonalInfo tests
+
+---
+
 ## Contributing
 
 When adding new library functions:
 
+### Bash Libraries
 1. Follow naming conventions (`lowercase_with_underscores`)
 2. Add function to appropriate module
 3. Document in this file
 4. Add tests in `tests/test-*.sh`
 5. Use `local` for function variables
 6. Return meaningful exit codes
+
+### PowerShell Libraries
+1. Follow naming conventions (`Verb-Noun` with PascalCase)
+2. Add function to appropriate module
+3. Include comment-based help (`.SYNOPSIS`, `.DESCRIPTION`, `.EXAMPLE`)
+4. Document in this file
+5. Add tests in `tests/powershell/*.Tests.ps1`
+6. Use `param()` blocks with types

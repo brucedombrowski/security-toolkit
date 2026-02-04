@@ -141,3 +141,49 @@ print_toolkit_header() {
     $output_fn "Toolkit: $TOOLKIT_NAME $TOOLKIT_VERSION ($TOOLKIT_COMMIT)"
     $output_fn "Source: $TOOLKIT_SOURCE"
 }
+
+# ============================================================================
+# Output Directory Helpers
+# ============================================================================
+
+# Determine the appropriate .scans directory for output
+# Priority:
+#   1. SECURITY_TOOLKIT_OUTPUT_DIR env var (if set)
+#   2. $TARGET_DIR/.scans (if target is writable)
+#   3. $SECURITY_REPO_DIR/.scans (toolkit directory fallback)
+#
+# Arguments:
+#   $1 - Target directory being scanned
+#
+# Returns: Path to .scans directory (echoed)
+#
+# Example:
+#   SCANS_DIR=$(get_scans_dir "$TARGET_DIR")
+#   mkdir -p "$SCANS_DIR"
+#
+get_scans_dir() {
+    local target_dir="${1:-.}"
+
+    # Priority 1: Environment variable override
+    if [ -n "${SECURITY_TOOLKIT_OUTPUT_DIR:-}" ]; then
+        echo "${SECURITY_TOOLKIT_OUTPUT_DIR}/.scans"
+        return 0
+    fi
+
+    # Priority 2: Target directory (if writable)
+    local target_scans="$target_dir/.scans"
+    if mkdir -p "$target_scans" 2>/dev/null; then
+        # Test write access
+        local test_file="$target_scans/.write-test-$$"
+        if touch "$test_file" 2>/dev/null; then
+            rm -f "$test_file"
+            echo "$target_scans"
+            return 0
+        fi
+    fi
+
+    # Priority 3: Toolkit directory fallback
+    local toolkit_scans="${SECURITY_REPO_DIR:-.}/.scans"
+    mkdir -p "$toolkit_scans" 2>/dev/null || true
+    echo "$toolkit_scans"
+}

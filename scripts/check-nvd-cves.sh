@@ -152,7 +152,8 @@ fi
 # Find inventory file if not specified
 if [ -z "$INVENTORY_FILE" ]; then
     # Look for most recent inventory file
-    SCANS_DIR="$TARGET_DIR/.scans"
+    # get_scans_dir handles fallback if target is not writable
+    SCANS_DIR=$(get_scans_dir "$TARGET_DIR")
     if [ -d "$SCANS_DIR" ]; then
         INVENTORY_FILE=$(find "$SCANS_DIR" -name "host-inventory-*.txt" -type f 2>/dev/null | sort -r | head -1)
     fi
@@ -164,8 +165,8 @@ if [ -z "$INVENTORY_FILE" ] || [ ! -f "$INVENTORY_FILE" ]; then
     echo "Run collect-host-inventory.sh first or specify with -i flag."
     echo ""
     echo "Generating host inventory now..."
-    "$SCRIPT_DIR/collect-host-inventory.sh" "$TARGET_DIR/.scans/host-inventory-$(date +%Y-%m-%d-T%H%M%SZ).txt" 2>/dev/null
-    INVENTORY_FILE=$(find "$TARGET_DIR/.scans" -name "host-inventory-*.txt" -type f 2>/dev/null | sort -r | head -1)
+    "$SCRIPT_DIR/collect-host-inventory.sh" "$SCANS_DIR/host-inventory-$(date +%Y-%m-%d-T%H%M%SZ).txt" 2>/dev/null
+    INVENTORY_FILE=$(find "$SCANS_DIR" -name "host-inventory-*.txt" -type f 2>/dev/null | sort -r | head -1)
 
     if [ -z "$INVENTORY_FILE" ] || [ ! -f "$INVENTORY_FILE" ]; then
         echo -e "${RED}Error: Could not generate host inventory.${NC}"
@@ -176,7 +177,7 @@ fi
 # Initialize toolkit (sets TIMESTAMP, TOOLKIT_VERSION, TOOLKIT_COMMIT)
 init_security_toolkit
 FILENAME_TS=$(get_filename_timestamp)
-OUTPUT_DIR="$TARGET_DIR/.scans"
+OUTPUT_DIR=$(get_scans_dir "$TARGET_DIR")
 OUTPUT_FILE="$OUTPUT_DIR/nvd-cve-scan-${FILENAME_TS}.txt"
 
 mkdir -p "$OUTPUT_DIR"

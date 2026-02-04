@@ -80,11 +80,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Set output directory
+# Set output directory (with fallback for non-writable targets)
 if [ -n "$TARGET_DIR" ]; then
-    OUTPUT_DIR="$TARGET_DIR/.scans"
+    OUTPUT_DIR=$(get_scans_dir "$TARGET_DIR")
 elif [ -z "$OUTPUT_DIR" ]; then
-    OUTPUT_DIR="$(pwd)/.scans"
+    OUTPUT_DIR=$(get_scans_dir "$(pwd)")
 fi
 
 # Detect container runtime if not specified

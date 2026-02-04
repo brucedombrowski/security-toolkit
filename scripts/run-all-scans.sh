@@ -216,7 +216,8 @@ validate_scan_directory() {
 }
 
 # Create .scans directory for output (delete previous results first)
-SCANS_DIR="$TARGET_DIR/.scans"
+# get_scans_dir handles fallback if target is not writable (e.g., scanning /)
+SCANS_DIR=$(get_scans_dir "$TARGET_DIR")
 
 # Validate directory before deletion
 if ! validate_scan_directory "$TARGET_DIR"; then

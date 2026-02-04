@@ -44,6 +44,13 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 
+# Source toolkit info for version
+TOOLKIT_VERSION="unknown"
+if [ -f "$SCRIPTS_DIR/lib/toolkit-info.sh" ]; then
+    source "$SCRIPTS_DIR/lib/toolkit-info.sh"
+    init_toolkit_info "$SCRIPT_DIR"
+fi
+
 # TUI detection (dialog or whiptail)
 TUI_CMD=""
 if command -v dialog &>/dev/null; then
@@ -84,6 +91,7 @@ print_banner() {
     echo ""
     echo -e "${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${CYAN}║${NC}${BOLD}            Security Toolkit - QuickStart Demo                 ${NC}${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}                      Version: ${TOOLKIT_VERSION}                            ${CYAN}║${NC}"
     echo -e "${CYAN}╠════════════════════════════════════════════════════════════════╣${NC}"
     echo -e "${CYAN}║${NC}  Scan your projects for:                                       ${CYAN}║${NC}"
     echo -e "${CYAN}║${NC}    • PII (Social Security Numbers, Phone Numbers, etc.)        ${CYAN}║${NC}"
@@ -231,6 +239,7 @@ check_dependencies() {
 
     # Optional but recommended
     check_dependency "clamscan" "ClamAV" "Install for malware scanning (brew install clamav)" || true
+    check_dependency "lynis" "Lynis" "Install for security auditing (brew install lynis)" || true
     check_dependency "nmap" "Nmap" "Install for vulnerability scanning (brew install nmap)" || true
 
     # TUI status
@@ -390,6 +399,7 @@ select_scans_tui() {
     RUN_MAC=false
     RUN_MALWARE=false
     RUN_KEV=false
+    RUN_LYNIS=false
     MALWARE_FULL_SYSTEM=false
 
     case "$choice" in
@@ -408,6 +418,7 @@ select_scans_tui() {
             RUN_MAC=true
             RUN_MALWARE=true
             RUN_KEV=true
+            RUN_LYNIS=true
             ;;
         4)
             RUN_MALWARE=true
@@ -417,11 +428,12 @@ select_scans_tui() {
         5)
             # Custom scan selection via checklist
             local selections
-            selections=$(tui_checklist "Custom Scan Selection" "Select scans to run (space to toggle):" 18 70 6 \
+            selections=$(tui_checklist "Custom Scan Selection" "Select scans to run (space to toggle):" 20 70 7 \
                 "pii" "PII detection (SSN, phone, etc.)" "on" \
                 "secrets" "Secrets detection (API keys, passwords)" "on" \
                 "mac" "MAC address scan" "off" \
                 "malware" "Malware scan (requires ClamAV)" "off" \
+                "lynis" "Lynis security audit (requires Lynis)" "off" \
                 "kev" "CISA KEV vulnerability check" "off")
 
             if [ -z "$selections" ]; then
@@ -434,6 +446,7 @@ select_scans_tui() {
             [[ "$selections" =~ secrets ]] && RUN_SECRETS=true
             [[ "$selections" =~ mac ]] && RUN_MAC=true
             [[ "$selections" =~ malware ]] && RUN_MALWARE=true
+            [[ "$selections" =~ lynis ]] && RUN_LYNIS=true
             [[ "$selections" =~ kev ]] && RUN_KEV=true
 
             # If malware selected, ask about full system
@@ -451,7 +464,7 @@ select_scans_cli() {
     echo ""
     echo "  1) Quick scan     - PII + Secrets only (fastest)"
     echo "  2) Standard scan  - PII + Secrets + MAC addresses"
-    echo "  3) Full scan      - All scans including malware (requires ClamAV)"
+    echo "  3) Full scan      - All scans including malware + Lynis"
     echo "  4) System malware - Full system malware scan only (thorough)"
     echo "  5) Custom         - Select individual scans"
     echo ""
@@ -464,6 +477,7 @@ select_scans_cli() {
     RUN_MAC=false
     RUN_MALWARE=false
     RUN_KEV=false
+    RUN_LYNIS=false
     MALWARE_FULL_SYSTEM=false
 
     case "$choice" in
@@ -482,6 +496,7 @@ select_scans_cli() {
             RUN_MAC=true
             RUN_MALWARE=true
             RUN_KEV=true
+            RUN_LYNIS=true
             ;;
         4)
             # System-wide malware scan only
@@ -509,6 +524,8 @@ select_scans_cli() {
                 echo -n "    Scan full system (not just target)? [y/N]: "
                 read -r ans && [[ "$ans" =~ ^[Yy] ]] && MALWARE_FULL_SYSTEM=true
             fi
+            echo -n "  Lynis security audit (requires Lynis)? [y/N]: "
+            read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_LYNIS=true
             echo -n "  CISA KEV check? [y/N]: "
             read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_KEV=true
             ;;
@@ -635,6 +652,26 @@ run_scans() {
             # Exit code 1 = KEV matches found
             print_warning "KEV check found known exploited vulnerabilities"
             ((failed++))
+        fi
+    fi
+
+    # Lynis Security Audit
+    if [ "$RUN_LYNIS" = true ]; then
+        if command -v lynis &>/dev/null; then
+            print_step "Lynis Security Audit (this may take a while)..."
+            local lynis_exit=0
+            "$SCRIPTS_DIR/scan-vulnerabilities.sh" --lynis-only "$TARGET_DIR" || lynis_exit=$?
+            if [ "$lynis_exit" -eq 0 ]; then
+                print_success "Lynis audit passed"
+                ((passed++))
+            else
+                print_warning "Lynis audit found potential issues"
+                ((failed++))
+            fi
+            echo ""
+        else
+            print_warning "Skipping Lynis audit (Lynis not installed - brew install lynis)"
+            ((skipped++))
         fi
     fi
 
