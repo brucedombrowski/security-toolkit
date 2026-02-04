@@ -493,6 +493,7 @@ select_scans_tui() {
     RUN_MALWARE=false
     RUN_KEV=false
     RUN_LYNIS=false
+    LYNIS_PRIVILEGED=false
     MALWARE_FULL_SYSTEM=false
 
     case "$choice" in
@@ -512,6 +513,10 @@ select_scans_tui() {
             RUN_MALWARE=true
             RUN_KEV=true
             RUN_LYNIS=true
+            # Ask about privileged mode for Lynis
+            if tui_yesno "Lynis Privileged Mode" "Run Lynis with sudo for deeper system checks?\n\n(Recommended for comprehensive audits)"; then
+                LYNIS_PRIVILEGED=true
+            fi
             ;;
         4)
             RUN_MALWARE=true
@@ -548,6 +553,13 @@ select_scans_tui() {
                     MALWARE_FULL_SYSTEM=true
                 fi
             fi
+
+            # If Lynis selected, ask about privileged mode
+            if [ "$RUN_LYNIS" = true ]; then
+                if tui_yesno "Lynis Privileged Mode" "Run Lynis with sudo for deeper system checks?\n\n(Recommended for comprehensive audits)"; then
+                    LYNIS_PRIVILEGED=true
+                fi
+            fi
             ;;
     esac
 }
@@ -571,6 +583,7 @@ select_scans_cli() {
     RUN_MALWARE=false
     RUN_KEV=false
     RUN_LYNIS=false
+    LYNIS_PRIVILEGED=false
     MALWARE_FULL_SYSTEM=false
 
     case "$choice" in
@@ -590,6 +603,9 @@ select_scans_cli() {
             RUN_MALWARE=true
             RUN_KEV=true
             RUN_LYNIS=true
+            echo ""
+            echo -n "  Run Lynis with sudo (deeper checks)? [y/N]: "
+            read -r ans && [[ "$ans" =~ ^[Yy] ]] && LYNIS_PRIVILEGED=true
             ;;
         4)
             # System-wide malware scan only
@@ -619,6 +635,10 @@ select_scans_cli() {
             fi
             echo -n "  Lynis security audit (requires Lynis)? [y/N]: "
             read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_LYNIS=true
+            if [ "$RUN_LYNIS" = true ]; then
+                echo -n "    Run with sudo (deeper checks)? [y/N]: "
+                read -r ans && [[ "$ans" =~ ^[Yy] ]] && LYNIS_PRIVILEGED=true
+            fi
             echo -n "  CISA KEV check? [y/N]: "
             read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_KEV=true
             ;;
@@ -751,9 +771,15 @@ run_scans() {
     # Lynis Security Audit
     if [ "$RUN_LYNIS" = true ]; then
         if command -v lynis &>/dev/null; then
-            print_step "Lynis Security Audit (this may take a while)..."
             local lynis_exit=0
-            "$SCRIPTS_DIR/scan-vulnerabilities.sh" --lynis-only "$TARGET_DIR" || lynis_exit=$?
+            if [ "$LYNIS_PRIVILEGED" = true ]; then
+                print_step "Lynis Security Audit [privileged] (this may take a while)..."
+                echo "  Note: You may be prompted for your password"
+                sudo "$SCRIPTS_DIR/scan-vulnerabilities.sh" --lynis-only "$TARGET_DIR" || lynis_exit=$?
+            else
+                print_step "Lynis Security Audit (this may take a while)..."
+                "$SCRIPTS_DIR/scan-vulnerabilities.sh" --lynis-only "$TARGET_DIR" || lynis_exit=$?
+            fi
             if [ "$lynis_exit" -eq 0 ]; then
                 print_success "Lynis audit passed"
                 ((passed++))
