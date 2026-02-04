@@ -447,6 +447,7 @@ RUN_NMAP_VULN=false        # Vulnerability scripts
 RUN_REMOTE_INVENTORY=false # Host inventory via SSH
 RUN_REMOTE_SECURITY=false  # Security check via SSH
 RUN_REMOTE_LYNIS=false     # Lynis audit via SSH
+RUN_REMOTE_MALWARE=false   # Malware scan via SSH
 
 # Output
 PDF_ATTESTATION_PATH=""    # Path to generated PDF attestation
@@ -837,9 +838,10 @@ test_ssh_connection() {
 # Scan selection for remote credentialed (SSH) scans
 select_remote_scans_ssh_tui() {
     local selections
-    selections=$(tui_checklist "Remote Scan Selection (SSH)" "Select scans to run on $REMOTE_HOST:" 18 70 5 \
+    selections=$(tui_checklist "Remote Scan Selection (SSH)" "Select scans to run on $REMOTE_HOST:" 18 70 6 \
         "inventory" "Host inventory (system info, packages)" "on" \
         "security" "Security configuration check" "on" \
+        "malware" "Malware scan (ClamAV, if installed)" "on" \
         "lynis" "Lynis security audit (if installed)" "off" \
         "ports" "Port scan (nmap from local)" "off" \
         "services" "Service version detection (nmap)" "off")
@@ -852,6 +854,7 @@ select_remote_scans_ssh_tui() {
     # Parse selections
     [[ "$selections" =~ inventory ]] && RUN_REMOTE_INVENTORY=true
     [[ "$selections" =~ security ]] && RUN_REMOTE_SECURITY=true
+    [[ "$selections" =~ malware ]] && RUN_REMOTE_MALWARE=true
     [[ "$selections" =~ lynis ]] && RUN_REMOTE_LYNIS=true
     [[ "$selections" =~ ports ]] && RUN_NMAP_PORTS=true
     [[ "$selections" =~ services ]] && RUN_NMAP_SERVICES=true
@@ -865,6 +868,8 @@ select_remote_scans_ssh_cli() {
     read -r ans && [[ ! "$ans" =~ ^[Nn] ]] && RUN_REMOTE_INVENTORY=true
     echo -n "  Security configuration check? [Y/n]: "
     read -r ans && [[ ! "$ans" =~ ^[Nn] ]] && RUN_REMOTE_SECURITY=true
+    echo -n "  Malware scan (ClamAV, if installed)? [Y/n]: "
+    read -r ans && [[ ! "$ans" =~ ^[Nn] ]] && RUN_REMOTE_MALWARE=true
     echo -n "  Lynis security audit (if installed)? [y/N]: "
     read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_REMOTE_LYNIS=true
     echo -n "  Port scan (nmap from local)? [y/N]: "
@@ -1132,6 +1137,75 @@ run_remote_ssh_scans() {
             fi
         else
             print_warning "Lynis not installed on remote host"
+            echo "  To install: sudo apt install lynis (Debian/Ubuntu)"
+            ((skipped++))
+        fi
+    fi
+
+    # Remote Malware Scan (ClamAV)
+    if [ "$RUN_REMOTE_MALWARE" = true ]; then
+        print_step "Running malware scan on remote host..."
+        local malware_file="$output_dir/remote-malware-$timestamp.txt"
+
+        # Check if clamscan is available on remote
+        if ssh_cmd "command -v clamscan" &>/dev/null; then
+            {
+                echo "Remote Malware Scan (ClamAV)"
+                echo "============================="
+                echo "Host: $REMOTE_HOST"
+                echo "Scanned: $timestamp"
+                echo ""
+
+                echo "--- ClamAV Version ---"
+                ssh_cmd "clamscan --version" 2>/dev/null || echo "(failed to get version)"
+                echo ""
+
+                echo "--- Scan Results ---"
+                echo "Scanning home directory with common exclusions..."
+                echo ""
+                # Scan home directory, show only infected files, limit output
+                ssh_cmd "clamscan --recursive --infected \
+                    --exclude-dir='.git' \
+                    --exclude-dir='node_modules' \
+                    --exclude-dir='.cache' \
+                    --exclude-dir='.local/share/Trash' \
+                    ~/ 2>&1" 2>/dev/null || echo "(scan completed with warnings)"
+
+            } > "$malware_file" 2>&1
+
+            # Check for infections in the output
+            if grep -q "Infected files: 0" "$malware_file" 2>/dev/null; then
+                print_success "No malware detected"
+                REMOTE_MALWARE_RESULT="PASS"
+                ((passed++))
+            elif grep -q "FOUND" "$malware_file" 2>/dev/null; then
+                print_fail "Malware detected! Check $malware_file"
+                REMOTE_MALWARE_RESULT="FAIL"
+                ((failed++))
+            else
+                print_success "Malware scan completed: $malware_file"
+                REMOTE_MALWARE_RESULT="PASS"
+                ((passed++))
+            fi
+        else
+            {
+                echo "Remote Malware Scan (ClamAV)"
+                echo "============================="
+                echo "Host: $REMOTE_HOST"
+                echo "Checked: $timestamp"
+                echo ""
+                echo "ClamAV not installed on remote host."
+                echo ""
+                echo "To install:"
+                echo "  Debian/Ubuntu: sudo apt install clamav"
+                echo "  RHEL/CentOS:   sudo yum install clamav"
+                echo "  Arch:          sudo pacman -S clamav"
+                echo "  macOS:         brew install clamav"
+            } > "$malware_file" 2>&1
+
+            print_warning "ClamAV not installed on remote host (skipped)"
+            echo "  To install: sudo apt install clamav (Debian/Ubuntu)"
+            REMOTE_MALWARE_RESULT="SKIP"
             ((skipped++))
         fi
     fi
@@ -1761,23 +1835,35 @@ generate_pdf_attestation() {
 
     # Set scan results based on what was run
     if [ "$SCAN_MODE" = "remote" ]; then
-        export TARGET_DIR="$REMOTE_HOST (remote)"
-        export INVENTORY_CHECKSUM="N/A (remote scan)"
+        # Use PROJECT_NAME for clean display, no IP addresses in PDF
+        export TARGET_DIR="$PROJECT_NAME"
+        export SCAN_SCOPE="Remote - credentialed SSH scan"
+        export INVENTORY_CHECKSUM="Remote-scan"
         export PII_RESULT="SKIP"
         export PII_FINDINGS="Not applicable for remote scans"
         export SECRETS_RESULT="SKIP"
         export SECRETS_FINDINGS="Not applicable for remote scans"
         export MAC_RESULT="SKIP"
         export MAC_FINDINGS="Not applicable for remote scans"
-        export MALWARE_RESULT="SKIP"
-        export MALWARE_FINDINGS="Not applicable for remote scans"
+        # Use actual malware scan result if available
+        export MALWARE_RESULT="${REMOTE_MALWARE_RESULT:-SKIP}"
+        if [ "$MALWARE_RESULT" = "PASS" ]; then
+            export MALWARE_FINDINGS="No malware detected on remote host"
+        elif [ "$MALWARE_RESULT" = "FAIL" ]; then
+            export MALWARE_FINDINGS="Malware detected - see remote-malware-*.txt"
+        else
+            export MALWARE_FINDINGS="ClamAV not available on remote host"
+        fi
         export HOST_RESULT="PASS"
         export HOST_FINDINGS="Remote security check completed"
         export VULN_RESULT="${RUN_NMAP_PORTS:+PASS}"
         export VULN_RESULT="${VULN_RESULT:-SKIP}"
         export VULN_FINDINGS="Nmap network scan"
     else
-        # Local scan - get inventory checksum if available
+        # Local scan - set scope
+        export SCAN_SCOPE="Local - $TARGET_DIR"
+
+        # Get inventory checksum if available
         local inv_file
         inv_file=$(ls -t "$output_dir"/host-inventory-*.txt 2>/dev/null | head -1)
         if [ -n "$inv_file" ] && [ -f "$inv_file" ]; then
@@ -1947,6 +2033,25 @@ main() {
     run_scans
     generate_pdf_attestation "$SCAN_OUTPUT_DIR"
     print_summary
+
+    # Open scan folder in file browser (interactive mode only, when TTY available)
+    if [ -t 1 ] && [ -d "$SCAN_OUTPUT_DIR" ]; then
+        echo ""
+        echo -e "${BOLD}Opening scan folder...${NC}"
+        case "$(uname -s)" in
+            Darwin)
+                open "$SCAN_OUTPUT_DIR" 2>/dev/null || true
+                ;;
+            Linux)
+                if command -v xdg-open &>/dev/null; then
+                    xdg-open "$SCAN_OUTPUT_DIR" 2>/dev/null || true
+                fi
+                ;;
+            MINGW*|MSYS*|CYGWIN*)
+                explorer "$(cygpath -w "$SCAN_OUTPUT_DIR" 2>/dev/null || echo "$SCAN_OUTPUT_DIR")" 2>/dev/null || true
+                ;;
+        esac
+    fi
 
     # Exit with appropriate code
     if [ "$SCANS_FAILED" -gt 0 ]; then

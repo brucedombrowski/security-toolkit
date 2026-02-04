@@ -58,6 +58,9 @@ if [ ! -d "$SCANS_DIR" ]; then
     exit 2
 fi
 
+# Convert to absolute path (needed since we cd to build dir later)
+SCANS_DIR="$(cd "$SCANS_DIR" && pwd)"
+
 # Check for required environment variables
 REQUIRED_VARS="TARGET_DIR FILE_TIMESTAMP TIMESTAMP DATE_STAMP INVENTORY_CHECKSUM TOOLKIT_VERSION TOOLKIT_COMMIT OVERALL_STATUS PASS_COUNT FAIL_COUNT"
 for var in $REQUIRED_VARS; do
@@ -118,7 +121,25 @@ UNIQUE_ID="SCAN-$(date -u +%Y%m%d-%H%M%S)"
 FORMATTED_DATE=$(date "+%B %d, %Y")
 
 # Get repo name from target dir
-REPO_NAME=$(basename "$TARGET_DIR")
+# For remote scans, TARGET_DIR is "hostname (remote)" with no path separator
+# In that case, strip the "(remote)" or "(remote scan)" suffix to avoid duplication in the PDF
+if [[ "$TARGET_DIR" != */* ]]; then
+    # Remote scan: extract name without remote scan suffix
+    REPO_NAME=$(echo "$TARGET_DIR" | sed -E 's/ *\(remote( scan)?\)$//')
+else
+    # Local scan: use basename of path
+    REPO_NAME=$(basename "$TARGET_DIR")
+fi
+
+# Find the actual inventory file (could be host-inventory or remote-inventory)
+INVENTORY_FILE=$(ls -t "$SCANS_DIR"/remote-inventory-*.txt "$SCANS_DIR"/host-inventory-*.txt 2>/dev/null | head -1)
+if [ -n "$INVENTORY_FILE" ]; then
+    INVENTORY_BASENAME=$(basename "$INVENTORY_FILE")
+    INVENTORY_FILE_CHECKSUM=$(shasum -a 256 "$INVENTORY_FILE" 2>/dev/null | awk '{print $1}' || echo "N/A")
+else
+    INVENTORY_BASENAME="inventory-not-found.txt"
+    INVENTORY_FILE_CHECKSUM="N/A"
+fi
 
 # Calculate individual scan file checksums (first 16 chars)
 PII_SCAN_CHECKSUM=$(shasum -a 256 "$SCANS_DIR/pii-scan-$FILE_TIMESTAMP.txt" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
@@ -238,6 +259,8 @@ FORMATTED_DATE_ESCAPED=$(escape_latex_chars "$FORMATTED_DATE")
 TIMESTAMP_ESCAPED=$(escape_latex_chars "$TIMESTAMP")
 FILE_TIMESTAMP_ESCAPED=$(escape_latex_chars "$FILE_TIMESTAMP")
 DATE_STAMP_ESCAPED=$(escape_latex_chars "$DATE_STAMP")
+INVENTORY_BASENAME_ESCAPED=$(escape_latex_chars "$INVENTORY_BASENAME")
+SCAN_SCOPE_ESCAPED=$(escape_latex_chars "${SCAN_SCOPE:-Local Scan}")
 
 sed -i.bak \
     -e "s/SCAN-YYYY-NNN/$UNIQUE_ID_ESCAPED/g" \
@@ -247,11 +270,12 @@ sed -i.bak \
     -e "s/2026-01-15/$DATE_STAMP_ESCAPED/g" \
     -e "s/ProjectName/$REPO_NAME_ESCAPED/g" \
     -e "s|/path/to/project|$ESCAPED_TARGET_PATH|g" \
+    -e "s/Local Scan/$SCAN_SCOPE_ESCAPED/g" \
     -e "s/v1.0.0/$TOOLKIT_VERSION_ESCAPED/g" \
     -e "s/abc1234/$TOOLKIT_COMMIT_ESCAPED/g" \
-    -e "s/PLACEHOLDER_HOSTNAME/$INVENTORY_CHECKSUM/g" \
-    -e "s/0000000000000000000000000000000000000000000000000000000000000000/$INVENTORY_CHECKSUM_SHORT_ESCAPED/g" \
-    -e "s/host-inventory-2026-01-15.txt/host-inventory-$FILE_TIMESTAMP_ESCAPED.txt/g" \
+    -e "s|PLACEHOLDER_HOSTNAME|$INVENTORY_CHECKSUM|g" \
+    -e "s|0000000000000000000000000000000000000000000000000000000000000000|$INVENTORY_CHECKSUM_SHORT_ESCAPED|g" \
+    -e "s/host-inventory-2026-01-15.txt/$INVENTORY_BASENAME_ESCAPED/g" \
     -e "s/\\\\newcommand{\\\\PIIScanResult}{PASS}/\\\\newcommand{\\\\PIIScanResult}{$PII_RESULT_ESCAPED}/g" \
     -e "s/\\\\newcommand{\\\\PIIScanFindings}{No PII detected}/\\\\newcommand{\\\\PIIScanFindings}{$PII_FINDINGS_ESCAPED}/g" \
     -e "s/\\\\newcommand{\\\\MalwareScanResult}{PASS}/\\\\newcommand{\\\\MalwareScanResult}{$MALWARE_RESULT_ESCAPED}/g" \
@@ -268,16 +292,16 @@ sed -i.bak \
     -e "s/\\\\newcommand{\\\\PassCount}{5}/\\\\newcommand{\\\\PassCount}{$PASS_COUNT_ESCAPED}/g" \
     -e "s/\\\\newcommand{\\\\FailCount}{0}/\\\\newcommand{\\\\FailCount}{$FAIL_COUNT_ESCAPED}/g" \
     -e "s/\\\\newcommand{\\\\PIIAllowlistCount}{0}/\\\\newcommand{\\\\PIIAllowlistCount}{$PII_ALLOWLIST_COUNT_ESCAPED}/g" \
-    -e "s/\\\\newcommand{\\\\PIIAllowlistChecksum}{N\\/A}/\\\\newcommand{\\\\PIIAllowlistChecksum}{$PII_ALLOWLIST_CHECKSUM_ESCAPED}/g" \
-    -e "s/\\\\newcommand{\\\\SecretsAllowlistCount}{0}/\\\\newcommand{\\\\SecretsAllowlistCount}{$SECRETS_ALLOWLIST_COUNT_ESCAPED}/g" \
-    -e "s/\\\\newcommand{\\\\SecretsAllowlistChecksum}{N\\/A}/\\\\newcommand{\\\\SecretsAllowlistChecksum}{$SECRETS_ALLOWLIST_CHECKSUM_ESCAPED}/g" \
-    -e "s/\\\\newcommand{\\\\PIIScanChecksum}{N\\/A}/\\\\newcommand{\\\\PIIScanChecksum}{$PII_SCAN_CHECKSUM_ESCAPED}/g" \
-    -e "s/\\\\newcommand{\\\\MalwareScanChecksum}{N\\/A}/\\\\newcommand{\\\\MalwareScanChecksum}{$MALWARE_SCAN_CHECKSUM_ESCAPED}/g" \
-    -e "s/\\\\newcommand{\\\\SecretsScanChecksum}{N\\/A}/\\\\newcommand{\\\\SecretsScanChecksum}{$SECRETS_SCAN_CHECKSUM_ESCAPED}/g" \
-    -e "s/\\\\newcommand{\\\\MACScanChecksum}{N\\/A}/\\\\newcommand{\\\\MACScanChecksum}{$MAC_SCAN_CHECKSUM_ESCAPED}/g" \
-    -e "s/\\\\newcommand{\\\\HostSecurityScanChecksum}{N\\/A}/\\\\newcommand{\\\\HostSecurityScanChecksum}{$HOST_SECURITY_SCAN_CHECKSUM_ESCAPED}/g" \
-    -e "s/\\\\newcommand{\\\\VulnScanChecksum}{N\\/A}/\\\\newcommand{\\\\VulnScanChecksum}{$VULN_SCAN_CHECKSUM_ESCAPED}/g" \
-    -e "s/\\\\newcommand{\\\\ReportChecksum}{N\\/A}/\\\\newcommand{\\\\ReportChecksum}{$REPORT_CHECKSUM_ESCAPED}/g" \
+    -e "s|\\\\newcommand{\\\\PIIAllowlistChecksum}{N/A}|\\\\newcommand{\\\\PIIAllowlistChecksum}{$PII_ALLOWLIST_CHECKSUM_ESCAPED}|g" \
+    -e "s|\\\\newcommand{\\\\SecretsAllowlistCount}{0}|\\\\newcommand{\\\\SecretsAllowlistCount}{$SECRETS_ALLOWLIST_COUNT_ESCAPED}|g" \
+    -e "s|\\\\newcommand{\\\\SecretsAllowlistChecksum}{N/A}|\\\\newcommand{\\\\SecretsAllowlistChecksum}{$SECRETS_ALLOWLIST_CHECKSUM_ESCAPED}|g" \
+    -e "s|\\\\newcommand{\\\\PIIScanChecksum}{N/A}|\\\\newcommand{\\\\PIIScanChecksum}{$PII_SCAN_CHECKSUM_ESCAPED}|g" \
+    -e "s|\\\\newcommand{\\\\MalwareScanChecksum}{N/A}|\\\\newcommand{\\\\MalwareScanChecksum}{$MALWARE_SCAN_CHECKSUM_ESCAPED}|g" \
+    -e "s|\\\\newcommand{\\\\SecretsScanChecksum}{N/A}|\\\\newcommand{\\\\SecretsScanChecksum}{$SECRETS_SCAN_CHECKSUM_ESCAPED}|g" \
+    -e "s|\\\\newcommand{\\\\MACScanChecksum}{N/A}|\\\\newcommand{\\\\MACScanChecksum}{$MAC_SCAN_CHECKSUM_ESCAPED}|g" \
+    -e "s|\\\\newcommand{\\\\HostSecurityScanChecksum}{N/A}|\\\\newcommand{\\\\HostSecurityScanChecksum}{$HOST_SECURITY_SCAN_CHECKSUM_ESCAPED}|g" \
+    -e "s|\\\\newcommand{\\\\VulnScanChecksum}{N/A}|\\\\newcommand{\\\\VulnScanChecksum}{$VULN_SCAN_CHECKSUM_ESCAPED}|g" \
+    -e "s|\\\\newcommand{\\\\ReportChecksum}{N/A}|\\\\newcommand{\\\\ReportChecksum}{$REPORT_CHECKSUM_ESCAPED}|g" \
     -e "s/\\\\newcommand{\\\\ChecksumsMdChecksumFull}{CHECKSUMS_MD_FULL_PLACEHOLDER}/\\\\newcommand{\\\\ChecksumsMdChecksumFull}{$CHECKSUMS_MD_CHECKSUM_FULL_ESCAPED}/g" \
     "$PDF_BUILD_DIR/scan_attestation.tex"
 
@@ -361,7 +385,7 @@ generate_ports_appendix() {
     nmap_file=$(ls -t "$SCANS_DIR"/nmap-*.txt 2>/dev/null | head -1)
 
     if [ -z "$nmap_file" ] || [ ! -f "$nmap_file" ]; then
-        echo '\subsection*{No network scan data available}' > "$appendix_file"
+        printf '%s\n' '\textbf{No network scan data available}' > "$appendix_file"
         return
     fi
 
@@ -369,9 +393,9 @@ generate_ports_appendix() {
     nmap_basename=$(basename "$nmap_file")
 
     {
-        echo "\\subsection*{Source: \\texttt{$nmap_basename}}"
-        echo ""
-        echo "\\begin{lstlisting}[basicstyle=\\ttfamily\\small,breaklines=true]"
+        printf '\\subsection*{Source: \\texttt{%s}}\n' "$nmap_basename"
+        printf '\n'
+        printf '\\begin{lstlisting}[basicstyle=\\ttfamily\\small,breaklines=true]\n'
 
         # Extract open ports section with line numbers
         local line_num=0
@@ -391,7 +415,7 @@ generate_ports_appendix() {
             fi
         done < "$nmap_file"
 
-        echo "\\end{lstlisting}"
+        printf '\\end{lstlisting}\n'
     } > "$appendix_file"
 }
 
@@ -404,7 +428,7 @@ generate_security_appendix() {
     sec_file=$(ls -t "$SCANS_DIR"/remote-security-*.txt "$SCANS_DIR"/host-security-scan-*.txt 2>/dev/null | head -1)
 
     if [ -z "$sec_file" ] || [ ! -f "$sec_file" ]; then
-        echo '\subsection*{No security configuration data available}' > "$appendix_file"
+        printf '%s\n' '\textbf{No security configuration data available}' > "$appendix_file"
         return
     fi
 
@@ -412,9 +436,9 @@ generate_security_appendix() {
     sec_basename=$(basename "$sec_file")
 
     {
-        echo "\\subsection*{Source: \\texttt{$sec_basename}}"
-        echo ""
-        echo "\\begin{lstlisting}[basicstyle=\\ttfamily\\small,breaklines=true]"
+        printf '\\subsection*{Source: \\texttt{%s}}\n' "$sec_basename"
+        printf '\n'
+        printf '\\begin{lstlisting}[basicstyle=\\ttfamily\\small,breaklines=true]\n'
 
         # Extract key sections with line numbers
         local line_num=0
@@ -434,7 +458,7 @@ generate_security_appendix() {
             fi
         done < "$sec_file" | head -50
 
-        echo "\\end{lstlisting}"
+        printf '\\end{lstlisting}\n'
     } > "$appendix_file"
 }
 
@@ -447,7 +471,7 @@ generate_system_appendix() {
     inv_file=$(ls -t "$SCANS_DIR"/remote-inventory-*.txt "$SCANS_DIR"/host-inventory-*.txt 2>/dev/null | head -1)
 
     if [ -z "$inv_file" ] || [ ! -f "$inv_file" ]; then
-        echo '\subsection*{No system inventory data available}' > "$appendix_file"
+        printf '%s\n' '\textbf{No system inventory data available}' > "$appendix_file"
         return
     fi
 
@@ -455,9 +479,9 @@ generate_system_appendix() {
     inv_basename=$(basename "$inv_file")
 
     {
-        echo "\\subsection*{Source: \\texttt{$inv_basename}}"
-        echo ""
-        echo "\\begin{lstlisting}[basicstyle=\\ttfamily\\small,breaklines=true]"
+        printf '\\subsection*{Source: \\texttt{%s}}\n' "$inv_basename"
+        printf '\n'
+        printf '\\begin{lstlisting}[basicstyle=\\ttfamily\\small,breaklines=true]\n'
 
         # Extract key system info with line numbers
         local line_num=0
@@ -480,7 +504,7 @@ generate_system_appendix() {
             fi
         done < "$inv_file" | head -40
 
-        echo "\\end{lstlisting}"
+        printf '\\end{lstlisting}\n'
     } > "$appendix_file"
 }
 
