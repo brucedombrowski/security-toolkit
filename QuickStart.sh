@@ -435,6 +435,8 @@ SCAN_SCOPE=""         # "full" or "directory"
 REMOTE_HOST=""        # Remote hostname/IP
 REMOTE_USER=""        # Remote username (for credentialed)
 REMOTE_OS=""          # Detected remote OS (Linux, Darwin, etc.)
+SSH_CONTROL_PATH=""   # SSH multiplexing socket path
+SSH_OPTS=""           # SSH options for connection reuse
 
 # Remote scan options
 RUN_NMAP_PORTS=false       # Port scan
@@ -706,27 +708,60 @@ select_remote_config() {
 # Remote Scan Selection
 # ============================================================================
 
+# Start SSH control master for connection multiplexing (single password prompt)
+start_ssh_control_master() {
+    # Create control socket path
+    SSH_CONTROL_PATH="/tmp/ssh-quickstart-$$-$(date +%s)"
+    SSH_OPTS="-o ControlPath=$SSH_CONTROL_PATH -o ControlMaster=auto -o ControlPersist=300"
+
+    print_step "Establishing SSH connection to $REMOTE_USER@$REMOTE_HOST..."
+    echo "  (You will only need to enter your password once)"
+    echo ""
+
+    # Start the control master connection
+    if ssh -o ConnectTimeout=10 -o ControlMaster=yes -o ControlPath="$SSH_CONTROL_PATH" -o ControlPersist=300 -N -f "$REMOTE_USER@$REMOTE_HOST" 2>/dev/null; then
+        print_success "SSH connection established (will be reused for all scans)"
+        return 0
+    else
+        print_error "Failed to establish SSH connection"
+        SSH_CONTROL_PATH=""
+        SSH_OPTS=""
+        return 1
+    fi
+}
+
+# Stop SSH control master (cleanup)
+stop_ssh_control_master() {
+    if [ -n "$SSH_CONTROL_PATH" ] && [ -S "$SSH_CONTROL_PATH" ]; then
+        ssh -o ControlPath="$SSH_CONTROL_PATH" -O exit "$REMOTE_USER@$REMOTE_HOST" 2>/dev/null || true
+        rm -f "$SSH_CONTROL_PATH" 2>/dev/null || true
+    fi
+}
+
+# Run SSH command using control master
+ssh_cmd() {
+    if [ -n "$SSH_OPTS" ]; then
+        ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" "$@"
+    else
+        ssh_cmd "$@"
+    fi
+}
+
 # Test SSH connectivity and detect remote OS
 test_ssh_connection() {
-    print_step "Testing SSH connection to $REMOTE_USER@$REMOTE_HOST..."
-
-    # Test connection with timeout
-    if ssh -o ConnectTimeout=10 -o BatchMode=yes "$REMOTE_USER@$REMOTE_HOST" "echo connected" &>/dev/null; then
-        print_success "SSH connection successful (key-based auth)"
-    else
-        # Try with password prompt
-        print_warning "Key-based auth failed, will prompt for password"
-        if ! ssh -o ConnectTimeout=10 "$REMOTE_USER@$REMOTE_HOST" "echo connected" 2>/dev/null; then
-            print_error "Cannot connect to $REMOTE_USER@$REMOTE_HOST"
-            return 1
-        fi
-        print_success "SSH connection successful"
+    # Set up SSH multiplexing first
+    if ! start_ssh_control_master; then
+        return 1
     fi
 
-    # Detect remote OS
-    REMOTE_OS=$(ssh "$REMOTE_USER@$REMOTE_HOST" "uname -s" 2>/dev/null || echo "Unknown")
+    # Detect remote OS using the multiplexed connection
+    REMOTE_OS=$(ssh_cmd "uname -s" 2>/dev/null || echo "Unknown")
     print_success "Remote OS: $REMOTE_OS"
     echo ""
+
+    # Register cleanup on exit
+    trap stop_ssh_control_master EXIT
+
     return 0
 }
 
@@ -916,39 +951,39 @@ run_remote_ssh_scans() {
             echo ""
 
             echo "--- System Information ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "uname -a" 2>/dev/null || echo "(failed)"
+            ssh_cmd "uname -a" 2>/dev/null || echo "(failed)"
             echo ""
 
             echo "--- Hostname ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "hostname -f 2>/dev/null || hostname" 2>/dev/null || echo "(failed)"
+            ssh_cmd "hostname -f 2>/dev/null || hostname" 2>/dev/null || echo "(failed)"
             echo ""
 
             echo "--- OS Release ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "cat /etc/os-release 2>/dev/null || sw_vers 2>/dev/null || echo 'Unknown'" 2>/dev/null
+            ssh_cmd "cat /etc/os-release 2>/dev/null || sw_vers 2>/dev/null || echo 'Unknown'" 2>/dev/null
             echo ""
 
             echo "--- CPU Information ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "lscpu 2>/dev/null || sysctl -n machdep.cpu.brand_string 2>/dev/null || echo 'Unknown'" 2>/dev/null
+            ssh_cmd "lscpu 2>/dev/null || sysctl -n machdep.cpu.brand_string 2>/dev/null || echo 'Unknown'" 2>/dev/null
             echo ""
 
             echo "--- Memory ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "free -h 2>/dev/null || vm_stat 2>/dev/null || echo 'Unknown'" 2>/dev/null
+            ssh_cmd "free -h 2>/dev/null || vm_stat 2>/dev/null || echo 'Unknown'" 2>/dev/null
             echo ""
 
             echo "--- Disk Usage ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "df -h" 2>/dev/null || echo "(failed)"
+            ssh_cmd "df -h" 2>/dev/null || echo "(failed)"
             echo ""
 
             echo "--- Network Interfaces ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "ip addr 2>/dev/null || ifconfig 2>/dev/null" 2>/dev/null || echo "(failed)"
+            ssh_cmd "ip addr 2>/dev/null || ifconfig 2>/dev/null" 2>/dev/null || echo "(failed)"
             echo ""
 
             echo "--- Installed Packages (sample) ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "dpkg -l 2>/dev/null | head -50 || rpm -qa 2>/dev/null | head -50 || brew list 2>/dev/null | head -50 || echo 'Unknown package manager'" 2>/dev/null
+            ssh_cmd "dpkg -l 2>/dev/null | head -50 || rpm -qa 2>/dev/null | head -50 || brew list 2>/dev/null | head -50 || echo 'Unknown package manager'" 2>/dev/null
             echo ""
 
             echo "--- Running Services ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "systemctl list-units --type=service --state=running 2>/dev/null | head -30 || launchctl list 2>/dev/null | head -30 || echo 'Unknown'" 2>/dev/null
+            ssh_cmd "systemctl list-units --type=service --state=running 2>/dev/null | head -30 || launchctl list 2>/dev/null | head -30 || echo 'Unknown'" 2>/dev/null
 
         } > "$inv_file" 2>&1
 
@@ -974,31 +1009,31 @@ run_remote_ssh_scans() {
             echo ""
 
             echo "--- SSH Configuration ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "grep -E '^(PermitRootLogin|PasswordAuthentication|PubkeyAuthentication|PermitEmptyPasswords)' /etc/ssh/sshd_config 2>/dev/null || echo 'Cannot read sshd_config'" 2>/dev/null
+            ssh_cmd "grep -E '^(PermitRootLogin|PasswordAuthentication|PubkeyAuthentication|PermitEmptyPasswords)' /etc/ssh/sshd_config 2>/dev/null || echo 'Cannot read sshd_config'" 2>/dev/null
             echo ""
 
             echo "--- Firewall Status ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "sudo ufw status 2>/dev/null || sudo iptables -L -n 2>/dev/null | head -20 || sudo firewall-cmd --state 2>/dev/null || echo 'Firewall status unknown'" 2>/dev/null
+            ssh_cmd "sudo ufw status 2>/dev/null || sudo iptables -L -n 2>/dev/null | head -20 || sudo firewall-cmd --state 2>/dev/null || echo 'Firewall status unknown'" 2>/dev/null
             echo ""
 
             echo "--- Users with Shell Access ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "grep -E '/bin/(bash|sh|zsh)$' /etc/passwd 2>/dev/null || dscl . -list /Users 2>/dev/null || echo 'Cannot enumerate users'" 2>/dev/null
+            ssh_cmd "grep -E '/bin/(bash|sh|zsh)$' /etc/passwd 2>/dev/null || dscl . -list /Users 2>/dev/null || echo 'Cannot enumerate users'" 2>/dev/null
             echo ""
 
             echo "--- Sudo Configuration ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "sudo cat /etc/sudoers 2>/dev/null | grep -v '^#' | grep -v '^$' || echo 'Cannot read sudoers'" 2>/dev/null
+            ssh_cmd "sudo cat /etc/sudoers 2>/dev/null | grep -v '^#' | grep -v '^$' || echo 'Cannot read sudoers'" 2>/dev/null
             echo ""
 
             echo "--- Listening Ports ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null || lsof -i -P -n | grep LISTEN 2>/dev/null || echo 'Cannot list ports'" 2>/dev/null
+            ssh_cmd "ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null || lsof -i -P -n | grep LISTEN 2>/dev/null || echo 'Cannot list ports'" 2>/dev/null
             echo ""
 
             echo "--- Failed Login Attempts (last 10) ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "sudo grep 'Failed password' /var/log/auth.log 2>/dev/null | tail -10 || sudo grep 'Failed password' /var/log/secure 2>/dev/null | tail -10 || echo 'Cannot read auth logs'" 2>/dev/null
+            ssh_cmd "sudo grep 'Failed password' /var/log/auth.log 2>/dev/null | tail -10 || sudo grep 'Failed password' /var/log/secure 2>/dev/null | tail -10 || echo 'Cannot read auth logs'" 2>/dev/null
             echo ""
 
             echo "--- Kernel Security Parameters ---"
-            ssh "$REMOTE_USER@$REMOTE_HOST" "sysctl -a 2>/dev/null | grep -E '(randomize|protect|secure)' | head -20 || echo 'Cannot read sysctl'" 2>/dev/null
+            ssh_cmd "sysctl -a 2>/dev/null | grep -E '(randomize|protect|secure)' | head -20 || echo 'Cannot read sysctl'" 2>/dev/null
 
         } > "$sec_file" 2>&1
 
@@ -1016,11 +1051,11 @@ run_remote_ssh_scans() {
         print_step "Running Lynis audit on remote host..."
 
         # Check if Lynis is installed remotely
-        if ssh "$REMOTE_USER@$REMOTE_HOST" "command -v lynis" &>/dev/null; then
+        if ssh_cmd "command -v lynis" &>/dev/null; then
             local lynis_file="$output_dir/remote-lynis-$REMOTE_HOST-$timestamp.txt"
 
             echo "  Note: Lynis running on remote host (may take a while)..."
-            if ssh "$REMOTE_USER@$REMOTE_HOST" "sudo lynis audit system --quick 2>&1" > "$lynis_file" 2>&1; then
+            if ssh_cmd "sudo lynis audit system --quick 2>&1" > "$lynis_file" 2>&1; then
                 print_success "Remote Lynis audit saved: $lynis_file"
                 ((passed++))
             else
