@@ -1150,7 +1150,7 @@ run_remote_ssh_scans() {
             read -r install_ans
             if [[ "$install_ans" =~ ^[Yy] ]]; then
                 echo "  Installing Lynis on remote host..."
-                if ssh_cmd_sudo "sudo apt install -y lynis" 2>&1 | tail -5; then
+                if ssh_cmd_sudo "sudo apt install -y lynis" 2>&1; then
                     print_success "Lynis installed"
                     # Now run the audit
                     local lynis_file="$output_dir/remote-lynis-$timestamp.txt"
@@ -1223,10 +1223,10 @@ run_remote_ssh_scans() {
             read -r install_ans
             if [[ "$install_ans" =~ ^[Yy] ]]; then
                 echo "  Installing ClamAV on remote host..."
-                if ssh_cmd_sudo "sudo apt install -y clamav" 2>&1 | tail -5; then
+                if ssh_cmd_sudo "sudo apt install -y clamav" 2>&1; then
                     print_success "ClamAV installed"
                     echo "  Updating virus database (this may take a minute)..."
-                    ssh_cmd_sudo "sudo freshclam" 2>&1 | tail -3 || true
+                    ssh_cmd_sudo "sudo freshclam" 2>&1 || true
                     # Now run the scan
                     {
                         echo "Remote Malware Scan (ClamAV)"
