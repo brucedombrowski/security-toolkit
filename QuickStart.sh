@@ -222,6 +222,77 @@ check_dependency() {
     fi
 }
 
+# Detect package manager
+detect_package_manager() {
+    if command -v brew &>/dev/null; then
+        echo "brew"
+    elif command -v apt-get &>/dev/null; then
+        echo "apt"
+    elif command -v dnf &>/dev/null; then
+        echo "dnf"
+    elif command -v yum &>/dev/null; then
+        echo "yum"
+    elif command -v pacman &>/dev/null; then
+        echo "pacman"
+    else
+        echo ""
+    fi
+}
+
+# Get install command for a package
+get_install_cmd() {
+    local pkg_mgr="$1"
+    local package="$2"
+
+    case "$pkg_mgr" in
+        brew)   echo "brew install $package" ;;
+        apt)    echo "sudo apt install -y $package" ;;
+        dnf)    echo "sudo dnf install -y $package" ;;
+        yum)    echo "sudo yum install -y $package" ;;
+        pacman) echo "sudo pacman -S --noconfirm $package" ;;
+        *)      echo "" ;;
+    esac
+}
+
+# Offer to install missing packages
+offer_install() {
+    local pkg_mgr="$1"
+    shift
+    local packages=("$@")
+
+    if [ ${#packages[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    if [ -z "$pkg_mgr" ]; then
+        return 0  # No package manager detected
+    fi
+
+    echo ""
+    echo -e "${BOLD}Would you like to install missing optional dependencies?${NC}"
+    echo "  Packages: ${packages[*]}"
+    echo ""
+    echo -n "Install now? [y/N]: "
+    read -r answer
+
+    if [[ "$answer" =~ ^[Yy] ]]; then
+        for pkg in "${packages[@]}"; do
+            local cmd
+            cmd=$(get_install_cmd "$pkg_mgr" "$pkg")
+            if [ -n "$cmd" ]; then
+                echo ""
+                print_step "Installing $pkg..."
+                if eval "$cmd"; then
+                    print_success "$pkg installed"
+                else
+                    print_warning "Failed to install $pkg"
+                fi
+            fi
+        done
+        echo ""
+    fi
+}
+
 # ============================================================================
 # Dependency Check
 # ============================================================================
@@ -231,16 +302,25 @@ check_dependencies() {
     echo ""
 
     local all_good=true
+    local missing_optional=()
+    local pkg_mgr
+    pkg_mgr=$(detect_package_manager)
 
     # Required
     check_dependency "bash" "Bash" "Required" || all_good=false
     check_dependency "grep" "grep" "Required" || all_good=false
     check_dependency "git" "Git" "Required for version info" || all_good=false
 
-    # Optional but recommended
-    check_dependency "clamscan" "ClamAV" "Install for malware scanning (brew install clamav)" || true
-    check_dependency "lynis" "Lynis" "Install for security auditing (brew install lynis)" || true
-    check_dependency "nmap" "Nmap" "Install for vulnerability scanning (brew install nmap)" || true
+    # Optional but recommended - track missing ones
+    if ! check_dependency "clamscan" "ClamAV" "Install for malware scanning"; then
+        missing_optional+=("clamav")
+    fi
+    if ! check_dependency "lynis" "Lynis" "Install for security auditing"; then
+        missing_optional+=("lynis")
+    fi
+    if ! check_dependency "nmap" "Nmap" "Install for vulnerability scanning"; then
+        missing_optional+=("nmap")
+    fi
 
     # TUI status
     if [ -n "$TUI_CMD" ]; then
@@ -250,7 +330,8 @@ check_dependencies() {
             print_success "$TUI_CMD found (TUI enabled)"
         fi
     else
-        print_warning "dialog/whiptail not found - using CLI mode (brew install dialog)"
+        print_warning "dialog/whiptail not found - using CLI mode"
+        missing_optional+=("dialog")
     fi
 
     echo ""
@@ -258,6 +339,18 @@ check_dependencies() {
     if [ "$all_good" = false ]; then
         print_error "Missing required dependencies. Please install them and try again."
         exit 1
+    fi
+
+    # Offer to install missing optional dependencies
+    if [ ${#missing_optional[@]} -gt 0 ] && [ -n "$pkg_mgr" ] && [ -t 0 ]; then
+        offer_install "$pkg_mgr" "${missing_optional[@]}"
+
+        # Re-check TUI after potential install
+        if command -v dialog &>/dev/null; then
+            TUI_CMD="dialog"
+        elif command -v whiptail &>/dev/null; then
+            TUI_CMD="whiptail"
+        fi
     fi
 
     print_success "Dependency check complete"
