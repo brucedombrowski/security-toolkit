@@ -53,9 +53,20 @@ for arg in "$@"; do
 done
 
 # Load config file if specified
-if [ -n "$CONFIG_FILE" ] && [ -f "$CONFIG_FILE" ]; then
-    echo "Loading config from: $CONFIG_FILE"
-    source "$CONFIG_FILE"
+if [ -n "$CONFIG_FILE" ]; then
+    # If file doesn't exist, check .scans/ directory
+    if [ ! -f "$CONFIG_FILE" ]; then
+        SCRIPT_BASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        if [ -f "$SCRIPT_BASE/.scans/$CONFIG_FILE" ]; then
+            CONFIG_FILE="$SCRIPT_BASE/.scans/$CONFIG_FILE"
+        fi
+    fi
+    if [ -f "$CONFIG_FILE" ]; then
+        echo "Loading config from: $CONFIG_FILE"
+        source "$CONFIG_FILE"
+    else
+        echo "Warning: Config file not found: $CONFIG_FILE"
+    fi
 fi
 
 # ============================================================================
