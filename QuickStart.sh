@@ -449,27 +449,29 @@ check_dependencies() {
 # Menu Configuration Variables
 # ============================================================================
 
-SCAN_MODE=""          # "local" or "remote"
-AUTH_MODE=""          # "credentialed" or "uncredentialed"
-PRIVILEGE_LEVEL=""    # "admin" or "standard"
-SCAN_SCOPE=""         # "full" or "directory"
-REMOTE_HOST=""        # Remote hostname/IP
-REMOTE_USER=""        # Remote username (for credentialed)
-PROJECT_NAME=""       # User-provided project/target alias (no IP in filenames)
-REMOTE_OS=""          # Detected remote OS (Linux, Darwin, etc.)
-SSH_CONTROL_PATH=""   # SSH multiplexing socket path
-SSH_OPTS=""           # SSH options for connection reuse
+# These use := to preserve values from config file
+SCAN_MODE="${SCAN_MODE:-}"              # "local" or "remote"
+AUTH_MODE="${AUTH_MODE:-}"              # "credentialed" or "uncredentialed"
+PRIVILEGE_LEVEL="${PRIVILEGE_LEVEL:-}"  # "admin" or "standard"
+SCAN_SCOPE="${SCAN_SCOPE:-}"            # "full" or "directory"
+REMOTE_HOST="${REMOTE_HOST:-}"          # Remote hostname/IP
+REMOTE_USER="${REMOTE_USER:-}"          # Remote username (for credentialed)
+PROJECT_NAME="${PROJECT_NAME:-}"        # User-provided project/target alias (no IP in filenames)
+REMOTE_OS="${REMOTE_OS:-}"              # Detected remote OS (Linux, Darwin, etc.)
+SSH_CONTROL_PATH="${SSH_CONTROL_PATH:-}" # SSH multiplexing socket path
+SSH_OPTS="${SSH_OPTS:-}"                # SSH options for connection reuse
 
-# Remote scan options
-RUN_NMAP_PORTS=false       # Port scan
-RUN_NMAP_SERVICES=false    # Service version detection
-RUN_NMAP_OS=false          # OS fingerprinting
-RUN_NMAP_VULN=false        # Vulnerability scripts
-RUN_REMOTE_INVENTORY=false # Host inventory via SSH
-RUN_REMOTE_SECURITY=false  # Security check via SSH
-RUN_REMOTE_LYNIS=false     # Lynis audit via SSH
-LYNIS_MODE="quick"         # "quick" or "full"
-RUN_REMOTE_MALWARE=false   # Malware scan via SSH
+# Remote scan options (preserve config values, default to false)
+RUN_NMAP_PORTS="${RUN_NMAP_PORTS:-false}"             # Port scan
+RUN_NMAP_SERVICES="${RUN_NMAP_SERVICES:-false}"       # Service version detection
+RUN_NMAP_OS="${RUN_NMAP_OS:-false}"                   # OS fingerprinting
+RUN_NMAP_VULN="${RUN_NMAP_VULN:-false}"               # Vulnerability scripts
+RUN_REMOTE_INVENTORY="${RUN_REMOTE_INVENTORY:-false}" # Host inventory via SSH
+RUN_REMOTE_SECURITY="${RUN_REMOTE_SECURITY:-false}"   # Security check via SSH
+RUN_REMOTE_LYNIS="${RUN_REMOTE_LYNIS:-false}"         # Lynis audit via SSH
+LYNIS_MODE="${LYNIS_MODE:-quick}"                     # "quick" or "full"
+RUN_REMOTE_MALWARE="${RUN_REMOTE_MALWARE:-false}"     # Malware scan via SSH
+SKIP_SCAN_SELECTION="${SKIP_SCAN_SELECTION:-false}"   # Skip interactive scan selection
 
 # Output
 PDF_ATTESTATION_PATH=""    # Path to generated PDF attestation
