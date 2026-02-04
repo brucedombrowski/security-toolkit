@@ -661,9 +661,10 @@ select_remote_config_tui() {
     fi
 
     if [ "$AUTH_MODE" = "credentialed" ]; then
-        REMOTE_USER=$(tui_input "SSH Username" "Enter username for $REMOTE_HOST:" "$(whoami)")
+        REMOTE_USER=$(tui_input "SSH Username" "Enter username for $REMOTE_HOST:" "")
         if [ -z "$REMOTE_USER" ]; then
-            REMOTE_USER="$(whoami)"
+            print_error "Username required"
+            exit 1
         fi
         # Note: We don't prompt for password here - let SSH handle it securely
         tui_msgbox "SSH Authentication" "You will be prompted for SSH credentials when connecting.\n\nEnsure you have SSH access to $REMOTE_USER@$REMOTE_HOST"
@@ -682,9 +683,12 @@ select_remote_config_cli() {
     fi
 
     if [ "$AUTH_MODE" = "credentialed" ]; then
-        echo -n "Enter SSH username [$USER]: "
+        echo -n "Enter SSH username: "
         read -r REMOTE_USER
-        [ -z "$REMOTE_USER" ] && REMOTE_USER="$USER"
+        if [ -z "$REMOTE_USER" ]; then
+            print_error "Username required"
+            exit 1
+        fi
         echo ""
         echo "Note: You will be prompted for SSH credentials when connecting."
     fi
