@@ -1,0 +1,395 @@
+{
+  "title": "AI Software Catalog",
+  "catalogVersion": "2026.02.05",
+  "lastUpdated": "2026-02-05T00:00:00Z",
+  "description": "Catalog of AI/ML software for inventory detection",
+  "categories": {
+    "frameworks": [
+      {
+        "name": "PyTorch",
+        "vendor": "Meta",
+        "detectMethods": {
+          "pip": "torch",
+          "conda": "pytorch",
+          "command": "python3 -c \"import torch; print(torch.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "TensorFlow",
+        "vendor": "Google",
+        "detectMethods": {
+          "pip": "tensorflow",
+          "conda": "tensorflow",
+          "command": "python3 -c \"import tensorflow; print(tensorflow.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "JAX",
+        "vendor": "Google",
+        "detectMethods": {
+          "pip": "jax",
+          "command": "python3 -c \"import jax; print(jax.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "scikit-learn",
+        "vendor": "Community",
+        "detectMethods": {
+          "pip": "scikit-learn",
+          "conda": "scikit-learn",
+          "command": "python3 -c \"import sklearn; print(sklearn.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "Transformers",
+        "vendor": "Hugging Face",
+        "detectMethods": {
+          "pip": "transformers",
+          "command": "python3 -c \"import transformers; print(transformers.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "LangChain",
+        "vendor": "LangChain",
+        "detectMethods": {
+          "pip": "langchain",
+          "command": "python3 -c \"import langchain; print(langchain.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "LlamaIndex",
+        "vendor": "LlamaIndex",
+        "detectMethods": {
+          "pip": "llama-index",
+          "command": "python3 -c \"import llama_index; print(llama_index.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "OpenCV",
+        "vendor": "OpenCV",
+        "detectMethods": {
+          "pip": "opencv-python",
+          "brew": "opencv",
+          "command": "python3 -c \"import cv2; print(cv2.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "spaCy",
+        "vendor": "Explosion",
+        "detectMethods": {
+          "pip": "spacy",
+          "conda": "spacy",
+          "command": "python3 -c \"import spacy; print(spacy.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "NLTK",
+        "vendor": "NLTK Project",
+        "detectMethods": {
+          "pip": "nltk",
+          "command": "python3 -c \"import nltk; print(nltk.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "Keras",
+        "vendor": "Google",
+        "detectMethods": {
+          "pip": "keras",
+          "command": "python3 -c \"import keras; print(keras.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "FastAI",
+        "vendor": "fast.ai",
+        "detectMethods": {
+          "pip": "fastai",
+          "conda": "fastai",
+          "command": "python3 -c \"import fastai; print(fastai.__version__)\" 2>/dev/null"
+        }
+      }
+    ],
+    "apiServices": [
+      {
+        "name": "OpenAI",
+        "vendor": "OpenAI",
+        "detectMethods": {
+          "pip": "openai",
+          "envVars": ["OPENAI_API_KEY", "OPENAI_ORG_ID"],
+          "command": "python3 -c \"import openai; print(openai.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "Anthropic",
+        "vendor": "Anthropic",
+        "detectMethods": {
+          "pip": "anthropic",
+          "envVars": ["ANTHROPIC_API_KEY"],
+          "command": "python3 -c \"import anthropic; print(anthropic.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "Google AI",
+        "vendor": "Google",
+        "detectMethods": {
+          "pip": "google-generativeai",
+          "envVars": ["GOOGLE_API_KEY", "GEMINI_API_KEY"],
+          "command": "python3 -c \"import google.generativeai; print('installed')\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "Cohere",
+        "vendor": "Cohere",
+        "detectMethods": {
+          "pip": "cohere",
+          "envVars": ["COHERE_API_KEY", "CO_API_KEY"],
+          "command": "python3 -c \"import cohere; print(cohere.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "Replicate",
+        "vendor": "Replicate",
+        "detectMethods": {
+          "pip": "replicate",
+          "envVars": ["REPLICATE_API_TOKEN"],
+          "command": "python3 -c \"import replicate; print(replicate.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "Hugging Face Hub",
+        "vendor": "Hugging Face",
+        "detectMethods": {
+          "pip": "huggingface-hub",
+          "envVars": ["HUGGINGFACE_TOKEN", "HF_TOKEN"],
+          "command": "python3 -c \"import huggingface_hub; print(huggingface_hub.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "AWS Bedrock",
+        "vendor": "Amazon",
+        "detectMethods": {
+          "pip": "boto3",
+          "envVars": ["AWS_BEDROCK_RUNTIME"],
+          "configFiles": ["~/.aws/config"]
+        }
+      },
+      {
+        "name": "Azure OpenAI",
+        "vendor": "Microsoft",
+        "detectMethods": {
+          "pip": "openai",
+          "envVars": ["AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT"]
+        }
+      }
+    ],
+    "localRuntimes": [
+      {
+        "name": "Ollama",
+        "vendor": "Ollama",
+        "detectMethods": {
+          "command": "ollama --version 2>/dev/null",
+          "brew": "ollama",
+          "process": "ollama"
+        }
+      },
+      {
+        "name": "LM Studio",
+        "vendor": "LM Studio",
+        "detectMethods": {
+          "macApp": "/Applications/LM Studio.app",
+          "linuxPath": "~/.lmstudio",
+          "process": "LM Studio"
+        }
+      },
+      {
+        "name": "llama.cpp",
+        "vendor": "ggerganov",
+        "detectMethods": {
+          "command": "llama-cli --version 2>/dev/null || llama.cpp --version 2>/dev/null",
+          "brew": "llama.cpp"
+        }
+      },
+      {
+        "name": "LocalAI",
+        "vendor": "LocalAI",
+        "detectMethods": {
+          "command": "local-ai --version 2>/dev/null",
+          "process": "local-ai"
+        }
+      },
+      {
+        "name": "GPT4All",
+        "vendor": "Nomic AI",
+        "detectMethods": {
+          "pip": "gpt4all",
+          "macApp": "/Applications/GPT4All.app",
+          "command": "python3 -c \"import gpt4all; print(gpt4all.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "vLLM",
+        "vendor": "vLLM",
+        "detectMethods": {
+          "pip": "vllm",
+          "command": "python3 -c \"import vllm; print(vllm.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "Text Generation Inference",
+        "vendor": "Hugging Face",
+        "detectMethods": {
+          "command": "text-generation-launcher --version 2>/dev/null",
+          "process": "text-generation"
+        }
+      }
+    ],
+    "devTools": [
+      {
+        "name": "GitHub Copilot",
+        "vendor": "GitHub/Microsoft",
+        "detectMethods": {
+          "configPaths": ["~/.config/github-copilot", "~/.config/gh/hosts.yml"],
+          "vscodeExtension": "github.copilot"
+        }
+      },
+      {
+        "name": "Claude Code",
+        "vendor": "Anthropic",
+        "detectMethods": {
+          "command": "claude --version 2>/dev/null",
+          "npm": "@anthropic-ai/claude-code",
+          "configPaths": ["~/.claude"]
+        }
+      },
+      {
+        "name": "Cursor",
+        "vendor": "Cursor",
+        "detectMethods": {
+          "macApp": "/Applications/Cursor.app",
+          "linuxPath": "~/.cursor",
+          "command": "cursor --version 2>/dev/null"
+        }
+      },
+      {
+        "name": "Aider",
+        "vendor": "Aider",
+        "detectMethods": {
+          "pip": "aider-chat",
+          "command": "aider --version 2>/dev/null"
+        }
+      },
+      {
+        "name": "Continue",
+        "vendor": "Continue",
+        "detectMethods": {
+          "configPaths": ["~/.continue"],
+          "vscodeExtension": "continue.continue"
+        }
+      },
+      {
+        "name": "Cody",
+        "vendor": "Sourcegraph",
+        "detectMethods": {
+          "vscodeExtension": "sourcegraph.cody-ai",
+          "configPaths": ["~/.sourcegraph"]
+        }
+      },
+      {
+        "name": "Tabnine",
+        "vendor": "Tabnine",
+        "detectMethods": {
+          "vscodeExtension": "tabnine.tabnine-vscode",
+          "configPaths": ["~/.tabnine"]
+        }
+      },
+      {
+        "name": "Amazon Q",
+        "vendor": "Amazon",
+        "detectMethods": {
+          "vscodeExtension": "amazonwebservices.amazon-q-vscode",
+          "configPaths": ["~/.aws/amazonq"]
+        }
+      }
+    ],
+    "mlopsTools": [
+      {
+        "name": "MLflow",
+        "vendor": "Databricks",
+        "detectMethods": {
+          "pip": "mlflow",
+          "command": "mlflow --version 2>/dev/null"
+        }
+      },
+      {
+        "name": "Weights & Biases",
+        "vendor": "Weights & Biases",
+        "detectMethods": {
+          "pip": "wandb",
+          "envVars": ["WANDB_API_KEY"],
+          "command": "wandb --version 2>/dev/null"
+        }
+      },
+      {
+        "name": "DVC",
+        "vendor": "Iterative",
+        "detectMethods": {
+          "pip": "dvc",
+          "command": "dvc --version 2>/dev/null"
+        }
+      },
+      {
+        "name": "Kubeflow",
+        "vendor": "Google",
+        "detectMethods": {
+          "pip": "kfp",
+          "command": "python3 -c \"import kfp; print(kfp.__version__)\" 2>/dev/null"
+        }
+      },
+      {
+        "name": "Ray",
+        "vendor": "Anyscale",
+        "detectMethods": {
+          "pip": "ray",
+          "command": "ray --version 2>/dev/null"
+        }
+      }
+    ],
+    "computeLibraries": [
+      {
+        "name": "CUDA Toolkit",
+        "vendor": "NVIDIA",
+        "detectMethods": {
+          "command": "nvcc --version 2>/dev/null | head -4"
+        }
+      },
+      {
+        "name": "cuDNN",
+        "vendor": "NVIDIA",
+        "detectMethods": {
+          "command": "cat /usr/local/cuda/include/cudnn_version.h 2>/dev/null | grep CUDNN_MAJOR"
+        }
+      },
+      {
+        "name": "NVIDIA Driver",
+        "vendor": "NVIDIA",
+        "detectMethods": {
+          "command": "nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>/dev/null | head -1"
+        }
+      },
+      {
+        "name": "ROCm",
+        "vendor": "AMD",
+        "detectMethods": {
+          "command": "rocminfo 2>/dev/null | grep 'ROCm Runtime' | head -1"
+        }
+      },
+      {
+        "name": "Intel oneAPI",
+        "vendor": "Intel",
+        "detectMethods": {
+          "command": "icpx --version 2>/dev/null | head -1",
+          "envVars": ["ONEAPI_ROOT"]
+        }
+      }
+    ]
+  }
+}
