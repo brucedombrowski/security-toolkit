@@ -593,7 +593,7 @@ run_remote_ssh_scans() {
         else
             print_warning "Lynis not installed on remote host"
             echo -n "  Install Lynis now? [y/N]: "
-            read -r install_ans
+            read -r install_ans </dev/tty
             if [[ "$install_ans" =~ ^[Yy] ]]; then
                 echo "  Installing Lynis on remote host..."
                 if ssh_cmd_sudo "sudo apt install -y lynis" 2>&1; then
@@ -681,7 +681,7 @@ run_remote_ssh_scans() {
         else
             print_warning "ClamAV not installed on remote host"
             echo -n "  Install ClamAV now? [y/N]: "
-            read -r install_ans
+            read -r install_ans </dev/tty
             if [[ "$install_ans" =~ ^[Yy] ]]; then
                 echo "  Installing ClamAV on remote host..."
                 if ssh_cmd_sudo "sudo apt install -y clamav" 2>&1; then
