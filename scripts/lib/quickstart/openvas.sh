@@ -62,6 +62,14 @@ extract_id() {
     echo "$1" | grep -o 'id="[^"]*"' | head -1 | sed 's/id="//;s/"//'
 }
 
+# Get default port list ID
+get_port_list_id() {
+    local response
+    response=$(gvm_docker_cmd "<get_port_lists/>")
+    # Use "All IANA assigned TCP and UDP" for comprehensive scanning
+    echo "$response" | sed 's/<port_list/\n<port_list/g' | grep "All IANA assigned TCP and UDP" | grep -o 'id="[^"]*"' | head -1 | sed 's/id="//;s/"//'
+}
+
 # Get or create a target for scanning
 # Usage: get_or_create_target "target_ip" "target_name"
 # Returns: target_id
@@ -80,8 +88,16 @@ get_or_create_target() {
         return 0
     fi
 
-    # Create new target
-    response=$(gvm_docker_cmd "<create_target><name>$target_name</name><hosts>$target_ip</hosts></create_target>")
+    # Get port list ID (required for target creation)
+    local port_list_id
+    port_list_id=$(get_port_list_id)
+    if [ -z "$port_list_id" ]; then
+        echo "Error: Could not find port list" >&2
+        return 1
+    fi
+
+    # Create new target with port list
+    response=$(gvm_docker_cmd "<create_target><name>$target_name</name><hosts>$target_ip</hosts><port_list id=\"$port_list_id\"/></create_target>")
     extract_id "$response"
 }
 
