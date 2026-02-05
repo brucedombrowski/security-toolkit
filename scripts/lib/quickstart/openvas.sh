@@ -48,10 +48,12 @@ check_openvas_available() {
 # Run GVM command via Docker
 gvm_docker_cmd() {
     local cmd="$1"
-    docker compose -f "$OPENVAS_COMPOSE_FILE" exec -T gvm-tools \
+    # Use 'run --rm' instead of 'exec' because gvm-tools is a transient container
+    # Filter out docker compose status messages (Container ... Running/Creating/etc)
+    docker compose -f "$OPENVAS_COMPOSE_FILE" run --rm -T gvm-tools \
         gvm-cli --gmp-username admin --gmp-password admin123 \
         socket --socketpath /run/gvmd/gvmd.sock \
-        --xml "$cmd" 2>/dev/null
+        --xml "$cmd" 2>&1 | grep -v "Container\|Creating\|Created\|Running\|Healthy\|Waiting"
 }
 
 # Extract ID from XML response (macOS compatible)
@@ -87,8 +89,9 @@ get_or_create_target() {
 get_scanner_id() {
     local response
     response=$(gvm_docker_cmd "<get_scanners/>")
-    # Find the scanner with "OpenVAS Default" name
-    echo "$response" | grep -B1 "OpenVAS Default" | grep -o 'id="[^"]*"' | head -1 | sed 's/id="//;s/"//'
+    # XML is on one line - extract scanner id that contains "OpenVAS Default"
+    # The format is: <scanner id="xxx">...<name>OpenVAS Default</name>...
+    echo "$response" | sed 's/<scanner/\n<scanner/g' | grep "OpenVAS Default" | grep -o 'id="[^"]*"' | head -1 | sed 's/id="//;s/"//'
 }
 
 # Get scan config ID
@@ -98,7 +101,8 @@ get_config_id() {
     local config_name="${1:-Full and fast}"
     local response
     response=$(gvm_docker_cmd "<get_configs/>")
-    echo "$response" | grep -B1 "$config_name" | grep -o 'id="[^"]*"' | head -1 | sed 's/id="//;s/"//'
+    # XML is on one line - extract config id that contains the config name
+    echo "$response" | sed 's/<config/\n<config/g' | grep "$config_name" | grep -o 'id="[^"]*"' | head -1 | sed 's/id="//;s/"//'
 }
 
 # Create and start a scan task

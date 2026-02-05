@@ -120,8 +120,11 @@ select_remote_config_tui() {
 
 select_remote_config_cli() {
     # Project name first (used in filenames instead of IP for security)
+    echo ""
+    echo -e "${BOLD}Remote Host Configuration${NC}"
+    echo ""
     echo -n "Enter project name (used in filenames): "
-    read -r PROJECT_NAME
+    read -r PROJECT_NAME </dev/tty
     if [ -z "$PROJECT_NAME" ]; then
         print_error "Project name required"
         exit 1
@@ -130,7 +133,7 @@ select_remote_config_cli() {
     PROJECT_NAME=$(echo "$PROJECT_NAME" | sed 's/[^a-zA-Z0-9_-]/_/g')
 
     echo -n "Enter remote hostname or IP: "
-    read -r REMOTE_HOST
+    read -r REMOTE_HOST </dev/tty
 
     if [ -z "$REMOTE_HOST" ]; then
         print_error "Hostname required"
@@ -139,7 +142,7 @@ select_remote_config_cli() {
 
     if [ "$AUTH_MODE" = "credentialed" ]; then
         echo -n "Enter SSH username: "
-        read -r REMOTE_USER
+        read -r REMOTE_USER </dev/tty
         if [ -z "$REMOTE_USER" ]; then
             print_error "Username required"
             exit 1
