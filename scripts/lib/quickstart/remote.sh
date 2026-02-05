@@ -212,12 +212,12 @@ select_remote_scans_ssh_cli() {
     echo -n "  Malware scan (ClamAV, if installed)? [y/N]: "
     read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_REMOTE_MALWARE=true
     echo -n "  Lynis security audit (if installed)? [y/N]: "
-    read -r ans
+    read -r ans </dev/tty
     if [[ "$ans" =~ ^[Yy] ]]; then
         RUN_REMOTE_LYNIS=true
         while true; do
             echo -n "    Full scan (~10-15 min) or quick (~2 min)? [f/Q]: "
-            read -r mode_ans
+            read -r mode_ans </dev/tty
             case "$mode_ans" in
                 [Ff]) LYNIS_MODE="full"; break ;;
                 [Qq]|"") LYNIS_MODE="quick"; break ;;
@@ -227,9 +227,9 @@ select_remote_scans_ssh_cli() {
     fi
 
     echo -n "  Port scan (nmap from local)? [y/N]: "
-    read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_PORTS=true
+    read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_PORTS=true
     echo -n "  Service version detection (nmap)? [y/N]: "
-    read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_SERVICES=true
+    read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_SERVICES=true
     echo ""
 }
 
@@ -286,7 +286,7 @@ select_remote_scans_nmap_cli() {
     echo "  4) Custom        - Select individual options"
     echo ""
     echo -n "Select [1-4]: "
-    read -r choice
+    read -r choice </dev/tty
 
     case "$choice" in
         1)
@@ -306,13 +306,13 @@ select_remote_scans_nmap_cli() {
             echo ""
             echo "Select options (y/n for each):"
             echo -n "  Port scan (TCP)? [y/N]: "
-            read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_PORTS=true
+            read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_PORTS=true
             echo -n "  Service version detection? [y/N]: "
-            read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_SERVICES=true
+            read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_SERVICES=true
             echo -n "  OS fingerprinting (requires sudo)? [y/N]: "
-            read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_OS=true
+            read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_OS=true
             echo -n "  Vulnerability scripts? [y/N]: "
-            read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_VULN=true
+            read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_VULN=true
             ;;
         *)
             print_error "Invalid selection"
