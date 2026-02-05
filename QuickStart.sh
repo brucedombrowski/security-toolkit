@@ -1284,17 +1284,25 @@ run_remote_ssh_scans() {
             local lynis_opts=""
             [[ "$LYNIS_MODE" == "quick" ]] && lynis_opts="--quick"
 
-            if [[ "$LYNIS_MODE" == "quick" ]]; then
-                echo "  Lynis quick audit running (~2-5 minutes)..."
-            else
-                echo "  Lynis full audit running (~10-15 minutes)..."
-            fi
-            if ssh_cmd_sudo "sudo lynis audit system $lynis_opts" > "$lynis_file" 2>&1; then
-                print_success "Remote Lynis audit saved: $lynis_file"
-                ((passed++))
-            else
-                print_warning "Remote Lynis audit had issues (check $lynis_file)"
+            # Prime sudo credentials first (with TTY so user sees password prompt)
+            echo "  Authenticating sudo on remote host..."
+            if ! ssh_cmd_sudo "sudo -v"; then
+                print_error "Failed to authenticate sudo on remote host"
                 ((failed++))
+            else
+                if [[ "$LYNIS_MODE" == "quick" ]]; then
+                    echo "  Lynis quick audit running (~2-5 minutes)..."
+                else
+                    echo "  Lynis full audit running (~10-15 minutes)..."
+                fi
+                # Run lynis without TTY since output goes to file (sudo already authenticated)
+                if ssh_cmd "sudo lynis audit system $lynis_opts" > "$lynis_file" 2>&1; then
+                    print_success "Remote Lynis audit saved: $lynis_file"
+                    ((passed++))
+                else
+                    print_warning "Remote Lynis audit had issues (check $lynis_file)"
+                    ((failed++))
+                fi
             fi
         else
             print_warning "Lynis not installed on remote host"
@@ -1309,12 +1317,13 @@ run_remote_ssh_scans() {
                     local lynis_opts=""
                     [[ "$LYNIS_MODE" == "quick" ]] && lynis_opts="--quick"
 
+                    # sudo should still be cached from the apt install
                     if [[ "$LYNIS_MODE" == "quick" ]]; then
                         echo "  Lynis quick audit running (~2-5 minutes)..."
                     else
                         echo "  Lynis full audit running (~10-15 minutes)..."
                     fi
-                    if ssh_cmd_sudo "sudo lynis audit system $lynis_opts" > "$lynis_file" 2>&1; then
+                    if ssh_cmd "sudo lynis audit system $lynis_opts" > "$lynis_file" 2>&1; then
                         print_success "Remote Lynis audit saved: $lynis_file"
                         ((passed++))
                     else
