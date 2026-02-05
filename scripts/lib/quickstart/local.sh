@@ -67,7 +67,7 @@ select_local_config_cli() {
     echo "  3) Specific Directory - Choose a folder"
     echo ""
     echo -n "Select [1-3]: "
-    read -r choice
+    read -r choice </dev/tty
 
     case "$choice" in
         1)
@@ -82,7 +82,7 @@ select_local_config_cli() {
             SCAN_SCOPE="directory"
             echo ""
             echo -n "Enter directory path: "
-            read -r TARGET_DIR
+            read -r TARGET_DIR </dev/tty
             ;;
         *)
             print_error "Invalid selection"
@@ -173,13 +173,13 @@ select_target_cli() {
         echo ""
         echo -n "Select option [1-4]: "
 
-        read -r choice
+        read -r choice </dev/tty
 
         case "$choice" in
             1)
                 echo ""
                 echo -n "Enter directory path: "
-                read -r TARGET_DIR
+                read -r TARGET_DIR </dev/tty
                 ;;
             2)
                 TARGET_DIR="$(pwd)"
@@ -191,7 +191,7 @@ select_target_cli() {
             4)
                 echo ""
                 echo -n "Enter full path: "
-                read -r TARGET_DIR
+                read -r TARGET_DIR </dev/tty
                 ;;
             *)
                 print_error "Invalid selection, please enter 1-4"
@@ -299,28 +299,28 @@ select_scans_cli() {
     echo "  (Enter 'y' to enable, or just press Enter to skip)"
     echo ""
     echo -n "  PII detection (SSN, phone, email)? [y/N]: "
-    read -r ans; [[ "$ans" =~ ^[Yy] ]] && RUN_PII=true
+    read -r ans </dev/tty; [[ "$ans" =~ ^[Yy] ]] && RUN_PII=true
     echo -n "  Secrets detection (API keys, passwords)? [y/N]: "
-    read -r ans; [[ "$ans" =~ ^[Yy] ]] && RUN_SECRETS=true
+    read -r ans </dev/tty; [[ "$ans" =~ ^[Yy] ]] && RUN_SECRETS=true
     echo -n "  MAC address detection? [y/N]: "
-    read -r ans; [[ "$ans" =~ ^[Yy] ]] && RUN_MAC=true
+    read -r ans </dev/tty; [[ "$ans" =~ ^[Yy] ]] && RUN_MAC=true
     echo -n "  Malware scan (ClamAV)? [y/N]: "
-    read -r ans; [[ "$ans" =~ ^[Yy] ]] && RUN_MALWARE=true
+    read -r ans </dev/tty; [[ "$ans" =~ ^[Yy] ]] && RUN_MALWARE=true
     if [ "$RUN_MALWARE" = true ]; then
         echo -n "    Scan full system (~/Applications, /tmp)? [y/N]: "
-        read -r ans; [[ "$ans" =~ ^[Yy] ]] && MALWARE_FULL_SYSTEM=true
+        read -r ans </dev/tty; [[ "$ans" =~ ^[Yy] ]] && MALWARE_FULL_SYSTEM=true
     fi
     echo -n "  System hardening audit (Lynis)? [y/N]: "
-    read -r ans; [[ "$ans" =~ ^[Yy] ]] && RUN_LYNIS=true
+    read -r ans </dev/tty; [[ "$ans" =~ ^[Yy] ]] && RUN_LYNIS=true
     if [ "$RUN_LYNIS" = true ]; then
         echo -n "    Run with sudo (deeper checks)? [y/N]: "
-        read -r ans; [[ "$ans" =~ ^[Yy] ]] && LYNIS_PRIVILEGED=true
+        read -r ans </dev/tty; [[ "$ans" =~ ^[Yy] ]] && LYNIS_PRIVILEGED=true
         echo -n "    Quick scan or full scan? [q/F]: "
-        read -r ans; [[ "$ans" =~ ^[Qq] ]] && LYNIS_QUICK=true || LYNIS_QUICK=false
+        read -r ans </dev/tty; [[ "$ans" =~ ^[Qq] ]] && LYNIS_QUICK=true || LYNIS_QUICK=false
     fi
 
     echo -n "  CISA KEV cross-reference? [y/N]: "
-    read -r ans; [[ "$ans" =~ ^[Yy] ]] && RUN_KEV=true
+    read -r ans </dev/tty; [[ "$ans" =~ ^[Yy] ]] && RUN_KEV=true
 
     # Verify at least one scan selected
     if [ "$RUN_PII" = false ] && [ "$RUN_SECRETS" = false ] && [ "$RUN_MAC" = false ] && \
