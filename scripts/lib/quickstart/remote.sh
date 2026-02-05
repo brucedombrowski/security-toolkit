@@ -669,15 +669,24 @@ run_remote_ssh_scans() {
 
             } > "$malware_file" 2>&1
 
-            # Check for infections in the output
-            if grep -q "Infected files: 0" "$malware_file" 2>/dev/null; then
-                print_success "No malware detected"
-                REMOTE_MALWARE_RESULT="PASS"
-                ((passed++)) || true
+            # Check for errors first (no database, etc.)
+            if grep -q "No supported database files found\|cli_loaddbdir" "$malware_file" 2>/dev/null; then
+                print_warning "ClamAV has no virus database - scan invalid"
+                echo "  Run 'sudo freshclam' on remote host to download definitions"
+                REMOTE_MALWARE_RESULT="SKIP"
+                ((skipped++)) || true
+            elif grep -q "Scanned files: 0" "$malware_file" 2>/dev/null && grep -q "ERROR\|Error" "$malware_file" 2>/dev/null; then
+                print_warning "Malware scan failed - check $malware_file"
+                REMOTE_MALWARE_RESULT="FAIL"
+                ((failed++)) || true
             elif grep -q "FOUND" "$malware_file" 2>/dev/null; then
                 print_fail "Malware detected! Check $malware_file"
                 REMOTE_MALWARE_RESULT="FAIL"
                 ((failed++)) || true
+            elif grep -q "Infected files: 0" "$malware_file" 2>/dev/null; then
+                print_success "No malware detected"
+                REMOTE_MALWARE_RESULT="PASS"
+                ((passed++)) || true
             else
                 print_success "Malware scan completed: $malware_file"
                 REMOTE_MALWARE_RESULT="PASS"
@@ -717,14 +726,20 @@ run_remote_ssh_scans() {
                             ~/ 2>&1" 2>/dev/null || echo "(scan completed)"
                     } > "$malware_file" 2>&1
 
-                    if grep -q "Infected files: 0" "$malware_file" 2>/dev/null; then
-                        print_success "No malware detected"
-                        REMOTE_MALWARE_RESULT="PASS"
-                        ((passed++)) || true
+                    # Check for errors first (no database, etc.)
+                    if grep -q "No supported database files found\|cli_loaddbdir" "$malware_file" 2>/dev/null; then
+                        print_warning "ClamAV has no virus database - scan invalid"
+                        echo "  Run 'sudo freshclam' on remote host to download definitions"
+                        REMOTE_MALWARE_RESULT="SKIP"
+                        ((skipped++)) || true
                     elif grep -q "FOUND" "$malware_file" 2>/dev/null; then
                         print_fail "Malware detected! Check $malware_file"
                         REMOTE_MALWARE_RESULT="FAIL"
                         ((failed++)) || true
+                    elif grep -q "Infected files: 0" "$malware_file" 2>/dev/null; then
+                        print_success "No malware detected"
+                        REMOTE_MALWARE_RESULT="PASS"
+                        ((passed++)) || true
                     else
                         print_success "Malware scan completed: $malware_file"
                         REMOTE_MALWARE_RESULT="PASS"

@@ -239,8 +239,20 @@ run_ssh_host_scans() {
             echo "--- Users with Login Shell ---"
             ssh_cmd "grep -v '/nologin\|/false' /etc/passwd 2>/dev/null | cut -d: -f1,7 || echo 'Cannot read passwd'" || true
             echo ""
-            echo "--- Sudo Users ---"
-            ssh_cmd "getent group sudo wheel 2>/dev/null || echo 'No sudo/wheel group found'" || true
+            echo "--- Sudo/Wheel Group Members ---"
+            local sudo_group
+            sudo_group=$(ssh_cmd "getent group sudo 2>/dev/null" 2>/dev/null) || true
+            local wheel_group
+            wheel_group=$(ssh_cmd "getent group wheel 2>/dev/null" 2>/dev/null) || true
+            if [ -n "$sudo_group" ]; then
+                echo "sudo group: $sudo_group"
+            fi
+            if [ -n "$wheel_group" ]; then
+                echo "wheel group: $wheel_group"
+            fi
+            if [ -z "$sudo_group" ] && [ -z "$wheel_group" ]; then
+                echo "No sudo or wheel group found on this system"
+            fi
         } > "$sec_file" 2>&1
 
         print_success "Security check saved"
@@ -267,16 +279,47 @@ run_ssh_host_scans() {
 
             if [ "$remote_os" = "Linux" ]; then
                 echo "--- systemd Sleep Targets ---"
-                ssh_cmd "systemctl is-enabled sleep.target suspend.target hibernate.target 2>/dev/null || echo 'systemctl not available'" || true
+                local target
+                for target in sleep.target suspend.target hibernate.target hybrid-sleep.target; do
+                    local status
+                    status=$(ssh_cmd "systemctl is-enabled $target 2>/dev/null" 2>/dev/null) || status="not found"
+                    echo "  $target: $status"
+                done
                 echo ""
                 echo "--- logind.conf Settings ---"
-                ssh_cmd "grep -v '^#' /etc/systemd/logind.conf 2>/dev/null | grep -v '^$' || echo 'No custom settings'" || true
+                local logind_settings
+                logind_settings=$(ssh_cmd "grep -v '^#' /etc/systemd/logind.conf 2>/dev/null | grep -v '^\$' | grep -v '^\['" 2>/dev/null) || true
+                if [ -n "$logind_settings" ]; then
+                    echo "$logind_settings"
+                else
+                    echo "  (using defaults - no custom settings)"
+                fi
                 echo ""
                 echo "--- Active Power Profile ---"
-                ssh_cmd "cat /sys/firmware/acpi/platform_profile 2>/dev/null || echo 'N/A'" || true
+                local profile
+                profile=$(ssh_cmd "cat /sys/firmware/acpi/platform_profile 2>/dev/null" 2>/dev/null) || true
+                if [ -n "$profile" ]; then
+                    echo "  Profile: $profile"
+                else
+                    echo "  N/A (power-profiles-daemon not installed or not supported)"
+                fi
                 echo ""
                 echo "--- Screen Lock (GNOME) ---"
-                ssh_cmd "gsettings get org.gnome.desktop.session idle-delay 2>/dev/null || echo 'GNOME not available'" || true
+                local idle_delay
+                idle_delay=$(ssh_cmd "gsettings get org.gnome.desktop.session idle-delay 2>/dev/null" 2>/dev/null) || true
+                if [ -n "$idle_delay" ]; then
+                    # Parse "uint32 300" format
+                    local seconds
+                    seconds=$(echo "$idle_delay" | grep -oE '[0-9]+' || echo "0")
+                    if [ "$seconds" -gt 0 ]; then
+                        local minutes=$((seconds / 60))
+                        echo "  Lock after idle: $minutes minutes ($seconds seconds)"
+                    else
+                        echo "  Lock after idle: Never (disabled)"
+                    fi
+                else
+                    echo "  GNOME not available or not configured"
+                fi
             elif [ "$remote_os" = "Darwin" ]; then
                 echo "--- pmset Settings ---"
                 ssh_cmd "pmset -g || echo 'pmset not available'" || true
@@ -332,8 +375,9 @@ run_ssh_host_scans() {
             echo -n "  Install Lynis now? [y/N]: "
             read -r install_ans </dev/tty
             if [[ "$install_ans" =~ ^[Yy] ]]; then
-                echo "  Installing Lynis on remote host..."
-                if ssh_cmd "sudo apt install -y lynis" 2>&1; then
+                echo "  Updating package list and installing Lynis..."
+                # Use ssh_cmd_sudo for TTY allocation (sudo password prompt)
+                if ssh_cmd_sudo "sudo apt update && sudo apt install -y lynis" 2>&1; then
                     print_success "Lynis installed"
                     INSTALLED_LYNIS=true
                     # Run the audit now
@@ -346,12 +390,12 @@ run_ssh_host_scans() {
                         echo "Mode: $LYNIS_MODE"
                         echo "Started: $timestamp"
                         echo ""
-                        ssh_cmd "sudo lynis audit system $lynis_opts --no-colors 2>&1" || true
+                        ssh_cmd_sudo "sudo lynis audit system $lynis_opts --no-colors 2>&1" || true
                     } > "$lynis_file" 2>&1
                     print_success "Lynis audit complete"
                     ((_passed++)) || true
                 else
-                    print_error "Lynis installation failed"
+                    print_error "Lynis installation failed (check sudo access and network)"
                     ((_skipped++)) || true
                 fi
             else
@@ -392,12 +436,17 @@ run_ssh_host_scans() {
                     ~/ 2>&1" 2>/dev/null || echo "(scan completed)"
             } > "$malware_file" 2>&1
 
-            if grep -q "Infected files: 0" "$malware_file" 2>/dev/null; then
-                print_success "No malware detected"
-                ((_passed++)) || true
+            # Check for errors first (no database, etc.)
+            if grep -q "No supported database files found\|cli_loaddbdir" "$malware_file" 2>/dev/null; then
+                print_warning "ClamAV has no virus database - scan invalid"
+                echo "  Run 'sudo freshclam' on remote host to download definitions"
+                ((_skipped++)) || true
             elif grep -q "FOUND" "$malware_file" 2>/dev/null; then
                 print_fail "Malware detected! Check $malware_file"
                 ((_failed++)) || true
+            elif grep -q "Infected files: 0" "$malware_file" 2>/dev/null; then
+                print_success "No malware detected"
+                ((_passed++)) || true
             else
                 print_success "Malware scan completed"
                 ((_passed++)) || true
@@ -409,12 +458,13 @@ run_ssh_host_scans() {
             read -r install_ans </dev/tty
             if [[ "$install_ans" =~ ^[Yy] ]]; then
                 echo "  Installing ClamAV on remote host..."
-                if ssh_cmd "sudo apt install -y clamav" 2>&1; then
+                # Use ssh_cmd_sudo for TTY allocation (sudo password prompt)
+                if ssh_cmd_sudo "sudo apt update && sudo apt install -y clamav" 2>&1; then
                     print_success "ClamAV installed"
                     INSTALLED_CLAMAV=true
                     # Update virus database
-                    echo "  Updating virus database..."
-                    ssh_cmd "sudo freshclam" 2>&1 || echo "  (freshclam update skipped)"
+                    echo "  Updating virus database (this may take a minute)..."
+                    ssh_cmd_sudo "sudo freshclam" 2>&1 || echo "  (freshclam update skipped - may be locked by daemon)"
                     # Run the scan
                     {
                         echo "Remote Malware Scan (ClamAV)"
@@ -433,12 +483,17 @@ run_ssh_host_scans() {
                             ~/ 2>&1" 2>/dev/null || echo "(scan completed)"
                     } > "$malware_file" 2>&1
 
-                    if grep -q "Infected files: 0" "$malware_file" 2>/dev/null; then
-                        print_success "No malware detected"
-                        ((_passed++)) || true
+                    # Check for errors first (no database, etc.)
+                    if grep -q "No supported database files found\|cli_loaddbdir" "$malware_file" 2>/dev/null; then
+                        print_warning "ClamAV has no virus database - scan invalid"
+                        echo "  Run 'sudo freshclam' on remote host to download definitions"
+                        ((_skipped++)) || true
                     elif grep -q "FOUND" "$malware_file" 2>/dev/null; then
                         print_fail "Malware detected! Check $malware_file"
                         ((_failed++)) || true
+                    elif grep -q "Infected files: 0" "$malware_file" 2>/dev/null; then
+                        print_success "No malware detected"
+                        ((_passed++)) || true
                     else
                         print_success "Malware scan completed"
                         ((_passed++)) || true
@@ -464,10 +519,16 @@ run_ssh_host_scans() {
 
     # KEV Check (CISA Known Exploited Vulnerabilities)
     if [ "$RUN_HOST_KEV" = true ]; then
-        print_step "Running KEV check on remote host..."
+        print_step "Running KEV check..."
         local kev_file="$output_dir/host-kev-$timestamp.txt"
 
-        # Get package list from remote and check against KEV catalog
+        # KEV check requires a vulnerability scan with CVEs
+        # Check if nmap vuln scan was run, otherwise explain
+        local vuln_scan_file=""
+        if [ "$RUN_NMAP_VULN" = true ]; then
+            vuln_scan_file=$(find "$output_dir" -name "nmap-*.txt" -newer "$kev_file" 2>/dev/null | head -1)
+        fi
+
         {
             echo "CISA KEV Check (Known Exploited Vulnerabilities)"
             echo "================================================"
@@ -475,26 +536,31 @@ run_ssh_host_scans() {
             echo "Checked: $timestamp"
             echo ""
 
-            # Get installed packages from remote
-            echo "Fetching installed packages from remote host..."
-            local pkg_list
-            pkg_list=$(ssh_cmd "dpkg -l 2>/dev/null || rpm -qa 2>/dev/null || pacman -Q 2>/dev/null" 2>/dev/null)
-
-            if [ -n "$pkg_list" ]; then
-                echo "Running KEV cross-reference..."
+            if [ -n "$vuln_scan_file" ] && [ -f "$vuln_scan_file" ]; then
+                echo "Checking vulnerability scan against KEV catalog..."
+                echo "Source: $vuln_scan_file"
                 echo ""
-                # Run local KEV check script with the package list
-                echo "$pkg_list" | "$SCRIPTS_DIR/check-kev.sh" --stdin 2>&1 || true
+                # Run KEV check with nmap output (strip ANSI codes)
+                "$SCRIPTS_DIR/check-kev.sh" "$vuln_scan_file" 2>&1 | sed 's/\x1b\[[0-9;]*m//g' || true
             else
-                echo "Could not retrieve package list from remote host"
+                echo "Note: KEV cross-reference requires vulnerability scan data."
+                echo ""
+                echo "To enable KEV checking:"
+                echo "  1. Enable 'Vulnerability scripts (nmap --script vuln)' scan"
+                echo "  2. Re-run scans to generate CVE data"
+                echo ""
+                echo "The KEV catalog tracks actively exploited CVEs per BOD 22-01."
             fi
         } > "$kev_file" 2>&1
 
         # Check results
-        if grep -q "No known exploited vulnerabilities found" "$kev_file" 2>/dev/null; then
+        if grep -q "No known exploited vulnerabilities\|No KEV matches" "$kev_file" 2>/dev/null; then
             print_success "No known exploited vulnerabilities found"
             ((_passed++)) || true
-        elif grep -q "CRITICAL\|HIGH\|KEV match" "$kev_file" 2>/dev/null; then
+        elif grep -q "KEV cross-reference requires" "$kev_file" 2>/dev/null; then
+            print_warning "KEV check skipped (requires vulnerability scan)"
+            ((_skipped++)) || true
+        elif grep -q "CVE-" "$kev_file" 2>/dev/null; then
             print_warning "Potential KEV matches found - review $kev_file"
             ((_failed++)) || true
         else
