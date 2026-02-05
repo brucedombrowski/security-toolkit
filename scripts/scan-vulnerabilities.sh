@@ -218,10 +218,11 @@ main() {
         exit 2
     fi
 
-    # Update run flags from dependency check
-    RUN_NMAP=$SCANNER_RUN_NMAP
-    RUN_OPENVAS=$SCANNER_RUN_OPENVAS
-    RUN_LYNIS=$SCANNER_RUN_LYNIS
+    # Update run flags from dependency check (only disable if tool not found)
+    # Don't enable if explicitly disabled by command-line options
+    $RUN_NMAP && RUN_NMAP=$SCANNER_RUN_NMAP
+    $RUN_OPENVAS && RUN_OPENVAS=$SCANNER_RUN_OPENVAS
+    $RUN_LYNIS && RUN_LYNIS=$SCANNER_RUN_LYNIS
 
     # Initialize output directory
     init_scanner_output "$OUTPUT_DIR_ARG" "$TIMESTAMP" "$SECURITY_REPO_DIR"

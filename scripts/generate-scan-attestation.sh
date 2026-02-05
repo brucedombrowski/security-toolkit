@@ -64,7 +64,7 @@ SCANS_DIR="$(cd "$SCANS_DIR" && pwd)"
 # Check for required environment variables
 REQUIRED_VARS="TARGET_DIR FILE_TIMESTAMP TIMESTAMP DATE_STAMP INVENTORY_CHECKSUM TOOLKIT_VERSION TOOLKIT_COMMIT OVERALL_STATUS PASS_COUNT FAIL_COUNT"
 for var in $REQUIRED_VARS; do
-    if [ -z "${!var}" ]; then
+    if [ -z "${!var:-}" ]; then
         echo "Error: Required environment variable $var is not set" >&2
         exit 2
     fi

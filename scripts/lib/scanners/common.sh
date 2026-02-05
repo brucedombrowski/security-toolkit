@@ -92,16 +92,33 @@ check_scanner_deps() {
         log_success "nmap: found"
     fi
 
-    # OpenVAS/GVM check
-    if ! command -v gvm-cli &> /dev/null && ! command -v omp &> /dev/null; then
+    # OpenVAS/GVM check - check CLI tools and Docker containers
+    local gvm_found=false
+    local gvm_method=""
+
+    # Check for gvm-cli in PATH
+    if command -v gvm-cli &> /dev/null; then
+        gvm_found=true
+        gvm_method="gvm-cli"
+    # Check for gvm-cli in Python framework (macOS pip install location)
+    elif [ -x "/Library/Frameworks/Python.framework/Versions/3.14/bin/gvm-cli" ]; then
+        gvm_found=true
+        gvm_method="gvm-cli (Python)"
+    # Check for legacy omp
+    elif command -v omp &> /dev/null; then
+        gvm_found=true
+        gvm_method="omp (OpenVAS)"
+    # Check for running Greenbone Docker containers
+    elif command -v docker &> /dev/null && docker ps 2>/dev/null | grep -q "greenbone"; then
+        gvm_found=true
+        gvm_method="Docker (Greenbone)"
+    fi
+
+    if [ "$gvm_found" = true ]; then
+        log_success "$gvm_method: installed"
+    else
         optional_tools+=("openvas/gvm")
         SCANNER_RUN_OPENVAS=false
-    else
-        if command -v gvm-cli &> /dev/null; then
-            log_success "gvm-cli: installed"
-        else
-            log_success "omp (OpenVAS): installed"
-        fi
     fi
 
     # Lynis check
@@ -158,7 +175,8 @@ init_scanner_output() {
             SCANNER_OUTPUT_DIR="$(pwd)/.scans"
         fi
     else
-        SCANNER_OUTPUT_DIR="$base_dir/.scans"
+        # Use provided directory directly (don't append .scans)
+        SCANNER_OUTPUT_DIR="$base_dir"
     fi
 
     mkdir -p "$SCANNER_OUTPUT_DIR"

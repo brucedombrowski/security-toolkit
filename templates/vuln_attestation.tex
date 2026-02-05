@@ -1,0 +1,324 @@
+\documentclass[11pt,letterpaper]{article}
+
+% ============================================================================
+% PACKAGES
+% ============================================================================
+\usepackage[margin=1in, top=1.5in, headheight=85pt]{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{longtable}
+
+% ============================================================================
+% DOCUMENT VARIABLES - Replaced by generation script
+% ============================================================================
+\newcommand{\UniqueID}{VULN-YYYY-NNN}
+\newcommand{\DocumentDate}{January 15, 2026}
+\newcommand{\ScanTimestamp}{2026-01-15 08:00:00}
+\newcommand{\SecurityToolkitVersion}{v1.0.0}
+\newcommand{\SecurityToolkitCommit}{abc1234}
+\newcommand{\SecurityToolkitURL}{https://github.com/brucedombrowski/Security}
+
+% Scanner Info
+\newcommand{\ScannerName}{Lynis}
+\newcommand{\ScannerVersion}{3.0.0}
+\newcommand{\ScanMode}{normal}
+\newcommand{\ScanTarget}{(local) /}
+
+% Scan Machine (host running the toolkit)
+\newcommand{\ScanMachineID}{N/A}
+\newcommand{\ScanMachineIDType}{Fingerprint}
+\newcommand{\ScanMachineIDMethod}{SHA256(MAC:hostname)}
+
+% Target Machine (host being scanned)
+\newcommand{\TargetMachineID}{N/A}
+\newcommand{\TargetMachineIDType}{Fingerprint}
+\newcommand{\TargetMachineIDMethod}{SHA256(MAC:hostname)}
+\newcommand{\TargetInventoryFile}{N/A}
+
+% Scan Results
+\newcommand{\ScanResult}{PASS}
+\newcommand{\HardeningIndex}{0}
+\newcommand{\WarningsCount}{0}
+\newcommand{\SuggestionsCount}{0}
+\newcommand{\TestsPerformed}{0}
+\newcommand{\PluginsEnabled}{0}
+
+% Source File Reference
+\newcommand{\SourceFileName}{lynis-scan-2026-01-15.txt}
+\newcommand{\SourceFileChecksum}{0000000000000000000000000000000000000000000000000000000000000000}
+
+% NIST Controls
+\newcommand{\NISTControls}{RA-5, SI-2, CM-6}
+
+% ============================================================================
+% DOCUMENT CONFIGURATION
+% ============================================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    pdfborder={0 0 0}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\setlist[enumerate]{leftmargin=0.5in, labelwidth=0.25in, labelsep=0.1in, align=left, itemsep=12pt, topsep=12pt}
+\setlist[enumerate,1]{label=\arabic*.}
+\setlist[itemize]{leftmargin=0.5in, itemsep=3pt, topsep=6pt}
+
+% Code listing colors
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+
+% Lynis output colors
+\definecolor{lynisgreen}{rgb}{0.0,0.6,0.0}
+\definecolor{lynisyellow}{rgb}{0.8,0.6,0.0}
+\definecolor{lynisred}{rgb}{0.8,0.0,0.0}
+\definecolor{lyniscyan}{rgb}{0.0,0.5,0.7}
+\definecolor{lyniswhite}{rgb}{0.3,0.3,0.3}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\scriptsize,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true,
+    numbers=left,
+    numberstyle=\tiny\color{codegray},
+    numbersep=5pt,
+    frame=single,
+    framesep=5pt,
+    xleftmargin=15pt,
+    xrightmargin=5pt
+}
+
+% Colored status commands for Lynis output
+\newcommand{\lynisOK}{\textcolor{lynisgreen}{[ OK ]}}
+\newcommand{\lynisDONE}{\textcolor{lynisgreen}{[ DONE ]}}
+\newcommand{\lynisFOUND}{\textcolor{lynisgreen}{[ FOUND ]}}
+\newcommand{\lynisWARNING}{\textcolor{lynisyellow}{[ WARNING ]}}
+\newcommand{\lynisSUGGESTION}{\textcolor{lynisyellow}{[ SUGGESTION ]}}
+\newcommand{\lynisNOTFOUND}{\textcolor{codegray}{[ NOT FOUND ]}}  % Gray - context-dependent
+\newcommand{\lynisNONE}{\textcolor{lynisred}{[ NONE ]}}
+\newcommand{\lynisFAIL}{\textcolor{lynisred}{[ FAIL ]}}
+\newcommand{\lynisUNKNOWN}{\textcolor{lynisred}{[ UNKNOWN ]}}
+\newcommand{\lynisSKIPPED}{\textcolor{codegray}{[ SKIPPED ]}}
+
+% ============================================================================
+% HEADER AND FOOTER
+% ============================================================================
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyhead[L]{%
+    \raisebox{-0.5\height}{\includegraphics[height=0.9in]{logo.png}}%
+}
+\fancyhead[R]{%
+    \parbox[b]{3.5in}{\raggedleft\large\textbf{Vulnerability Scan Attestation}}%
+}
+\renewcommand{\headrulewidth}{0pt}
+
+\fancyfoot[L]{\small \UniqueID}
+\fancyfoot[C]{\small Page \thepage\ of \pageref{LastPage}}
+\fancyfoot[R]{\small \DocumentDate}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% ============================================================================
+% CUSTOM COMMANDS
+% ============================================================================
+\newcommand{\dmsection}[1]{\item \textbf{#1}\par}
+
+\newcommand{\passmark}{\textcolor{green!60!black}{\textbf{PASS}}}
+\newcommand{\failmark}{\textcolor{red}{\textbf{FAIL}}}
+\newcommand{\skipmark}{\textcolor{gray}{\textbf{SKIP}}}
+\newcommand{\resultcell}[1]{\ifnum\pdfstrcmp{#1}{PASS}=0 \passmark\else\ifnum\pdfstrcmp{#1}{SKIP}=0 \skipmark\else\failmark\fi\fi}
+
+% ============================================================================
+% BEGIN DOCUMENT
+% ============================================================================
+\begin{document}
+
+\hfill \UniqueID
+
+\vspace{0.25in}
+
+% ----------------------------------------------------------------------------
+% HEADER FIELDS
+% ----------------------------------------------------------------------------
+\textbf{DATE:} \DocumentDate
+
+\textbf{SUBJECT:} Vulnerability Scan Attestation (\ScannerName) - NIST \NISTControls
+
+\vspace{0.25in}
+
+% ============================================================================
+% MAIN CONTENT
+% ============================================================================
+\begin{enumerate}
+
+% ----------------------------------------------------------------------------
+\dmsection{Purpose}
+
+This document attests that a vulnerability assessment was performed using \ScannerName{} security auditing tool. This scan verifies alignment with NIST SP 800-53 controls \NISTControls{} (Vulnerability Monitoring, Flaw Remediation, Configuration Settings).
+
+% ----------------------------------------------------------------------------
+\dmsection{Scan Environment}
+
+\begin{itemize}
+    \item \textbf{Scan Timestamp:} \ScanTimestamp
+    \item \textbf{Target Path:} \texttt{\ScanTarget}
+    \item \textbf{Scan Mode:} \ScanMode
+    \item \textbf{Toolkit Version:} \SecurityToolkitVersion{} (\SecurityToolkitCommit)
+    \item \textbf{Toolkit Repository:} \url{\SecurityToolkitURL}
+\end{itemize}
+
+% ----------------------------------------------------------------------------
+\dmsection{Machine Identification}
+
+\textbf{3.1 Scan Machine} (host running the security toolkit)
+
+\vspace{6pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Identifier} & {\small\texttt{\ScanMachineID}} \\
+\textbf{Type} & \ScanMachineIDType \\
+\textbf{Method} & \ScanMachineIDMethod \\
+\bottomrule
+\end{tabular}
+
+\vspace{12pt}
+\textbf{3.2 Target Machine} (host being scanned)
+
+\vspace{6pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Identifier} & {\small\texttt{\TargetMachineID}} \\
+\textbf{Type} & \TargetMachineIDType \\
+\textbf{Inventory File} & \texttt{\TargetInventoryFile} \\
+\textbf{Method} & \TargetMachineIDMethod \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+{\small\textit{Note: For local scans, Scan Machine and Target Machine are identical.}}
+
+% ----------------------------------------------------------------------------
+\dmsection{Scanner Information}
+
+\vspace{6pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Property} & \textbf{Value} \\
+\midrule
+Scanner & \ScannerName \\
+Version & \ScannerVersion \\
+Scan Mode & \ScanMode \\
+Tests Performed & \TestsPerformed \\
+Plugins Enabled & \PluginsEnabled \\
+\bottomrule
+\end{tabular}
+
+% ----------------------------------------------------------------------------
+\dmsection{Scan Results}
+
+\vspace{6pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+Overall Result & \resultcell{\ScanResult} \\
+Hardening Index & \HardeningIndex \\
+Warnings & \WarningsCount \\
+Suggestions & \SuggestionsCount \\
+\bottomrule
+\end{tabular}
+
+\vspace{12pt}
+\textbf{Overall Result:} \resultcell{\ScanResult}
+
+\vspace{6pt}
+{\small\textit{Note: Hardening index ranges from 0-100. Higher values indicate better security posture. Warnings indicate potential security issues. Suggestions are recommendations for improvement.}}
+
+% ----------------------------------------------------------------------------
+\dmsection{Source File Reference}
+
+\vspace{6pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{File} & \texttt{\SourceFileName} \\
+\textbf{SHA256} & {\scriptsize\texttt{\SourceFileChecksum}} \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\textbf{Verification Command:}
+\begin{verbatim}
+shasum -a 256 .scans/<filename>
+\end{verbatim}
+
+% ----------------------------------------------------------------------------
+\dmsection{NIST Control Mapping}
+
+\vspace{6pt}
+\begin{tabular}{@{}llp{2.8in}@{}}
+\toprule
+\textbf{Control} & \textbf{Family} & \textbf{Description} \\
+\midrule
+RA-5 & Risk Assessment & Vulnerability Monitoring and Scanning \\
+SI-2 & System Integrity & Flaw Remediation \\
+CM-6 & Config Management & Configuration Settings \\
+CA-2 & Security Assessment & Control Assessments \\
+\bottomrule
+\end{tabular}
+
+% ----------------------------------------------------------------------------
+\dmsection{Findings}
+
+The following findings require attention. This is a statement of facts, not an assessment.
+
+\input{vuln_key_findings.tex}
+
+% ----------------------------------------------------------------------------
+\dmsection{Attestation}
+
+This document certifies that:
+
+\begin{enumerate}[label=(\alph*)]
+    \item A \ScannerName{} vulnerability scan was executed against the specified target
+    \item Scan results are accurately represented in this document
+    \item The source file checksum enables independent verification
+    \item Full scan output is available in Appendix A
+\end{enumerate}
+
+\end{enumerate}
+
+% ============================================================================
+% APPENDIX A - Full Scan Output
+% ============================================================================
+\newpage
+\section*{Appendix A: Full Scan Output}
+
+The following is the complete \ScannerName{} scan output with color-coded status indicators.
+
+\vspace{6pt}
+\textbf{Legend:}
+\lynisOK{} = Passed \quad
+\lynisDONE{} = Completed \quad
+\lynisWARNING{} = Warning \quad
+\lynisSUGGESTION{} = Suggestion \quad
+\lynisNOTFOUND{} = Not Found \quad
+\lynisNONE{} = None
+
+\vspace{12pt}
+
+\input{vuln_findings.tex}
+
+\end{document}

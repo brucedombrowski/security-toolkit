@@ -38,10 +38,10 @@ run_lynis_audit() {
     echo "  - System and Information Integrity (SI)"
     echo ""
 
-    local lynis_args="--quick --no-colors"
+    local lynis_args="--quick"
 
     if [ "$scan_mode" = "full" ]; then
-        lynis_args="--no-colors"
+        lynis_args=""
         log_info "Running comprehensive Lynis audit..."
     else
         log_info "Running quick Lynis audit..."
