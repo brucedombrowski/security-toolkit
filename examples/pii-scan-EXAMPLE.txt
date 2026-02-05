@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    05064d262581d690...                                       #
+#  Source SHA256:    c42e7d37c3909204...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    d42c54e5d15a5782...                                       #
-#  Redacted:         2026-02-05T00:43:40Z                                       #
+#  Redacted:         2026-02-05T16:00:08Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,7 +19,7 @@
 PII Verification Scan
 =====================
 Timestamp: 2026-02-05T[REDACTED]Z
-Toolkit: Security Verification Toolkit v2.2.1 (3d92b97)
+Toolkit: Security Verification Toolkit v2.3.0 (ce7ae3b)
 Target: /Users/[REDACTED]
 Repository: Security
 
@@ -33,9 +33,9 @@ Checking: IPv4 Addresses
 /Users/[REDACTED]  Test 17: Reject version number (1.2.3.4.5.6)... [0;32mPASS[0m
 /Users/[REDACTED]      "Bash(export TARGET_DIR=\"10.0.0.223\" export FILE_TIMESTAMP=\"2026-02-04T213548Z\" export TIMESTAMP=\"2026-02-04T[REDACTED]Z\" export DATE_STAMP=\"2026-02-04\" export INVENTORY_CHECKSUM=\"N/A\" export TOOLKIT_VERSION=\"$TOOLKIT_VERSION:-2.1.9\" export TOOLKIT_COMMIT=\"$TOOLKIT_COMMIT:-unknown\" export OVERALL_STATUS=\"PASS\" export PASS_COUNT=\"3\" export FAIL_COUNT=\"0\" export PII_RESULT=\"SKIP\" export PII_FINDINGS=\"Remote scan\" export MALWARE_RESULT=\"SKIP\" export MALWARE_FINDINGS=\"Remote scan\" export SECRETS_RESULT=\"SKIP\" export SECRETS_FINDINGS=\"Remote scan\" export MAC_RESULT=\"SKIP\" export MAC_FINDINGS=\"Remote scan\" export HOST_RESULT=\"PASS\" export HOST_FINDINGS=\"Remote check\" export VULN_RESULT=\"PASS\" export VULN_FINDINGS=\"Nmap scan\")",
 /Users/[REDACTED]      "Bash(TARGET_DIR=\"10.0.0.223\" FILE_TIMESTAMP=\"2026-02-04T213548Z\" TIMESTAMP=\"2026-02-04T[REDACTED]Z\" DATE_STAMP=\"2026-02-04\" INVENTORY_CHECKSUM=\"Remote-scan\" TOOLKIT_VERSION=\"2.1.9\" TOOLKIT_COMMIT=\"unknown\" OVERALL_STATUS=\"PASS\" PASS_COUNT=\"3\" FAIL_COUNT=\"0\" PII_RESULT=\"SKIP\" PII_FINDINGS=\"Remote\" MALWARE_RESULT=\"SKIP\" MALWARE_FINDINGS=\"Remote\" SECRETS_RESULT=\"SKIP\" SECRETS_FINDINGS=\"Remote\" MAC_RESULT=\"SKIP\" MAC_FINDINGS=\"Remote\" HOST_RESULT=\"PASS\" HOST_FINDINGS=\"Remote\" VULN_RESULT=\"PASS\" VULN_FINDINGS=\"Nmap\" bash ./scripts/generate-scan-attestation.sh .scans/Scan20260204213548)",
-/Users/[REDACTED]            echo "  REMOTE_HOST=10.0.0.223"
-  Result: REVIEW - 19 new match(es) found
-  ... and 9 more
+/Users/[REDACTED]      "Bash(sshpass -p '1234' ssh -o StrictHostKeyChecking=no payload@10.0.0.223:*)",
+  Result: REVIEW - 25 new match(es) found
+  ... and 15 more
   (15 previously allowlisted)
 Checking: US Phone Numbers (dashed)
 /Users/[REDACTED]  Test 7: Detect 555-123-4567... [0;32mPASS[0m
@@ -63,7 +63,7 @@ Checking: Credit Card Numbers (Luhn validated)
   /Users/[REDACTED] 5500000000000004 (Luhn valid)
   /Users/[REDACTED] 0000000000000000 (Luhn valid)
   /Users/[REDACTED] 0000000000000000 (Luhn valid)
-  Result: REVIEW - 18 valid card(s) found (6 filtered by Luhn)
+  Result: REVIEW - 38 valid card(s) found (6 filtered by Luhn)
 
 =====================
 Allowlist: /Users/[REDACTED] (74 entries)
