@@ -30,6 +30,7 @@ RUN_NMAP_OS="${RUN_NMAP_OS:-false}"
 RUN_NMAP_VULN="${RUN_NMAP_VULN:-false}"
 RUN_HOST_INVENTORY="${RUN_HOST_INVENTORY:-false}"
 RUN_HOST_SECURITY="${RUN_HOST_SECURITY:-false}"
+RUN_HOST_POWER="${RUN_HOST_POWER:-false}"
 RUN_HOST_LYNIS="${RUN_HOST_LYNIS:-false}"
 RUN_OPENVAS="${RUN_OPENVAS:-false}"
 LYNIS_MODE="${LYNIS_MODE:-quick}"
@@ -50,6 +51,8 @@ select_host_scans_cli() {
         read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_HOST_INVENTORY=true
         echo -n "  Security configuration check? [y/N]: "
         read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_HOST_SECURITY=true
+        echo -n "  Power settings check (sleep/hibernate)? [y/N]: "
+        read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_HOST_POWER=true
         echo -n "  Lynis security audit? [y/N]: "
         read -r ans </dev/tty
         if [[ "$ans" =~ ^[Yy] ]]; then
@@ -89,7 +92,7 @@ select_host_scans_cli() {
 
     # Log selections
     log_transcript "HOST SCANS: nmap_ports=$RUN_NMAP_PORTS nmap_svc=$RUN_NMAP_SERVICES nmap_os=$RUN_NMAP_OS nmap_vuln=$RUN_NMAP_VULN"
-    log_transcript "HOST SCANS: inventory=$RUN_HOST_INVENTORY security=$RUN_HOST_SECURITY lynis=$RUN_HOST_LYNIS openvas=$RUN_OPENVAS"
+    log_transcript "HOST SCANS: inventory=$RUN_HOST_INVENTORY security=$RUN_HOST_SECURITY power=$RUN_HOST_POWER lynis=$RUN_HOST_LYNIS openvas=$RUN_OPENVAS"
 }
 
 select_host_scans() {
@@ -135,6 +138,7 @@ run_host_scans() {
             # Mark SSH scans as skipped
             [ "$RUN_HOST_INVENTORY" = true ] && ((skipped++))
             [ "$RUN_HOST_SECURITY" = true ] && ((skipped++))
+            [ "$RUN_HOST_POWER" = true ] && ((skipped++))
             [ "$RUN_HOST_LYNIS" = true ] && ((skipped++))
         fi
     fi
@@ -233,6 +237,57 @@ run_ssh_host_scans() {
 
         print_success "Security check saved"
         ((_passed++))
+    fi
+
+    # Power Settings Check
+    if [ "$RUN_HOST_POWER" = true ]; then
+        print_step "Checking remote power settings..."
+        local power_file="$output_dir/host-power-$timestamp.txt"
+
+        {
+            echo "Remote Power Settings"
+            echo "====================="
+            echo "Host: $TARGET_HOST"
+            echo "Checked: $timestamp"
+            echo ""
+
+            # Detect OS type
+            local remote_os
+            remote_os=$(ssh_cmd "uname -s" 2>/dev/null || echo "Unknown")
+            echo "OS: $remote_os"
+            echo ""
+
+            if [ "$remote_os" = "Linux" ]; then
+                echo "--- systemd Sleep Targets ---"
+                ssh_cmd "systemctl is-enabled sleep.target suspend.target hibernate.target 2>/dev/null || echo 'systemctl not available'"
+                echo ""
+                echo "--- logind.conf Settings ---"
+                ssh_cmd "grep -v '^#' /etc/systemd/logind.conf 2>/dev/null | grep -v '^$' || echo 'No custom settings'"
+                echo ""
+                echo "--- Active Power Profile ---"
+                ssh_cmd "cat /sys/firmware/acpi/platform_profile 2>/dev/null || echo 'N/A'"
+                echo ""
+                echo "--- Screen Lock (GNOME) ---"
+                ssh_cmd "gsettings get org.gnome.desktop.session idle-delay 2>/dev/null || echo 'GNOME not available'"
+            elif [ "$remote_os" = "Darwin" ]; then
+                echo "--- pmset Settings ---"
+                ssh_cmd "pmset -g"
+                echo ""
+                echo "--- Screen Saver ---"
+                ssh_cmd "defaults -currentHost read com.apple.screensaver idleTime 2>/dev/null || echo 'Not set'"
+            else
+                echo "Unsupported OS for power settings check"
+            fi
+        } > "$power_file" 2>&1
+
+        # Check for sleep-related issues
+        if grep -qE "(sleep|suspend|hibernate).*(enabled|active)" "$power_file" 2>/dev/null; then
+            print_warning "Power settings may cause downtime - review $power_file"
+            ((_failed++))
+        else
+            print_success "Power settings check saved"
+            ((_passed++))
+        fi
     fi
 
     # Lynis Audit
