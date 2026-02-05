@@ -208,10 +208,10 @@ run_ssh_host_scans() {
             } > "$inv_file" 2>&1
 
             print_success "Host inventory saved"
-            ((_passed++))
+            ((_passed++)) || true
         else
             print_warning "Could not collect inventory"
-            ((_skipped++))
+            ((_skipped++)) || true
         fi
     fi
 
@@ -244,7 +244,7 @@ run_ssh_host_scans() {
         } > "$sec_file" 2>&1
 
         print_success "Security check saved"
-        ((_passed++))
+        ((_passed++)) || true
     fi
 
     # Power Settings Check
@@ -291,10 +291,10 @@ run_ssh_host_scans() {
         # Check for sleep-related issues
         if grep -qE "(sleep|suspend|hibernate).*(enabled|active)" "$power_file" 2>/dev/null; then
             print_warning "Power settings may cause downtime - review $power_file"
-            ((_failed++))
+            ((_failed++)) || true
         else
             print_success "Power settings check saved"
-            ((_passed++))
+            ((_passed++)) || true
         fi
     fi
 
@@ -321,10 +321,10 @@ run_ssh_host_scans() {
             local warnings=$(grep -c "Warning:" "$lynis_file" 2>/dev/null || echo "0")
             if [ "$warnings" -gt 0 ]; then
                 print_warning "Lynis found $warnings warnings"
-                ((_failed++))
+                ((_failed++)) || true
             else
                 print_success "Lynis audit complete"
-                ((_passed++))
+                ((_passed++)) || true
             fi
         else
             {
@@ -337,7 +337,7 @@ run_ssh_host_scans() {
             } > "$lynis_file"
 
             print_warning "Lynis not installed on remote (skipped)"
-            ((_skipped++))
+            ((_skipped++)) || true
         fi
     fi
 }
@@ -373,7 +373,7 @@ run_network_host_scans() {
         # Check for open ports
         local open_ports=$(grep -c "open" "$nmap_file" 2>/dev/null || echo "0")
         print_success "Nmap found $open_ports open ports"
-        ((_passed++))
+        ((_passed++)) || true
     fi
 
     # OpenVAS Scan
@@ -385,14 +385,14 @@ run_network_host_scans() {
             local openvas_result=$?
             if [ $openvas_result -eq 0 ]; then
                 print_success "OpenVAS scan complete"
-                ((_passed++))
+                ((_passed++)) || true
             else
                 print_warning "OpenVAS scan completed with findings"
-                ((_failed++))
+                ((_failed++)) || true
             fi
         else
             print_warning "OpenVAS not available (skipped)"
-            ((_skipped++))
+            ((_skipped++)) || true
         fi
     fi
 }
