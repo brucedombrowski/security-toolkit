@@ -204,7 +204,7 @@ run_ssh_host_scans() {
                 ssh_cmd "ip addr 2>/dev/null || ifconfig"
                 echo ""
                 echo "--- Installed Packages (sample) ---"
-                ssh_cmd "dpkg -l 2>/dev/null | head -50 || rpm -qa 2>/dev/null | head -50"
+                ssh_cmd "dpkg -l 2>/dev/null | head -50 || rpm -qa 2>/dev/null | head -50 || echo 'Package manager not found'"
             } > "$inv_file" 2>&1
 
             print_success "Host inventory saved"
@@ -240,7 +240,7 @@ run_ssh_host_scans() {
             ssh_cmd "grep -v '/nologin\|/false' /etc/passwd | cut -d: -f1,7"
             echo ""
             echo "--- Sudo Users ---"
-            ssh_cmd "getent group sudo wheel 2>/dev/null"
+            ssh_cmd "getent group sudo wheel 2>/dev/null || echo 'No sudo/wheel group found'"
         } > "$sec_file" 2>&1
 
         print_success "Security check saved"
