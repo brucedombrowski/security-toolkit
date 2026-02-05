@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    b627b360c07e5c59...                                       #
+#  Source SHA256:    5aa15cd77e05eb86...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    d42c54e5d15a5782...                                       #
-#  Redacted:         2026-02-04T22:34:50Z                                       #
+#  Redacted:         2026-02-05T00:43:40Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -27,7 +27,7 @@ Host System Inventory
 =====================
 Generated: [REDACTED]
 Hostname: [REDACTED]
-Toolkit: Security Verification Toolkit v2.2.0 (5e59299)
+Toolkit: Security Verification Toolkit v2.2.1 (3d92b97)
 Source: https://[REDACTED]/brucedombrowski/Security
 
 HANDLING NOTICE:
