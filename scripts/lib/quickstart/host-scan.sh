@@ -57,9 +57,15 @@ select_host_scans_cli() {
         read -r ans </dev/tty
         if [[ "$ans" =~ ^[Yy] ]]; then
             RUN_HOST_LYNIS=true
-            echo -n "    Full scan (~10-15 min) or quick (~2 min)? [f/Q]: "
-            read -r mode_ans </dev/tty
-            [[ "$mode_ans" =~ ^[Ff] ]] && LYNIS_MODE="full" || LYNIS_MODE="quick"
+            while true; do
+                echo -n "    Full scan (~10-15 min) or quick (~2 min)? [f/Q]: "
+                read -r mode_ans </dev/tty
+                case "$mode_ans" in
+                    [Ff]) LYNIS_MODE="full"; break ;;
+                    [Qq]|"") LYNIS_MODE="quick"; break ;;
+                    *) echo "    Invalid option. Enter 'f' for full or 'q' for quick." ;;
+                esac
+            done
         fi
         echo ""
     fi
@@ -80,9 +86,15 @@ select_host_scans_cli() {
         read -r ans </dev/tty
         if [[ "$ans" =~ ^[Yy] ]]; then
             RUN_OPENVAS=true
-            echo -n "    Full scan (30-60 min) or quick (5-15 min)? [f/Q]: "
-            read -r mode_ans </dev/tty
-            [[ "$mode_ans" =~ ^[Ff] ]] && OPENVAS_SCAN_TYPE="full" || OPENVAS_SCAN_TYPE="quick"
+            while true; do
+                echo -n "    Full scan (30-60 min) or quick (5-15 min)? [f/Q]: "
+                read -r mode_ans </dev/tty
+                case "$mode_ans" in
+                    [Ff]) OPENVAS_SCAN_TYPE="full"; break ;;
+                    [Qq]|"") OPENVAS_SCAN_TYPE="quick"; break ;;
+                    *) echo "    Invalid option. Enter 'f' for full or 'q' for quick." ;;
+                esac
+            done
         fi
     else
         echo -e "  ${GRAY}OpenVAS (not available - skipping)${NC}"

@@ -237,9 +237,15 @@ select_remote_scans_ssh_cli() {
     read -r ans
     if [[ "$ans" =~ ^[Yy] ]]; then
         RUN_REMOTE_LYNIS=true
-        echo -n "    Full scan (~10-15 min) or quick (~2 min)? [f/Q]: "
-        read -r mode_ans
-        [[ "$mode_ans" =~ ^[Ff] ]] && LYNIS_MODE="full" || LYNIS_MODE="quick"
+        while true; do
+            echo -n "    Full scan (~10-15 min) or quick (~2 min)? [f/Q]: "
+            read -r mode_ans
+            case "$mode_ans" in
+                [Ff]) LYNIS_MODE="full"; break ;;
+                [Qq]|"") LYNIS_MODE="quick"; break ;;
+                *) echo "    Invalid option. Enter 'f' for full or 'q' for quick." ;;
+            esac
+        done
     fi
 
     # OpenVAS option
@@ -248,9 +254,15 @@ select_remote_scans_ssh_cli() {
         read -r ans
         if [[ "$ans" =~ ^[Yy] ]]; then
             RUN_REMOTE_OPENVAS=true
-            echo -n "    Full scan or quick? [f/Q]: "
-            read -r mode_ans
-            [[ "$mode_ans" =~ ^[Ff] ]] && OPENVAS_SCAN_TYPE="full" || OPENVAS_SCAN_TYPE="quick"
+            while true; do
+                echo -n "    Full scan or quick? [f/Q]: "
+                read -r mode_ans
+                case "$mode_ans" in
+                    [Ff]) OPENVAS_SCAN_TYPE="full"; break ;;
+                    [Qq]|"") OPENVAS_SCAN_TYPE="quick"; break ;;
+                    *) echo "    Invalid option. Enter 'f' for full or 'q' for quick." ;;
+                esac
+            done
         fi
     else
         echo -e "  ${GRAY}OpenVAS (not installed - skipping)${NC}"
