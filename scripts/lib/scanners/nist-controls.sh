@@ -102,7 +102,6 @@ get_nist_800_171_family() {
 get_scanner_controls_800_53() {
     case "$1" in
         "nmap")    echo "RA-5 SI-4 CM-8 SC-7" ;;
-        "openvas") echo "RA-5 SI-2 RA-3" ;;
         "lynis")   echo "SI-7 CM-6 CA-2" ;;
         "all")     echo "$NIST_800_53_CONTROLS" ;;
         *)         echo "" ;;
@@ -114,7 +113,6 @@ get_scanner_controls_800_53() {
 get_scanner_controls_800_171() {
     case "$1" in
         "nmap")    echo "3.11.2 3.14.6 3.14.7" ;;
-        "openvas") echo "3.11.2 3.11.3 3.14.1" ;;
         "lynis")   echo "3.12.1 3.12.3" ;;
         "all")     echo "$NIST_800_171_CONTROLS" ;;
         *)         echo "" ;;

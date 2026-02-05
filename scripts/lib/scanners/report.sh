@@ -73,7 +73,7 @@ init_report_file() {
 }
 
 # Generate NIST compliance mapping in report
-# Usage: generate_compliance_report "report_file" "timestamp" "target" "hostname" "scan_mode" "toolkit_version" "toolkit_commit" "run_nmap" "run_openvas" "run_lynis"
+# Usage: generate_compliance_report "report_file" "timestamp" "target" "hostname" "scan_mode" "toolkit_version" "toolkit_commit" "run_nmap" "run_lynis"
 generate_compliance_report() {
     local report_file="$1"
     local timestamp="$2"
@@ -83,8 +83,7 @@ generate_compliance_report() {
     local toolkit_version="$6"
     local toolkit_commit="$7"
     local run_nmap="$8"
-    local run_openvas="$9"
-    local run_lynis="${10}"
+    local run_lynis="$9"
 
     {
         echo ""
@@ -128,11 +127,6 @@ generate_compliance_report() {
             echo "  [X] Nmap network scanning"
         else
             echo "  [ ] Nmap (not available)"
-        fi
-        if [ "$run_openvas" = "true" ]; then
-            echo "  [X] OpenVAS vulnerability assessment"
-        else
-            echo "  [ ] OpenVAS (not available)"
         fi
         if [ "$run_lynis" = "true" ]; then
             echo "  [X] Lynis system audit"
@@ -189,7 +183,6 @@ Usage: $script_name [options] [target]
 
 Options:
   -n, --nmap-only      Run only Nmap network scans
-  -o, --openvas-only   Run only OpenVAS vulnerability scans
   -l, --lynis-only     Run only Lynis system audit
   -q, --quick          Quick scan (reduced thoroughness)
   -f, --full           Full comprehensive scan (default)

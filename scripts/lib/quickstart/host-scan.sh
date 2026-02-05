@@ -32,9 +32,7 @@ RUN_HOST_INVENTORY="${RUN_HOST_INVENTORY:-false}"
 RUN_HOST_SECURITY="${RUN_HOST_SECURITY:-false}"
 RUN_HOST_POWER="${RUN_HOST_POWER:-false}"
 RUN_HOST_LYNIS="${RUN_HOST_LYNIS:-false}"
-RUN_OPENVAS="${RUN_OPENVAS:-false}"
 LYNIS_MODE="${LYNIS_MODE:-quick}"
-OPENVAS_SCAN_TYPE="${OPENVAS_SCAN_TYPE:-quick}"
 
 # ============================================================================
 # Host Scan Selection
@@ -80,31 +78,11 @@ select_host_scans_cli() {
     echo -n "  Vulnerability scripts (nmap --script vuln)? [y/N]: "
     read -r ans </dev/tty && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_VULN=true
 
-    # OpenVAS option
-    if check_openvas_available; then
-        echo -n "  OpenVAS deep vulnerability scan? [y/N]: "
-        read -r ans </dev/tty
-        if [[ "$ans" =~ ^[Yy] ]]; then
-            RUN_OPENVAS=true
-            while true; do
-                echo -n "    Full scan (30-60 min) or quick (5-15 min)? [f/Q]: "
-                read -r mode_ans </dev/tty
-                case "$mode_ans" in
-                    [Ff]) OPENVAS_SCAN_TYPE="full"; break ;;
-                    [Qq]|"") OPENVAS_SCAN_TYPE="quick"; break ;;
-                    *) echo "    Invalid option. Enter 'f' for full or 'q' for quick." ;;
-                esac
-            done
-        fi
-    else
-        echo -e "  ${GRAY}OpenVAS (not available - skipping)${NC}"
-    fi
-
     echo ""
 
     # Log selections
     log_transcript "HOST SCANS: nmap_ports=$RUN_NMAP_PORTS nmap_svc=$RUN_NMAP_SERVICES nmap_os=$RUN_NMAP_OS nmap_vuln=$RUN_NMAP_VULN"
-    log_transcript "HOST SCANS: inventory=$RUN_HOST_INVENTORY security=$RUN_HOST_SECURITY power=$RUN_HOST_POWER lynis=$RUN_HOST_LYNIS openvas=$RUN_OPENVAS"
+    log_transcript "HOST SCANS: inventory=$RUN_HOST_INVENTORY security=$RUN_HOST_SECURITY power=$RUN_HOST_POWER lynis=$RUN_HOST_LYNIS"
 }
 
 select_host_scans() {
@@ -386,25 +364,5 @@ run_network_host_scans() {
         local open_ports=$(grep -c "open" "$nmap_file" 2>/dev/null || echo "0")
         print_success "Nmap found $open_ports open ports"
         ((_passed++)) || true
-    fi
-
-    # OpenVAS Scan
-    if [ "$RUN_OPENVAS" = true ]; then
-        print_step "Running OpenVAS vulnerability scan..."
-
-        if check_openvas_available; then
-            run_openvas_scan "$TARGET_HOST" "$output_dir" "$timestamp" "$OPENVAS_SCAN_TYPE"
-            local openvas_result=$?
-            if [ $openvas_result -eq 0 ]; then
-                print_success "OpenVAS scan complete"
-                ((_passed++)) || true
-            else
-                print_warning "OpenVAS scan completed with findings"
-                ((_failed++)) || true
-            fi
-        else
-            print_warning "OpenVAS not available (skipped)"
-            ((_skipped++)) || true
-        fi
     fi
 }

@@ -242,27 +242,17 @@ select_scans_tui() {
     RUN_MALWARE=false
     RUN_KEV=false
     RUN_LYNIS=false
-    RUN_OPENVAS=false
     LYNIS_PRIVILEGED=false
     MALWARE_FULL_SYSTEM=false
-    OPENVAS_SCAN_TYPE="quick"
-
-    # Check if OpenVAS is available for the menu
-    local openvas_status="off"
-    local openvas_label="OpenVAS network vuln scan"
-    if ! check_openvas_available; then
-        openvas_label="OpenVAS (not installed)"
-    fi
 
     # Direct checklist for scan selection
     local selections
-    selections=$(tui_checklist "Scan Selection" "Select scans to run (space to toggle):" 22 70 8 \
+    selections=$(tui_checklist "Scan Selection" "Select scans to run (space to toggle):" 22 70 6 \
         "pii" "PII detection (SSN, phone, email, etc.)" "on" \
         "secrets" "Secrets detection (API keys, passwords)" "on" \
         "mac" "MAC address detection" "off" \
         "malware" "Malware scan (ClamAV)" "off" \
         "lynis" "System hardening audit (Lynis)" "off" \
-        "openvas" "$openvas_label" "$openvas_status" \
         "kev" "CISA KEV cross-reference" "off")
 
     if [ -z "$selections" ]; then
@@ -276,7 +266,6 @@ select_scans_tui() {
     [[ "$selections" =~ mac ]] && RUN_MAC=true
     [[ "$selections" =~ malware ]] && RUN_MALWARE=true
     [[ "$selections" =~ lynis ]] && RUN_LYNIS=true
-    [[ "$selections" =~ openvas ]] && RUN_OPENVAS=true
     [[ "$selections" =~ kev ]] && RUN_KEV=true
 
     # If malware selected, ask about full system scan
@@ -292,20 +281,6 @@ select_scans_tui() {
             LYNIS_PRIVILEGED=true
         fi
     fi
-
-    # If OpenVAS selected, ask about scan type
-    if [ "$RUN_OPENVAS" = true ]; then
-        if ! check_openvas_available; then
-            tui_msgbox "OpenVAS Not Available" "OpenVAS/GVM is not running.\n\nStart it with:\ndocker compose -f ~/greenbone-community-container/docker-compose.yml up -d"
-            RUN_OPENVAS=false
-        else
-            if tui_yesno "OpenVAS Scan Type" "Run full vulnerability scan?\n\n'Yes' = Full scan (30-60 min)\n'No' = Quick scan (5-15 min)"; then
-                OPENVAS_SCAN_TYPE="full"
-            else
-                OPENVAS_SCAN_TYPE="quick"
-            fi
-        fi
-    fi
 }
 
 select_scans_cli() {
@@ -316,11 +291,9 @@ select_scans_cli() {
     RUN_MALWARE=false
     RUN_KEV=false
     RUN_LYNIS=false
-    RUN_OPENVAS=false
     LYNIS_PRIVILEGED=false
     LYNIS_QUICK=false
     MALWARE_FULL_SYSTEM=false
-    OPENVAS_SCAN_TYPE="quick"
 
     echo -e "${BOLD}Select scans to run:${NC}"
     echo "  (Enter 'y' to enable, or just press Enter to skip)"
@@ -346,26 +319,12 @@ select_scans_cli() {
         read -r ans; [[ "$ans" =~ ^[Qq] ]] && LYNIS_QUICK=true || LYNIS_QUICK=false
     fi
 
-    # OpenVAS option
-    if check_openvas_available; then
-        echo -n "  OpenVAS network vulnerability scan? [y/N]: "
-        read -r ans
-        if [[ "$ans" =~ ^[Yy] ]]; then
-            RUN_OPENVAS=true
-            echo -n "    Quick scan or full scan? [q/F]: "
-            read -r ans
-            [[ "$ans" =~ ^[Ff] ]] && OPENVAS_SCAN_TYPE="full" || OPENVAS_SCAN_TYPE="quick"
-        fi
-    else
-        echo -e "  ${GRAY}OpenVAS (not installed - skipping)${NC}"
-    fi
-
     echo -n "  CISA KEV cross-reference? [y/N]: "
     read -r ans; [[ "$ans" =~ ^[Yy] ]] && RUN_KEV=true
 
     # Verify at least one scan selected
     if [ "$RUN_PII" = false ] && [ "$RUN_SECRETS" = false ] && [ "$RUN_MAC" = false ] && \
-       [ "$RUN_MALWARE" = false ] && [ "$RUN_LYNIS" = false ] && [ "$RUN_OPENVAS" = false ] && [ "$RUN_KEV" = false ]; then
+       [ "$RUN_MALWARE" = false ] && [ "$RUN_LYNIS" = false ] && [ "$RUN_KEV" = false ]; then
         print_error "No scans selected"
         exit 1
     fi
@@ -387,7 +346,6 @@ select_scans_cli() {
     log_transcript "MAC Address Detection: $RUN_MAC"
     log_transcript "Malware Scan: $RUN_MALWARE (Full System: $MALWARE_FULL_SYSTEM)"
     log_transcript "System Hardening Audit: $RUN_LYNIS (Privileged: $LYNIS_PRIVILEGED, Quick: $LYNIS_QUICK)"
-    log_transcript "OpenVAS Network Scan: $RUN_OPENVAS (Type: $OPENVAS_SCAN_TYPE)"
     log_transcript "CISA KEV Check: $RUN_KEV"
     log_transcript ""
 
@@ -546,45 +504,6 @@ run_local_scans() {
             echo ""
         else
             print_warning "Skipping Lynis audit (Lynis not installed - brew install lynis)"
-            ((skipped++))
-        fi
-    fi
-
-    # OpenVAS Network Vulnerability Scan
-    if [ "$RUN_OPENVAS" = true ]; then
-        if check_openvas_available; then
-            print_step "OpenVAS Network Vulnerability Scan [$OPENVAS_SCAN_TYPE]..."
-            echo "  Note: This scan may take 5-60 minutes depending on scan type"
-            echo ""
-
-            local openvas_exit=0
-            local scan_target="127.0.0.1"
-
-            # For local scans, scan localhost
-            if [ "$SCAN_SCOPE" = "full" ] || [ "$TARGET_DIR" = "/" ]; then
-                scan_target="127.0.0.1"
-            fi
-
-            # Ensure OpenVAS containers are running
-            if ! is_openvas_running; then
-                echo "  Starting OpenVAS containers..."
-                start_openvas
-            fi
-
-            # Run the scan
-            run_openvas_scan "$scan_target" "$SCAN_OUTPUT_DIR" "$(date -u +%Y-%m-%dT%H%M%SZ)" "$OPENVAS_SCAN_TYPE" || openvas_exit=$?
-
-            if [ "$openvas_exit" -eq 0 ]; then
-                print_success "OpenVAS scan completed (no high-severity findings)"
-                ((passed++))
-            else
-                print_warning "OpenVAS scan found vulnerabilities"
-                ((failed++))
-            fi
-            echo ""
-        else
-            print_warning "Skipping OpenVAS scan (not available)"
-            echo "  Start with: docker compose -f ~/greenbone-community-container/docker-compose.yml up -d"
             ((skipped++))
         fi
     fi

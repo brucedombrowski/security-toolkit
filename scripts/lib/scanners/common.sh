@@ -31,7 +31,6 @@ SCANNER_NC='\033[0m'
 
 # Scanner state (set by check_scanner_deps)
 SCANNER_RUN_NMAP=${SCANNER_RUN_NMAP:-true}
-SCANNER_RUN_OPENVAS=${SCANNER_RUN_OPENVAS:-true}
 SCANNER_RUN_LYNIS=${SCANNER_RUN_LYNIS:-true}
 
 # Output configuration
@@ -76,7 +75,7 @@ check_root() {
 
 # Check for required scanning tools
 # Usage: check_scanner_deps
-# Sets: SCANNER_RUN_NMAP, SCANNER_RUN_OPENVAS, SCANNER_RUN_LYNIS
+# Sets: SCANNER_RUN_NMAP, SCANNER_RUN_LYNIS
 # Returns: 0 if at least one tool available, 2 if none found
 check_scanner_deps() {
     local optional_tools=()
@@ -92,35 +91,6 @@ check_scanner_deps() {
         log_success "nmap: found"
     fi
 
-    # OpenVAS/GVM check - check CLI tools and Docker containers
-    local gvm_found=false
-    local gvm_method=""
-
-    # Check for gvm-cli in PATH
-    if command -v gvm-cli &> /dev/null; then
-        gvm_found=true
-        gvm_method="gvm-cli"
-    # Check for gvm-cli in Python framework (macOS pip install location)
-    elif [ -x "/Library/Frameworks/Python.framework/Versions/3.14/bin/gvm-cli" ]; then
-        gvm_found=true
-        gvm_method="gvm-cli (Python)"
-    # Check for legacy omp
-    elif command -v omp &> /dev/null; then
-        gvm_found=true
-        gvm_method="omp (OpenVAS)"
-    # Check for running Greenbone Docker containers
-    elif command -v docker &> /dev/null && docker ps 2>/dev/null | grep -q "greenbone"; then
-        gvm_found=true
-        gvm_method="Docker (Greenbone)"
-    fi
-
-    if [ "$gvm_found" = true ]; then
-        log_success "$gvm_method: installed"
-    else
-        optional_tools+=("openvas/gvm")
-        SCANNER_RUN_OPENVAS=false
-    fi
-
     # Lynis check
     if ! command -v lynis &> /dev/null; then
         optional_tools+=("lynis")
@@ -132,7 +102,7 @@ check_scanner_deps() {
     echo ""
 
     # Ensure at least one tool is available
-    if ! $SCANNER_RUN_NMAP && ! $SCANNER_RUN_OPENVAS && ! $SCANNER_RUN_LYNIS; then
+    if ! $SCANNER_RUN_NMAP && ! $SCANNER_RUN_LYNIS; then
         log_error "No vulnerability scanning tools found!"
         echo ""
         echo "Install at least one of the following:"

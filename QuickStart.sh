@@ -101,8 +101,6 @@ RUN_NMAP_PORTS="${RUN_NMAP_PORTS:-false}"
 RUN_NMAP_SERVICES="${RUN_NMAP_SERVICES:-false}"
 RUN_NMAP_OS="${RUN_NMAP_OS:-false}"
 RUN_NMAP_VULN="${RUN_NMAP_VULN:-false}"
-RUN_OPENVAS="${RUN_OPENVAS:-false}"
-OPENVAS_SCAN_TYPE="${OPENVAS_SCAN_TYPE:-quick}"
 
 # Host scan options (SSH/credentialed)
 RUN_HOST_INVENTORY="${RUN_HOST_INVENTORY:-false}"
@@ -115,7 +113,6 @@ RUN_REMOTE_INVENTORY="${RUN_REMOTE_INVENTORY:-false}"
 RUN_REMOTE_SECURITY="${RUN_REMOTE_SECURITY:-false}"
 RUN_REMOTE_LYNIS="${RUN_REMOTE_LYNIS:-false}"
 RUN_REMOTE_MALWARE="${RUN_REMOTE_MALWARE:-false}"
-RUN_REMOTE_OPENVAS="${RUN_REMOTE_OPENVAS:-false}"
 
 SKIP_SCAN_SELECTION="${SKIP_SCAN_SELECTION:-false}"
 
@@ -126,7 +123,6 @@ RUN_MAC=false
 RUN_MALWARE=false
 RUN_KEV=false
 RUN_LYNIS=false
-RUN_OPENVAS=false
 LYNIS_PRIVILEGED=false
 LYNIS_QUICK=false
 MALWARE_FULL_SYSTEM=false
@@ -156,13 +152,6 @@ source "$LIB_DIR/ui.sh"
 source "$LIB_DIR/deps.sh"
 source "$LIB_DIR/session.sh"
 source "$LIB_DIR/menus.sh"
-
-# Load OpenVAS credentials if available
-if [ -f "$SCRIPT_DIR/.openvas-creds" ]; then
-    source "$SCRIPT_DIR/.openvas-creds"
-fi
-
-source "$LIB_DIR/openvas.sh"
 
 # Scan type modules
 source "$LIB_DIR/host-scan.sh"

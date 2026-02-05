@@ -70,7 +70,6 @@
 #
 #   Options:
 #     -n, --nmap-only      Run only Nmap scans
-#     -o, --openvas-only   Run only OpenVAS scans
 #     -l, --lynis-only     Run only Lynis audit
 #     -q, --quick          Quick scan (reduced thoroughness)
 #     -f, --full           Full comprehensive scan (default)
@@ -129,7 +128,6 @@ TOOLKIT_SOURCE="${TOOLKIT_SOURCE:-unknown}"
 source "$SCRIPT_DIR/lib/scanners/common.sh"
 source "$SCRIPT_DIR/lib/scanners/nist-controls.sh"
 source "$SCRIPT_DIR/lib/scanners/nmap.sh"
-source "$SCRIPT_DIR/lib/scanners/openvas.sh"
 source "$SCRIPT_DIR/lib/scanners/lynis.sh"
 source "$SCRIPT_DIR/lib/scanners/report.sh"
 
@@ -149,7 +147,6 @@ HOSTNAME_SHORT=$(hostname -s 2>/dev/null || hostname)
 TARGET="127.0.0.1"
 SCAN_MODE="full"
 RUN_NMAP=true
-RUN_OPENVAS=true
 RUN_LYNIS=true
 REPORT_ONLY=false
 OUTPUT_DIR_ARG=""
@@ -163,18 +160,11 @@ main() {
     while [[ $# -gt 0 ]]; do
         case $1 in
             -n|--nmap-only)
-                RUN_OPENVAS=false
-                RUN_LYNIS=false
-                shift
-                ;;
-            -o|--openvas-only)
-                RUN_NMAP=false
                 RUN_LYNIS=false
                 shift
                 ;;
             -l|--lynis-only)
                 RUN_NMAP=false
-                RUN_OPENVAS=false
                 shift
                 ;;
             -q|--quick)
@@ -221,7 +211,6 @@ main() {
     # Update run flags from dependency check (only disable if tool not found)
     # Don't enable if explicitly disabled by command-line options
     $RUN_NMAP && RUN_NMAP=$SCANNER_RUN_NMAP
-    $RUN_OPENVAS && RUN_OPENVAS=$SCANNER_RUN_OPENVAS
     $RUN_LYNIS && RUN_LYNIS=$SCANNER_RUN_LYNIS
 
     # Initialize output directory
@@ -253,16 +242,6 @@ main() {
         fi
     fi
 
-    # Run OpenVAS if enabled
-    if $RUN_OPENVAS && ! $REPORT_ONLY; then
-        scan_count=$((scan_count + 1))
-        if run_openvas_scan "$TARGET" "$SCANNER_OUTPUT_DIR" "$TIMESTAMP" 2>&1 | tee -a "$SCANNER_REPORT_FILE"; then
-            pass_count=$((pass_count + 1))
-        else
-            overall_status=1
-        fi
-    fi
-
     # Run Lynis if enabled (always local)
     if $RUN_LYNIS && ! $REPORT_ONLY; then
         scan_count=$((scan_count + 1))
@@ -275,7 +254,7 @@ main() {
 
     # Generate compliance mapping
     generate_compliance_report "$SCANNER_REPORT_FILE" "$TIMESTAMP" "$TARGET" "$HOSTNAME_SHORT" \
-        "$SCAN_MODE" "$TOOLKIT_VERSION" "$TOOLKIT_COMMIT" "$RUN_NMAP" "$RUN_OPENVAS" "$RUN_LYNIS"
+        "$SCAN_MODE" "$TOOLKIT_VERSION" "$TOOLKIT_COMMIT" "$RUN_NMAP" "$RUN_LYNIS"
 
     # Print summary
     print_scan_summary "$scan_count" "$pass_count" "$SCANNER_REPORT_FILE" "$overall_status"

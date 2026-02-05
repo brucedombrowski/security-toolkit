@@ -176,20 +176,13 @@ select_remote_config() {
 
 # Scan selection for remote credentialed (SSH) scans
 select_remote_scans_ssh_tui() {
-    # Check if OpenVAS is available
-    local openvas_label="OpenVAS vulnerability scan"
-    if ! check_openvas_available; then
-        openvas_label="OpenVAS (not installed)"
-    fi
-
     local selections
-    selections=$(tui_checklist "Remote Scan Selection (SSH)" "Select scans to run on $REMOTE_HOST:" 20 70 8 \
+    selections=$(tui_checklist "Remote Scan Selection (SSH)" "Select scans to run on $REMOTE_HOST:" 20 70 7 \
         "inventory" "Host inventory (system info, packages)" "on" \
         "security" "Security configuration check" "on" \
         "malware" "Malware scan (ClamAV, if installed)" "on" \
         "lynis-quick" "Lynis audit - quick (~2 min)" "off" \
         "lynis-full" "Lynis audit - full (~10-15 min)" "off" \
-        "openvas" "$openvas_label" "off" \
         "ports" "Port scan (nmap from local)" "off" \
         "services" "Service version detection (nmap)" "off")
 
@@ -204,23 +197,8 @@ select_remote_scans_ssh_tui() {
     [[ "$selections" =~ malware ]] && RUN_REMOTE_MALWARE=true
     [[ "$selections" =~ lynis-quick ]] && RUN_REMOTE_LYNIS=true && LYNIS_MODE="quick"
     [[ "$selections" =~ lynis-full ]] && RUN_REMOTE_LYNIS=true && LYNIS_MODE="full"
-    [[ "$selections" =~ openvas ]] && RUN_REMOTE_OPENVAS=true
     [[ "$selections" =~ ports ]] && RUN_NMAP_PORTS=true
     [[ "$selections" =~ services ]] && RUN_NMAP_SERVICES=true
-
-    # If OpenVAS selected, ask about scan type
-    if [ "$RUN_REMOTE_OPENVAS" = true ]; then
-        if ! check_openvas_available; then
-            tui_msgbox "OpenVAS Not Available" "OpenVAS/GVM is not running.\n\nStart with:\ndocker compose -f ~/greenbone-community-container/docker-compose.yml up -d"
-            RUN_REMOTE_OPENVAS=false
-        else
-            if tui_yesno "OpenVAS Scan Type" "Run full vulnerability scan?\n\n'Yes' = Full scan (30-60 min)\n'No' = Quick scan (5-15 min)"; then
-                OPENVAS_SCAN_TYPE="full"
-            else
-                OPENVAS_SCAN_TYPE="quick"
-            fi
-        fi
-    fi
 }
 
 select_remote_scans_ssh_cli() {
@@ -248,26 +226,6 @@ select_remote_scans_ssh_cli() {
         done
     fi
 
-    # OpenVAS option
-    if check_openvas_available; then
-        echo -n "  OpenVAS vulnerability scan? [y/N]: "
-        read -r ans
-        if [[ "$ans" =~ ^[Yy] ]]; then
-            RUN_REMOTE_OPENVAS=true
-            while true; do
-                echo -n "    Full scan or quick? [f/Q]: "
-                read -r mode_ans
-                case "$mode_ans" in
-                    [Ff]) OPENVAS_SCAN_TYPE="full"; break ;;
-                    [Qq]|"") OPENVAS_SCAN_TYPE="quick"; break ;;
-                    *) echo "    Invalid option. Enter 'f' for full or 'q' for quick." ;;
-                esac
-            done
-        fi
-    else
-        echo -e "  ${GRAY}OpenVAS (not installed - skipping)${NC}"
-    fi
-
     echo -n "  Port scan (nmap from local)? [y/N]: "
     read -r ans && [[ "$ans" =~ ^[Yy] ]] && RUN_NMAP_PORTS=true
     echo -n "  Service version detection (nmap)? [y/N]: "
@@ -278,11 +236,10 @@ select_remote_scans_ssh_cli() {
 # Scan selection for remote uncredentialed (Nmap) scans
 select_remote_scans_nmap_tui() {
     local choice
-    choice=$(tui_menu "Network Scan Type" "Select scan type for $REMOTE_HOST:" 18 70 5 \
+    choice=$(tui_menu "Network Scan Type" "Select scan type for $REMOTE_HOST:" 18 70 4 \
         "quick" "Quick scan - Top 100 ports only" \
         "standard" "Standard scan - Top 1000 ports + services" \
         "full" "Full scan - All ports + OS detection + vuln scripts" \
-        "openvas" "OpenVAS - Deep CVE vulnerability scan" \
         "custom" "Custom - Select individual options")
 
     if [ -z "$choice" ]; then
@@ -304,39 +261,18 @@ select_remote_scans_nmap_tui() {
             RUN_NMAP_OS=true
             RUN_NMAP_VULN=true
             ;;
-        openvas)
-            if check_openvas_available; then
-                RUN_REMOTE_OPENVAS=true
-                if tui_yesno "OpenVAS Scan Type" "Run full vulnerability scan?\n\n'Yes' = Full scan (30-60 min)\n'No' = Quick scan (5-15 min)"; then
-                    OPENVAS_SCAN_TYPE="full"
-                else
-                    OPENVAS_SCAN_TYPE="quick"
-                fi
-            else
-                tui_msgbox "OpenVAS Not Available" "OpenVAS/GVM is not running.\n\nStart with:\ndocker compose -f ~/greenbone-community-container/docker-compose.yml up -d"
-                # Fall back to nmap full scan
-                RUN_NMAP_PORTS=true
-                RUN_NMAP_SERVICES=true
-                RUN_NMAP_VULN=true
-            fi
-            ;;
         custom)
             local selections
-            selections=$(tui_checklist "Custom Network Scan" "Select scan options:" 18 70 5 \
+            selections=$(tui_checklist "Custom Network Scan" "Select scan options:" 18 70 4 \
                 "ports" "Port scan (TCP)" "on" \
                 "services" "Service version detection (-sV)" "on" \
                 "os" "OS fingerprinting (-O, requires root)" "off" \
-                "vuln" "Vulnerability scripts (--script vuln)" "off" \
-                "openvas" "OpenVAS deep vulnerability scan" "off")
+                "vuln" "Vulnerability scripts (--script vuln)" "off")
 
             [[ "$selections" =~ ports ]] && RUN_NMAP_PORTS=true
             [[ "$selections" =~ services ]] && RUN_NMAP_SERVICES=true
             [[ "$selections" =~ os ]] && RUN_NMAP_OS=true
             [[ "$selections" =~ vuln ]] && RUN_NMAP_VULN=true
-            if [[ "$selections" =~ openvas ]] && check_openvas_available; then
-                RUN_REMOTE_OPENVAS=true
-                OPENVAS_SCAN_TYPE="quick"
-            fi
             ;;
     esac
 }
@@ -818,36 +754,6 @@ run_remote_ssh_scans() {
         fi
     fi
 
-    # OpenVAS Network Vulnerability Scan (runs locally against remote target)
-    if [ "$RUN_REMOTE_OPENVAS" = true ]; then
-        if check_openvas_available; then
-            print_step "OpenVAS Vulnerability Scan [$OPENVAS_SCAN_TYPE]..."
-            echo "  Target: $REMOTE_HOST"
-            echo "  Note: This scan may take 5-60 minutes"
-            echo ""
-
-            # Ensure OpenVAS containers are running
-            if ! is_openvas_running; then
-                echo "  Starting OpenVAS containers..."
-                start_openvas
-            fi
-
-            local openvas_exit=0
-            run_openvas_scan "$REMOTE_HOST" "$output_dir" "$timestamp" "$OPENVAS_SCAN_TYPE" || openvas_exit=$?
-
-            if [ "$openvas_exit" -eq 0 ]; then
-                print_success "OpenVAS scan completed (no high-severity findings)"
-                ((passed++)) || true
-            else
-                print_warning "OpenVAS scan found vulnerabilities"
-                ((failed++)) || true
-            fi
-        else
-            print_warning "OpenVAS not available - skipping"
-            ((skipped++)) || true
-        fi
-    fi
-
     echo ""
 
     SCANS_PASSED=$passed
@@ -876,36 +782,6 @@ run_remote_nmap_scans() {
             ((passed++)) || true
         else
             ((failed++)) || true
-        fi
-    fi
-
-    # OpenVAS Network Vulnerability Scan
-    if [ "$RUN_REMOTE_OPENVAS" = true ]; then
-        if check_openvas_available; then
-            print_step "OpenVAS Vulnerability Scan [$OPENVAS_SCAN_TYPE]..."
-            echo "  Target: $REMOTE_HOST"
-            echo "  Note: This scan may take 5-60 minutes"
-            echo ""
-
-            # Ensure OpenVAS containers are running
-            if ! is_openvas_running; then
-                echo "  Starting OpenVAS containers..."
-                start_openvas
-            fi
-
-            local openvas_exit=0
-            run_openvas_scan "$REMOTE_HOST" "$output_dir" "$timestamp" "$OPENVAS_SCAN_TYPE" || openvas_exit=$?
-
-            if [ "$openvas_exit" -eq 0 ]; then
-                print_success "OpenVAS scan completed (no high-severity findings)"
-                ((passed++)) || true
-            else
-                print_warning "OpenVAS scan found vulnerabilities"
-                ((failed++)) || true
-            fi
-        else
-            print_warning "OpenVAS not available - skipping"
-            ((skipped++)) || true
         fi
     fi
 
