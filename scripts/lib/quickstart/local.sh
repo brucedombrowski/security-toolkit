@@ -382,11 +382,13 @@ run_local_scans() {
 
     # PII Scan
     if [ "$RUN_PII" = true ]; then
-        print_step "PII Detection..."
+        spinner_start "PII Detection"
         if "$SCRIPTS_DIR/check-pii.sh" "$TARGET_DIR" > /dev/null 2>&1; then
+            spinner_stop
             print_success "PII scan passed"
             ((passed++))
         else
+            spinner_stop
             print_warning "PII scan found potential issues"
             ((failed++))
         fi
@@ -394,11 +396,13 @@ run_local_scans() {
 
     # Secrets Scan
     if [ "$RUN_SECRETS" = true ]; then
-        print_step "Secrets Detection..."
+        spinner_start "Secrets Detection"
         if "$SCRIPTS_DIR/check-secrets.sh" "$TARGET_DIR" > /dev/null 2>&1; then
+            spinner_stop
             print_success "Secrets scan passed"
             ((passed++))
         else
+            spinner_stop
             print_warning "Secrets scan found potential issues"
             ((failed++))
         fi
@@ -406,11 +410,13 @@ run_local_scans() {
 
     # MAC Address Scan
     if [ "$RUN_MAC" = true ]; then
-        print_step "MAC Address Scan..."
+        spinner_start "MAC Address Scan"
         if "$SCRIPTS_DIR/check-mac-addresses.sh" "$TARGET_DIR" > /dev/null 2>&1; then
+            spinner_stop
             print_success "MAC address scan passed"
             ((passed++))
         else
+            spinner_stop
             print_warning "MAC address scan found potential issues"
             ((failed++))
         fi
@@ -457,11 +463,12 @@ run_local_scans() {
 
     # KEV Check
     if [ "$RUN_KEV" = true ]; then
-        print_step "CISA KEV Check..."
+        spinner_start "CISA KEV Check"
         # Note: check-kev.sh expects a scan file, not a directory.
         # Call without args to use most recent scan in .scans/
         local kev_exit=0
         "$SCRIPTS_DIR/check-kev.sh" > /dev/null 2>&1 || kev_exit=$?
+        spinner_stop
         if [ "$kev_exit" -eq 0 ]; then
             print_success "KEV check passed (no known exploited vulnerabilities)"
             ((passed++))

@@ -152,6 +152,7 @@ source "$LIB_DIR/ui.sh"
 source "$LIB_DIR/deps.sh"
 source "$LIB_DIR/session.sh"
 source "$LIB_DIR/menus.sh"
+source "$SCRIPTS_DIR/lib/progress.sh"
 
 # Scan type modules
 source "$LIB_DIR/host-scan.sh"
