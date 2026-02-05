@@ -83,14 +83,10 @@ if [ -f "$SCRIPTS_DIR/lib/toolkit-info.sh" ]; then
     init_toolkit_info "$SCRIPT_DIR"
 fi
 
-# TUI detection (prefer gum, fall back to dialog/whiptail)
+# TUI detection (gum only, otherwise CLI mode)
 TUI_CMD=""
 if command -v gum &>/dev/null; then
     TUI_CMD="gum"
-elif command -v dialog &>/dev/null; then
-    TUI_CMD="dialog"
-elif command -v whiptail &>/dev/null; then
-    TUI_CMD="whiptail"
 fi
 
 # Check if TUI should be used (available, terminal is interactive, and not forced CLI)
@@ -161,7 +157,7 @@ print_error() {
 }
 
 # ============================================================================
-# TUI Functions (gum preferred, dialog/whiptail fallback)
+# TUI Functions (gum only, CLI fallback handled by use_tui check)
 # ============================================================================
 
 # Show a TUI menu and return the selected option
@@ -174,37 +170,24 @@ tui_menu() {
     local menu_height="$5"
     shift 5
 
+    # Build array of display items and tags
+    local -a items=()
+    while [ $# -ge 2 ]; do
+        items+=("$1|$2")
+        shift 2
+    done
+
+    echo -e "${BOLD}$title${NC}" >&2
+    [ -n "$prompt" ] && echo "$prompt" >&2
+    echo "" >&2
+
     local result
+    result=$(printf '%s\n' "${items[@]}" | gum choose --height="$menu_height" | cut -d'|' -f1)
+    local exit_code=$?
 
-    if [ "$TUI_CMD" = "gum" ]; then
-        # Build array of display items and tags
-        local -a tags=()
-        local -a items=()
-        while [ $# -ge 2 ]; do
-            tags+=("$1")
-            items+=("$1|$2")
-            shift 2
-        done
-
-        echo -e "${BOLD}$title${NC}" >&2
-        [ -n "$prompt" ] && echo "$prompt" >&2
-        echo "" >&2
-
-        result=$(printf '%s\n' "${items[@]}" | gum choose --height="$menu_height" | cut -d'|' -f1)
-        local exit_code=$?
-
-        if [ $exit_code -ne 0 ] || [ -z "$result" ]; then
-            echo ""
-            return 1
-        fi
-    else
-        result=$($TUI_CMD --title "$title" --menu "$prompt" "$height" "$width" "$menu_height" "$@" 3>&1 1>&2 2>&3)
-        local exit_code=$?
-
-        if [ $exit_code -ne 0 ]; then
-            echo ""
-            return 1
-        fi
+    if [ $exit_code -ne 0 ] || [ -z "$result" ]; then
+        echo ""
+        return 1
     fi
 
     echo "$result"
@@ -218,25 +201,14 @@ tui_input() {
     local prompt="$2"
     local default="$3"
 
+    echo -e "${BOLD}$title${NC}" >&2
     local result
+    result=$(gum input --placeholder "$prompt" --value "$default")
+    local exit_code=$?
 
-    if [ "$TUI_CMD" = "gum" ]; then
-        echo -e "${BOLD}$title${NC}" >&2
-        result=$(gum input --placeholder "$prompt" --value "$default")
-        local exit_code=$?
-
-        if [ $exit_code -ne 0 ]; then
-            echo ""
-            return 1
-        fi
-    else
-        result=$($TUI_CMD --title "$title" --inputbox "$prompt" 10 60 "$default" 3>&1 1>&2 2>&3)
-        local exit_code=$?
-
-        if [ $exit_code -ne 0 ]; then
-            echo ""
-            return 1
-        fi
+    if [ $exit_code -ne 0 ]; then
+        echo ""
+        return 1
     fi
 
     echo "$result"
@@ -253,68 +225,52 @@ tui_checklist() {
     local list_height="$5"
     shift 5
 
+    # Build array of items, tracking which are pre-selected
+    local -a items=()
+    local -a selected=()
+    while [ $# -ge 3 ]; do
+        local tag="$1"
+        local desc="$2"
+        local state="$3"
+        items+=("$tag|$desc")
+        if [ "$state" = "on" ] || [ "$state" = "ON" ]; then
+            selected+=("$tag|$desc")
+        fi
+        shift 3
+    done
+
+    echo -e "${BOLD}$title${NC}" >&2
+    [ -n "$prompt" ] && echo "$prompt" >&2
+    echo "" >&2
+
+    # Build selected args
+    local -a gum_args=(--no-limit --height="$list_height")
+    for sel in "${selected[@]}"; do
+        gum_args+=(--selected="$sel")
+    done
+
     local result
+    result=$(printf '%s\n' "${items[@]}" | gum choose "${gum_args[@]}" | cut -d'|' -f1 | tr '\n' ' ')
+    local exit_code=$?
 
-    if [ "$TUI_CMD" = "gum" ]; then
-        # Build array of items, tracking which are pre-selected
-        local -a items=()
-        local -a selected=()
-        while [ $# -ge 3 ]; do
-            local tag="$1"
-            local desc="$2"
-            local state="$3"
-            items+=("$tag|$desc")
-            if [ "$state" = "on" ] || [ "$state" = "ON" ]; then
-                selected+=("$tag|$desc")
-            fi
-            shift 3
-        done
-
-        echo -e "${BOLD}$title${NC}" >&2
-        [ -n "$prompt" ] && echo "$prompt" >&2
-        echo "" >&2
-
-        # Build selected args
-        local -a gum_args=(--no-limit --height="$list_height")
-        for sel in "${selected[@]}"; do
-            gum_args+=(--selected="$sel")
-        done
-
-        result=$(printf '%s\n' "${items[@]}" | gum choose "${gum_args[@]}" | cut -d'|' -f1 | tr '\n' ' ')
-        local exit_code=$?
-
-        if [ $exit_code -ne 0 ]; then
-            echo ""
-            return 1
-        fi
-    else
-        result=$($TUI_CMD --title "$title" --checklist "$prompt" "$height" "$width" "$list_height" "$@" 3>&1 1>&2 2>&3)
-        local exit_code=$?
-
-        if [ $exit_code -ne 0 ]; then
-            echo ""
-            return 1
-        fi
+    if [ $exit_code -ne 0 ]; then
+        echo ""
+        return 1
     fi
 
     echo "$result"
     return 0
 }
 
-# Show a TUI yes/no dialog
+# Show a TUI yes/no confirmation
 # Usage: tui_yesno "title" "prompt"
 tui_yesno() {
     local title="$1"
     local prompt="$2"
 
-    if [ "$TUI_CMD" = "gum" ]; then
-        echo -e "${BOLD}$title${NC}" >&2
-        gum confirm "$prompt"
-        return $?
-    else
-        $TUI_CMD --title "$title" --yesno "$prompt" 10 60
-        return $?
-    fi
+    echo -e "${BOLD}$title${NC}" >&2
+    gum confirm "$prompt"
+    return $?
 }
 
 # Show a TUI message box
@@ -323,14 +279,10 @@ tui_msgbox() {
     local title="$1"
     local message="$2"
 
-    if [ "$TUI_CMD" = "gum" ]; then
-        echo ""
-        gum style --border normal --padding "1 2" --border-foreground 212 "$title" "" "$message"
-        echo ""
-        read -rp "Press Enter to continue..."
-    else
-        $TUI_CMD --title "$title" --msgbox "$message" 12 70
-    fi
+    echo ""
+    gum style --border normal --padding "1 2" --border-foreground 212 "$title" "" "$message"
+    echo ""
+    read -rp "Press Enter to continue..."
 }
 
 check_dependency() {
@@ -441,7 +393,7 @@ declare_dependency_categories() {
     DEPS_REMOTE_DESC=("Network vulnerability scanning" "Remote host access")
     DEPS_REMOTE_PKG=("nmap" "openssh")
 
-    # UI enhancement (gum preferred, dialog fallback)
+    # UI enhancement (gum for TUI, otherwise CLI mode)
     DEPS_UI_CMD=("gum")
     DEPS_UI_NAME=("gum")
     DEPS_UI_DESC=("Modern TUI (brew install gum)")
@@ -539,10 +491,6 @@ check_dependencies() {
             # Re-check TUI after potential install
             if command -v gum &>/dev/null; then
                 TUI_CMD="gum"
-            elif command -v dialog &>/dev/null; then
-                TUI_CMD="dialog"
-            elif command -v whiptail &>/dev/null; then
-                TUI_CMD="whiptail"
             fi
         fi
     fi
@@ -1768,7 +1716,7 @@ select_scans_tui() {
                 exit 1
             fi
 
-            # Parse selections (dialog returns quoted strings)
+            # Parse selections
             [[ "$selections" =~ pii ]] && RUN_PII=true
             [[ "$selections" =~ secrets ]] && RUN_SECRETS=true
             [[ "$selections" =~ mac ]] && RUN_MAC=true
