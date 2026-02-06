@@ -106,7 +106,9 @@ RUN_NMAP_VULN="${RUN_NMAP_VULN:-false}"
 RUN_HOST_INVENTORY="${RUN_HOST_INVENTORY:-false}"
 RUN_HOST_SECURITY="${RUN_HOST_SECURITY:-false}"
 RUN_HOST_LYNIS="${RUN_HOST_LYNIS:-false}"
+RUN_HOST_MALWARE="${RUN_HOST_MALWARE:-false}"
 LYNIS_MODE="${LYNIS_MODE:-quick}"
+MALWARE_SCAN_PATHS="${MALWARE_SCAN_PATHS:-~/}"  # Space-separated paths for ClamAV
 
 # Legacy remote scan options (for backward compatibility)
 RUN_REMOTE_INVENTORY="${RUN_REMOTE_INVENTORY:-false}"

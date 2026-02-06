@@ -431,11 +431,13 @@ run_ssh_host_scans() {
                 ssh_cmd "clamscan --version" 2>/dev/null || echo "(version unavailable)"
                 echo ""
                 echo "--- Scan Results ---"
+                local scan_paths="${MALWARE_SCAN_PATHS:-~/}"
+                echo "Scan paths: $scan_paths"
                 ssh_cmd "clamscan --recursive --infected \
                     --exclude-dir='.git' \
                     --exclude-dir='node_modules' \
                     --exclude-dir='.cache' \
-                    ~/ 2>&1" 2>/dev/null || echo "(scan completed)"
+                    $scan_paths 2>&1" 2>/dev/null || echo "(scan completed)"
             } > "$malware_file" 2>&1
 
             # Check for errors first (no database, etc.)
@@ -478,11 +480,13 @@ run_ssh_host_scans() {
                         ssh_cmd "clamscan --version" 2>/dev/null || echo "(version unavailable)"
                         echo ""
                         echo "--- Scan Results ---"
+                        local scan_paths="${MALWARE_SCAN_PATHS:-~/}"
+                        echo "Scan paths: $scan_paths"
                         ssh_cmd "clamscan --recursive --infected \
                             --exclude-dir='.git' \
                             --exclude-dir='node_modules' \
                             --exclude-dir='.cache' \
-                            ~/ 2>&1" 2>/dev/null || echo "(scan completed)"
+                            $scan_paths 2>&1" 2>/dev/null || echo "(scan completed)"
                     } > "$malware_file" 2>&1
 
                     # Check for errors first (no database, etc.)

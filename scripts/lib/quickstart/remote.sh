@@ -664,15 +664,16 @@ run_remote_ssh_scans() {
                 echo ""
 
                 echo "--- Scan Results ---"
-                echo "Scanning home directory with common exclusions..."
+                local scan_paths="${MALWARE_SCAN_PATHS:-~/}"
+                echo "Scan paths: $scan_paths"
                 echo ""
-                # Scan home directory, show only infected files, limit output
+                # Scan target paths, show only infected files
                 ssh_cmd "clamscan --recursive --infected \
                     --exclude-dir='.git' \
                     --exclude-dir='node_modules' \
                     --exclude-dir='.cache' \
                     --exclude-dir='.local/share/Trash' \
-                    ~/ 2>&1" 2>/dev/null || echo "(scan completed with warnings)"
+                    $scan_paths 2>&1" 2>/dev/null || echo "(scan completed with warnings)"
 
             } > "$malware_file" 2>&1
 
@@ -726,11 +727,13 @@ run_remote_ssh_scans() {
                         ssh_cmd "clamscan --version" 2>/dev/null || echo "(version check failed)"
                         echo ""
                         echo "--- Scan Results ---"
+                        local scan_paths="${MALWARE_SCAN_PATHS:-~/}"
+                        echo "Scan paths: $scan_paths"
                         ssh_cmd "clamscan --recursive --infected \
                             --exclude-dir='.git' \
                             --exclude-dir='node_modules' \
                             --exclude-dir='.cache' \
-                            ~/ 2>&1" 2>/dev/null || echo "(scan completed)"
+                            $scan_paths 2>&1" 2>/dev/null || echo "(scan completed)"
                     } > "$malware_file" 2>&1
 
                     # Check for errors first (no database, etc.)
