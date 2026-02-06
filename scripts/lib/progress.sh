@@ -69,8 +69,14 @@ spinner_start() {
     ) &
     SPINNER_PID=$!
 
-    # Ensure cleanup on script exit
-    trap 'spinner_stop 2>/dev/null' EXIT
+    # Ensure cleanup on script exit (append to existing EXIT trap)
+    local existing_trap
+    existing_trap=$(trap -p EXIT | sed "s/^trap -- '//;s/' EXIT$//" || true)
+    if [ -n "$existing_trap" ]; then
+        trap "${existing_trap}; spinner_stop 2>/dev/null" EXIT
+    else
+        trap 'spinner_stop 2>/dev/null' EXIT
+    fi
 }
 
 # Stop the spinner
