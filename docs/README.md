@@ -11,6 +11,7 @@ Supplementary documentation for the Security Verification Toolkit.
 | [BASH-SET-E-PITFALLS.md](BASH-SET-E-PITFALLS.md) | `set -e` and arithmetic pitfalls (required reading for contributors) |
 | [BRANCH-PROTECTION.md](BRANCH-PROTECTION.md) | GitHub branch protection configuration |
 | [DEMO-CHEAT-SHEET.md](DEMO-CHEAT-SHEET.md) | Demo walkthrough: Kali → Ubuntu SSH remote scan |
+| [DEMO-PLANTED-FINDINGS.md](DEMO-PLANTED-FINDINGS.md) | Planted demo findings: what they are, why, and proof they're not real |
 | [COMPLIANCE.md](COMPLIANCE.md) | NIST control mapping and compliance workflow |
 | [DEPENDENCIES.md](DEPENDENCIES.md) | Toolkit dependency requirements and versions |
 | [EXECUTIVE-BRIEF.md](EXECUTIVE-BRIEF.md) | High-level overview for stakeholders |
