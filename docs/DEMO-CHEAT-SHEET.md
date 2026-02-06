@@ -157,87 +157,124 @@ The script prompts for the target's public key and endpoint, generates a local k
 - Use **ephemeral + single-use** auth keys (auto-expire, can't be reused)
 - Live boot destroys everything on reboot
 
-## Demo Flow (On Kali)
+## Config-Driven Scanning
 
-### Step 1: Launch QuickStart
+The toolkit supports config files that define the complete scan profile — target, credentials, which scans to run, and how aggressive each scan should be. This eliminates interactive prompts and ensures repeatable, consistent scans.
+
+### Using a Config File
 
 ```bash
 cd ~/Security
-./QuickStart.sh
+./QuickStart.sh demo_target.conf
 ```
 
-### Step 2: Select Remote Scan
+The config file replaces all interactive prompts. QuickStart prints `(from config)` next to each setting so the audience sees exactly where the values come from.
+
+### Config File Reference
+
+```bash
+# ── Target ──────────────────────────────────────────────
+SCAN_TYPE=host                    # "host" or "repo"
+TARGET_HOST=10.0.0.244            # IP or hostname
+TARGET_LOCATION=remote            # "remote" or "local"
+AUTH_MODE=credentialed             # "credentialed" or "uncredentialed"
+REMOTE_USER=payload               # SSH username
+PROJECT_NAME="My Project"         # Label for reports
+
+# ── Scan Selection ──────────────────────────────────────
+SKIP_SCAN_SELECTION=true           # Skip interactive menu
+
+# SSH/credentialed scans
+RUN_HOST_INVENTORY=true            # System info, packages (CM-8)
+RUN_HOST_SECURITY=true             # SSH config, firewall (CM-6)
+RUN_HOST_POWER=true                # Sleep/hibernate settings
+RUN_HOST_LYNIS=true                # Lynis security audit (CA-2)
+RUN_HOST_MALWARE=true              # ClamAV malware scan (SI-3)
+RUN_HOST_KEV=true                  # CISA KEV cross-reference (RA-5)
+
+# Network scans
+RUN_NMAP_PORTS=true                # Port scan
+RUN_NMAP_SERVICES=true             # Service version detection (-sV)
+RUN_NMAP_OS=true                   # OS fingerprinting (-O, needs root)
+RUN_NMAP_VULN=true                 # Vulnerability scripts (--script vuln)
+
+# ── Scan Options ────────────────────────────────────────
+LYNIS_MODE=full                    # "full" (~10 min) or "quick" (~2 min)
+```
+
+### Customizing for Your Project
+
+Other teams can copy `demo_target.conf` and modify it for their environment:
+
+```bash
+cp demo_target.conf my_project.conf
+# Edit: set your target IP, username, and which scans matter
+./QuickStart.sh my_project.conf
+```
+
+**Demo talking point:** "This config file is how you adapt the toolkit to your project. Point it at your server, choose which NIST controls to verify, and run. Every scan is repeatable and auditable."
+
+## Demo Flow (On Kali)
+
+### Step 1: Launch QuickStart with Config
+
+```bash
+cd ~/Security
+./QuickStart.sh demo_target.conf
+```
+
+**Demo talking point:** "The config defines our target, credentials, and scan profile. No manual menu navigation — it's repeatable and scriptable for CI/CD."
+
+### Step 2: Enter SSH Password
+
+The only interactive prompt is the SSH password:
 
 ```
-Main Menu → Remote Scan → Credentialed (SSH)
+payload@10.0.0.244's password: 11111111
 ```
 
-Enter when prompted:
-- **Target IP/hostname**: `<ubuntu-ip>` (shown in banner on target)
-- **SSH username**: `payload`
-- **SSH password**: `11111111`
+**Demo talking point:** "We authenticate once. The toolkit multiplexes the SSH connection so every subsequent scan reuses it — no repeated password prompts."
 
-### Step 3: Select Scan Types
-
-Select all of the following:
-- Host Inventory (CM-8)
-- Host Security Check (CM-6)
-- Malware Scan (SI-3)
-- Lynis Quick Audit (CA-2)
-- Port Scan (RA-5)
-
-### Step 4: Install Dependencies on Target
-
-The toolkit will detect that the fresh Ubuntu target is missing ClamAV and Lynis:
-
-```
-ClamAV not found on target. Install? [y/N]  → y
-Lynis not found on target. Install? [y/N]   → y
-```
-
-**Demo talking point:** The toolkit handles dependency installation on remote targets over SSH, including preserving the sudo password prompt while filtering apt output.
-
-### Step 5: Scans Execute
+### Step 3: Scans Execute
 
 The following scans run in sequence:
 
-| Scan | What Happens | Duration |
-|------|-------------|----------|
-| Host Inventory | Collects OS, packages, network info from Ubuntu | ~10s |
-| Host Security | Checks SSH config, firewall, permissions | ~15s |
-| Malware Scan | ClamAV scans the target filesystem | 1-5 min |
-| Lynis Audit | Security hardening audit on Ubuntu | 2-5 min |
-| Nmap Port Scan | Network scan from Kali → Ubuntu | 1-3 min |
+| Scan | What Happens | Duration | Audience Value |
+|------|-------------|----------|----------------|
+| Host Inventory | Collects OS, packages, network info | ~10s | Quick, shows CUI handling |
+| Host Security | Checks SSH config, firewall, permissions | ~15s | Finds planted weaknesses |
+| Power Settings | Sleep/hibernate check | ~5s | Quick |
+| Lynis Audit | Full security hardening audit | ~2-5 min | Excellent — fills screen with findings |
+| Malware Scan | ClamAV scans target | 1-15 min | Finds EICAR test samples |
+| Nmap Port Scan | Network scan from Kali to target | 1-5 min | Finds open ports and services |
+| KEV Check | Cross-reference nmap CVEs against CISA KEV | ~5s | Shows threat intelligence integration |
 
-### Step 6: Review Output
+### Step 4: Review Output
 
 ```bash
-ls -la .scans/
+ls -la .scans/Scan*/
 ```
 
 Output includes:
-- `host-inventory-<timestamp>.txt` — System inventory (CUI)
+- `host-inventory-<timestamp>.txt` — System inventory (CUI-marked, mode 600)
 - `host-security-<timestamp>.txt` — Security posture findings
-- `malware-scan-<timestamp>.txt` — ClamAV results
-- `lynis-audit-<timestamp>.txt` — Hardening score and findings
-- `nmap-<timestamp>.txt` — Open ports and services
-- `audit-log-<timestamp>.jsonl` — Machine-readable audit trail
+- `host-lynis-<timestamp>.txt` — Hardening score and suggestions
+- `host-malware-<timestamp>.txt` — ClamAV results with EICAR detections
+- `nmap-ports-<timestamp>.txt` — Open ports, services, vulnerabilities
+- `host-kev-<timestamp>.txt` — CISA KEV cross-reference results
+- `scan-attestation-<timestamp>.pdf` — Signed attestation with checksums
 
-### Step 7: Generate Attestation PDF
+### Step 5: Attestation PDF
 
-```
-Generate attestation? [Y/n] → y
-```
+**Demo talking point:** "The PDF includes SHA256 checksums, toolkit version, scan timestamps, and NIST control mappings — everything needed for an audit package."
 
-**Demo talking point:** The PDF includes SHA256 checksums, toolkit version, scan timestamps, and NIST control mappings — everything needed for an audit package.
-
-### Step 8: Cleanup Prompt
+### Step 6: Cleanup Prompt
 
 ```
 Remove packages installed during scan (ClamAV, Lynis)? [y/N] → y
 ```
 
-**Demo talking point:** "Leave no trace" — the toolkit offers to uninstall any packages it installed on the target, returning the system to its pre-scan state. This is critical for production systems where you don't want scanner artifacts left behind.
+**Demo talking point:** "Leave no trace — the toolkit offers to uninstall any packages it installed on the target, returning the system to its pre-scan state."
 
 ## Key Demo Talking Points
 
@@ -254,12 +291,17 @@ Remove packages installed during scan (ClamAV, Lynis)? [y/N] → y
 
 | Problem | Quick Fix |
 |---------|-----------|
+| SSH host key changed | Fixed automatically — `~/.ssh/config` skips strict checking for `10.0.0.*` |
 | SSH connection refused | Re-run the one-liner on target |
 | Permission denied | Username: `payload`, Password: `11111111` |
-| Nmap scan slow | Use quick mode if time-constrained |
+| Multiple password prompts for Lynis | Known issue (#155) — `sudo -v` opens separate SSH connection |
+| Nmap hangs on sudo prompt | Fixed in v2.5.3+ — auto-skips `-O` when not root |
+| ClamAV scan appears frozen | Expected — `--infected` flag only shows hits, scan is running (#156) |
+| ClamAV scan takes too long | Full disk scan can take 5-15 min; consider scoping to target dirs (#157) |
+| Lynis "can't find include dir" | Install from CISOfy repo, not apt default (fixed in v2.5.1+ bootstrap) |
+| KEV check skipped | Fixed in v2.5.2+ — KEV now runs after nmap instead of before |
 | ClamAV database missing | `sudo freshclam` on target (requires internet) |
 | pdflatex not found | `sudo apt install texlive-latex-base` on Kali |
-| Script hangs on input | Ensure `/dev/tty` fixes are applied (#134) |
 | Tailscale auth key rejected | Generate a new key — single-use keys expire after one use |
 | WireGuard tunnel no traffic | Ensure peer public keys are exchanged on both sides |
 | Can't reach target over VPN | Verify both sides show tunnel IP: `tailscale ip` or `wg show` |

@@ -34,6 +34,7 @@ RUN_HOST_LYNIS="${RUN_HOST_LYNIS:-false}"
 RUN_HOST_MALWARE="${RUN_HOST_MALWARE:-false}"
 RUN_HOST_KEV="${RUN_HOST_KEV:-false}"
 LYNIS_MODE="${LYNIS_MODE:-quick}"
+MALWARE_SCAN_PATHS="${MALWARE_SCAN_PATHS:-/home /tmp /var /opt /root}"
 
 # Track installed packages (for cleanup)
 INSTALLED_LYNIS="${INSTALLED_LYNIS:-false}"
@@ -352,9 +353,9 @@ run_ssh_host_scans() {
             local lynis_opts="--quick"
             [ "$LYNIS_MODE" = "full" ] && lynis_opts="" || true
 
-            # Cache sudo credentials via direct SSH (bypass ControlMaster for clean TTY)
+            # Cache sudo credentials via ControlMaster connection
             echo "  Authenticating sudo on remote host..."
-            ssh -t "$REMOTE_USER@$REMOTE_HOST" "sudo -v" || true
+            ssh_cmd_sudo "sudo -v" || true
 
             {
                 echo "Remote Lynis Security Audit"
@@ -464,13 +465,10 @@ run_ssh_host_scans() {
                 echo ""
                 echo "--- Scan Results ---"
             } > "$malware_file"
+            echo "Scan paths: $MALWARE_SCAN_PATHS" | tee -a "$malware_file"
+            echo "" | tee -a "$malware_file"
             ssh_cmd "clamscan --recursive --infected \
-                --exclude-dir='^/proc' \
-                --exclude-dir='^/sys' \
-                --exclude-dir='^/dev' \
-                --exclude-dir='^/run' \
-                --exclude-dir='^/snap' \
-                / 2>&1" 2>/dev/null | tee -a "$malware_file" || true
+                $MALWARE_SCAN_PATHS 2>&1" 2>/dev/null | tee -a "$malware_file" || true
 
             # Check for errors first (no database, etc.)
             if grep -q "No supported database files found\|cli_loaddbdir" "$malware_file" 2>/dev/null; then
@@ -515,13 +513,10 @@ run_ssh_host_scans() {
                         echo ""
                         echo "--- Scan Results ---"
                     } > "$malware_file"
+                    echo "Scan paths: $MALWARE_SCAN_PATHS" | tee -a "$malware_file"
+                    echo "" | tee -a "$malware_file"
                     ssh_cmd "clamscan --recursive --infected \
-                        --exclude-dir='^/proc' \
-                        --exclude-dir='^/sys' \
-                        --exclude-dir='^/dev' \
-                        --exclude-dir='^/run' \
-                        --exclude-dir='^/snap' \
-                        / 2>&1" 2>/dev/null | tee -a "$malware_file" || true
+                        $MALWARE_SCAN_PATHS 2>&1" 2>/dev/null | tee -a "$malware_file" || true
 
                     # Check for errors first (no database, etc.)
                     if grep -q "No supported database files found\|cli_loaddbdir" "$malware_file" 2>/dev/null; then
