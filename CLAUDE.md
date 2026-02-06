@@ -598,6 +598,9 @@ Allowlist entries use SHA256 hash of `file:line:content` for integrity verificat
 ### CUI Sensitivity
 Host inventory contains Controlled Unclassified Information (MAC addresses, serial numbers, software versions). Never expose in logs, tests, or examples.
 
+### Bash `set -e` and Arithmetic
+Never use `((count++))` — it silently kills scripts under `set -e` when the variable is zero. Use `count=$((count + 1))` instead. See [docs/BASH-SET-E-PITFALLS.md](docs/BASH-SET-E-PITFALLS.md) for the full explanation and safe patterns.
+
 ### Known Limitations
 
 1. **False Positives**: Use `.allowlists/` to suppress known-good matches

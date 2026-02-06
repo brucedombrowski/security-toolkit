@@ -367,3 +367,4 @@ git checkout tests/fixtures/.gitkeep 2>/dev/null || true
 4. **Keep tests fast** - Avoid unnecessary sleeps or large file operations
 5. **Test exit codes** - Scripts should exit `0` on success, `1` on failure
 6. **Mirror production patterns** - Use the same regex patterns as the production scripts
+7. **Use safe arithmetic** - Never use `((count++))` in test scripts; use `count=$((count + 1))` instead. See [BASH-SET-E-PITFALLS.md](BASH-SET-E-PITFALLS.md) for why
