@@ -359,10 +359,11 @@ install_scan_deps() {
             rm -rf /opt/lynis /tmp/lynis.tar.gz 2>/dev/null || true
             local lynis_url="https://github.com/CISOfy/lynis/archive/refs/heads/master.tar.gz"
             local lynis_downloaded=false
-            # Try with SSL verification first, then without (live boot may have stale certs)
-            if wget -qO /tmp/lynis.tar.gz "$lynis_url" 2>>"$LOG_FILE"; then
+            # Verbose download so we can see what's failing
+            log_step "wget -v -O /tmp/lynis.tar.gz $lynis_url"
+            if wget -v -O /tmp/lynis.tar.gz "$lynis_url" 2>&1 | tee -a "$LOG_FILE"; then
                 lynis_downloaded=true
-            elif wget --no-check-certificate -qO /tmp/lynis.tar.gz "$lynis_url" 2>>"$LOG_FILE"; then
+            elif wget --no-check-certificate -v -O /tmp/lynis.tar.gz "$lynis_url" 2>&1 | tee -a "$LOG_FILE"; then
                 lynis_downloaded=true
                 log_warn "Lynis downloaded with --no-check-certificate (stale CA certs on live boot)"
             fi
