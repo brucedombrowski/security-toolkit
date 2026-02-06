@@ -183,7 +183,12 @@ echo "  4. BE IRREVERSIBLE (unless you have backups)"
 echo ""
 echo "Please review the file list above carefully."
 echo ""
-read -p "Type exactly 'yes' to confirm purge (or anything else to cancel): " confirmation
+# Use /dev/tty for interactive input unless in test mode
+if [ -n "${TESTING:-}" ]; then
+    read -p "Type exactly 'yes' to confirm purge (or anything else to cancel): " confirmation
+else
+    read -p "Type exactly 'yes' to confirm purge (or anything else to cancel): " confirmation </dev/tty
+fi
 
 if [ "$confirmation" != "yes" ]; then
     echo ""

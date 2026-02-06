@@ -141,7 +141,7 @@ check_docker_status() {
 
             # Give user a chance to start Docker if running interactively
             if [ "$INTERACTIVE" -eq 1 ] && [ -t 0 ]; then
-                read -p "Press Enter to continue without Docker, or start Docker and press Enter... " -r
+                read -p "Press Enter to continue without Docker, or start Docker and press Enter... " -r </dev/tty
                 echo ""
                 # Check again after user had a chance to start it
                 if docker info &>/dev/null 2>&1; then
@@ -247,7 +247,7 @@ if [ -d "$SCANS_DIR" ]; then
         echo ""
         
         # Require explicit confirmation
-        read -p "Delete previous scan results? Type 'yes' to confirm: " confirm
+        read -p "Delete previous scan results? Type 'yes' to confirm: " confirm </dev/tty
         if [ "$confirm" != "yes" ]; then
             echo "Preserving existing scan results. Exiting."
             exit 0

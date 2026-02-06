@@ -7,6 +7,9 @@
 
 set -eu
 
+# Enable test mode for scripts that check for interactive input
+export TESTING=1
+
 # Color codes
 RED='\033[0;31m'
 GREEN='\033[0;32m'

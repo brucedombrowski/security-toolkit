@@ -166,7 +166,7 @@ if [ "$FORCE" = false ]; then
     echo ""
     echo "This operation is IRREVERSIBLE."
     echo ""
-    read -p "Type 'DELETE' to confirm: " confirmation
+    read -p "Type 'DELETE' to confirm: " confirmation </dev/tty
     if [ "$confirmation" != "DELETE" ]; then
         echo "Aborted."
         exit 0

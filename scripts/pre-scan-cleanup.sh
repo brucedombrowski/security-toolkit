@@ -247,7 +247,7 @@ if [ "$AGGRESSIVE" -eq 1 ] && [ "$QUIET" -eq 0 ]; then
     echo ""
     if [ "$DRY_RUN" -eq 0 ]; then
         echo -n "Continue? [y/N] "
-        read -r confirm
+        read -r confirm </dev/tty
         if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
             echo "Aborted."
             exit 0

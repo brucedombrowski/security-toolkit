@@ -177,7 +177,7 @@ main() {
         echo ""
         git -C "$REPO_ROOT" status --short
         echo ""
-        read -p "Continue anyway? (y/N) " -n 1 -r
+        read -p "Continue anyway? (y/N) " -n 1 -r </dev/tty
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             print_info "Upgrade cancelled"
@@ -195,7 +195,7 @@ main() {
     fi
 
     # Confirm upgrade
-    read -p "Apply these updates? (y/N) " -n 1 -r
+    read -p "Apply these updates? (y/N) " -n 1 -r </dev/tty
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         print_info "Upgrade cancelled"
