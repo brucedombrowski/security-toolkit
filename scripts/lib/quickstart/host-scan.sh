@@ -352,9 +352,9 @@ run_ssh_host_scans() {
             local lynis_opts="--quick"
             [ "$LYNIS_MODE" = "full" ] && lynis_opts="" || true
 
-            # Cache sudo credentials first (TTY works here — no pipe)
+            # Cache sudo credentials via direct SSH (bypass ControlMaster for clean TTY)
             echo "  Authenticating sudo on remote host..."
-            ssh_cmd_sudo "sudo -v" 2>/dev/null || true
+            ssh -t "$REMOTE_USER@$REMOTE_HOST" "sudo -v" || true
 
             {
                 echo "Remote Lynis Security Audit"
@@ -399,7 +399,7 @@ run_ssh_host_scans() {
                     [ "$LYNIS_MODE" = "full" ] && lynis_opts="" || true
 
                     # sudo credentials should be cached from install, but refresh
-                    ssh_cmd_sudo "sudo -v" 2>/dev/null || true
+                    ssh -t "$REMOTE_USER@$REMOTE_HOST" "sudo -v" || true
 
                     {
                         echo "Remote Lynis Security Audit"
