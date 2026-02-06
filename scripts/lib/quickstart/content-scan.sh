@@ -160,10 +160,10 @@ run_content_scans() {
         print_step "PII Detection..."
         if "$SCRIPTS_DIR/check-pii.sh" "$TARGET_DIR" > /dev/null 2>&1; then
             print_success "PII scan passed"
-            ((passed++))
+            passed=$((passed + 1))
         else
             print_warning "PII scan found potential issues"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     fi
 
@@ -172,10 +172,10 @@ run_content_scans() {
         print_step "Secrets Detection..."
         if "$SCRIPTS_DIR/check-secrets.sh" "$TARGET_DIR" > /dev/null 2>&1; then
             print_success "Secrets scan passed"
-            ((passed++))
+            passed=$((passed + 1))
         else
             print_warning "Secrets scan found potential issues"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     fi
 
@@ -184,10 +184,10 @@ run_content_scans() {
         print_step "MAC Address Scan..."
         if "$SCRIPTS_DIR/check-mac-addresses.sh" "$TARGET_DIR" > /dev/null 2>&1; then
             print_success "MAC address scan passed"
-            ((passed++))
+            passed=$((passed + 1))
         else
             print_warning "MAC address scan found potential issues"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     fi
 
@@ -205,18 +205,18 @@ run_content_scans() {
 
             if [ "$malware_exit" -eq 0 ]; then
                 print_success "Malware scan passed"
-                ((passed++))
+                passed=$((passed + 1))
             elif [ "$malware_exit" -eq 2 ]; then
                 print_warning "Malware scan skipped (dependency missing)"
-                ((skipped++))
+                skipped=$((skipped + 1))
             else
                 print_warning "Malware scan found potential issues"
-                ((failed++))
+                failed=$((failed + 1))
             fi
             echo ""
         else
             print_warning "Skipping malware scan (ClamAV not installed)"
-            ((skipped++))
+            skipped=$((skipped + 1))
         fi
     fi
 
@@ -227,13 +227,13 @@ run_content_scans() {
         "$SCRIPTS_DIR/check-kev.sh" > /dev/null 2>&1 || kev_exit=$?
         if [ "$kev_exit" -eq 0 ]; then
             print_success "KEV check passed (no known exploited vulnerabilities)"
-            ((passed++))
+            passed=$((passed + 1))
         elif [ "$kev_exit" -eq 2 ]; then
             print_warning "KEV check skipped (no vulnerability scan file found)"
-            ((skipped++))
+            skipped=$((skipped + 1))
         else
             print_warning "KEV check found known exploited vulnerabilities"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     fi
 

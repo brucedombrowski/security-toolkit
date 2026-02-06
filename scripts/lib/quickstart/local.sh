@@ -386,11 +386,11 @@ run_local_scans() {
         if "$SCRIPTS_DIR/check-pii.sh" "$TARGET_DIR" > /dev/null 2>&1; then
             spinner_stop
             print_success "PII scan passed"
-            ((passed++))
+            passed=$((passed + 1))
         else
             spinner_stop
             print_warning "PII scan found potential issues"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     fi
 
@@ -400,11 +400,11 @@ run_local_scans() {
         if "$SCRIPTS_DIR/check-secrets.sh" "$TARGET_DIR" > /dev/null 2>&1; then
             spinner_stop
             print_success "Secrets scan passed"
-            ((passed++))
+            passed=$((passed + 1))
         else
             spinner_stop
             print_warning "Secrets scan found potential issues"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     fi
 
@@ -414,11 +414,11 @@ run_local_scans() {
         if "$SCRIPTS_DIR/check-mac-addresses.sh" "$TARGET_DIR" > /dev/null 2>&1; then
             spinner_stop
             print_success "MAC address scan passed"
-            ((passed++))
+            passed=$((passed + 1))
         else
             spinner_stop
             print_warning "MAC address scan found potential issues"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     fi
 
@@ -432,32 +432,32 @@ run_local_scans() {
                 "$SCRIPTS_DIR/check-malware.sh" --full-system || malware_exit=$?
                 if [ "$malware_exit" -eq 0 ]; then
                     print_success "Full system malware scan passed"
-                    ((passed++))
+                    passed=$((passed + 1))
                 elif [ "$malware_exit" -eq 2 ]; then
                     print_warning "Malware scan skipped (dependency missing)"
-                    ((skipped++))
+                    skipped=$((skipped + 1))
                 else
                     print_warning "Full system malware scan found potential issues"
-                    ((failed++))
+                    failed=$((failed + 1))
                 fi
             else
                 print_step "Malware Scan (this may take a while)..."
                 "$SCRIPTS_DIR/check-malware.sh" "$TARGET_DIR" || malware_exit=$?
                 if [ "$malware_exit" -eq 0 ]; then
                     print_success "Malware scan passed"
-                    ((passed++))
+                    passed=$((passed + 1))
                 elif [ "$malware_exit" -eq 2 ]; then
                     print_warning "Malware scan skipped (dependency missing)"
-                    ((skipped++))
+                    skipped=$((skipped + 1))
                 else
                     print_warning "Malware scan found potential issues"
-                    ((failed++))
+                    failed=$((failed + 1))
                 fi
             fi
             echo ""
         else
             print_warning "Skipping malware scan (ClamAV not installed)"
-            ((skipped++))
+            skipped=$((skipped + 1))
         fi
     fi
 
@@ -471,15 +471,15 @@ run_local_scans() {
         spinner_stop
         if [ "$kev_exit" -eq 0 ]; then
             print_success "KEV check passed (no known exploited vulnerabilities)"
-            ((passed++))
+            passed=$((passed + 1))
         elif [ "$kev_exit" -eq 2 ]; then
             # Exit code 2 = error (no scan file, missing deps, etc.)
             print_warning "KEV check skipped (no vulnerability scan file found)"
-            ((skipped++))
+            skipped=$((skipped + 1))
         else
             # Exit code 1 = KEV matches found
             print_warning "KEV check found known exploited vulnerabilities"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     fi
 
@@ -503,15 +503,15 @@ run_local_scans() {
             fi
             if [ "$lynis_exit" -eq 0 ]; then
                 print_success "Lynis audit passed"
-                ((passed++))
+                passed=$((passed + 1))
             else
                 print_warning "Lynis audit found potential issues"
-                ((failed++))
+                failed=$((failed + 1))
             fi
             echo ""
         else
             print_warning "Skipping Lynis audit (Lynis not installed - brew install lynis)"
-            ((skipped++))
+            skipped=$((skipped + 1))
         fi
     fi
 

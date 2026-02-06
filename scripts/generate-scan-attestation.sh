@@ -401,7 +401,7 @@ generate_ports_appendix() {
         local line_num=0
         local in_ports=false
         while IFS= read -r line; do
-            ((line_num++))
+            line_num=$((line_num + 1))
             # Look for port lines
             if [[ "$line" =~ ^[0-9]+/(tcp|udp) ]]; then
                 printf "L%d: %s\n" "$line_num" "$line"
@@ -443,7 +443,7 @@ generate_security_appendix() {
         # Extract key sections with line numbers
         local line_num=0
         while IFS= read -r line; do
-            ((line_num++))
+            line_num=$((line_num + 1))
             # Include section headers and important findings
             if [[ "$line" =~ ^--- ]] || \
                [[ "$line" =~ LISTEN ]] || \
@@ -487,7 +487,7 @@ generate_system_appendix() {
         local line_num=0
         local in_section=""
         while IFS= read -r line; do
-            ((line_num++))
+            line_num=$((line_num + 1))
             # Include section headers and key info
             if [[ "$line" =~ ^--- ]]; then
                 in_section="$line"

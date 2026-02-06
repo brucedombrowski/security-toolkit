@@ -232,14 +232,14 @@ check_macos_power() {
         log_status "pass" "System sleep disabled (always on)"
     elif [ -n "$system_sleep" ]; then
         log_status "warn" "System will sleep after $system_sleep minutes"
-        ((issues++))
+        issues=$((issues + 1))
     fi
 
     if [ "$hibernate_mode" = "0" ]; then
         log_status "pass" "Hibernate disabled"
     elif [ -n "$hibernate_mode" ]; then
         log_status "warn" "Hibernate mode: $hibernate_mode (may cause downtime)"
-        ((issues++))
+        issues=$((issues + 1))
     fi
 
     if [ "$wake_on_lan" = "1" ]; then
@@ -250,12 +250,12 @@ check_macos_power() {
 
     if [ "$standby" = "1" ]; then
         log_status "warn" "Standby enabled (deep sleep after extended idle)"
-        ((issues++))
+        issues=$((issues + 1))
     fi
 
     if [ "$autopoweroff" = "1" ]; then
         log_status "warn" "Auto power off enabled"
-        ((issues++))
+        issues=$((issues + 1))
     fi
 
     # Check screen lock (via security settings)
@@ -271,7 +271,7 @@ check_macos_power() {
 
         if [ "$screen_lock_delay" -gt "$MAX_IDLE_LOCK_TIME" ]; then
             log_status "warn" "Screen lock delay exceeds 15 minutes (security risk)"
-            ((issues++))
+            issues=$((issues + 1))
         else
             log_status "pass" "Screen lock within recommended timeframe"
         fi
@@ -353,21 +353,21 @@ check_linux_systemd_power() {
         log_status "pass" "Sleep target masked (disabled)"
     elif [ "$sleep_status" = "enabled" ] || [ "$sleep_status" = "static" ]; then
         log_status "warn" "Sleep target enabled"
-        ((issues++))
+        issues=$((issues + 1))
     fi
 
     if [ "$suspend_status" = "masked" ]; then
         log_status "pass" "Suspend target masked (disabled)"
     elif [ "$suspend_status" = "enabled" ] || [ "$suspend_status" = "static" ]; then
         log_status "warn" "Suspend target enabled"
-        ((issues++))
+        issues=$((issues + 1))
     fi
 
     if [ "$hibernate_status" = "masked" ]; then
         log_status "pass" "Hibernate target masked (disabled)"
     elif [ "$hibernate_status" = "enabled" ] || [ "$hibernate_status" = "static" ]; then
         log_status "warn" "Hibernate target enabled"
-        ((issues++))
+        issues=$((issues + 1))
     fi
 
     # Check for laptop (lid switch matters)
@@ -375,7 +375,7 @@ check_linux_systemd_power() {
         log_status "info" "Laptop detected - lid switch settings may apply"
         if [ "$handle_lid" != "ignore" ] && [ "$handle_lid" != "lock" ]; then
             log_status "warn" "Lid close will: $handle_lid"
-            ((issues++))
+            issues=$((issues + 1))
         fi
     fi
 
