@@ -101,5 +101,8 @@ demo/**/.scans/
 demo/**/.vagrant/
 demo/**/**.log
 
+# Scanner config (contains target IPs and meeting URLs)
+demo_scanner.conf
+
 # Homebrew tap (separate repo)
 homebrew-tap/

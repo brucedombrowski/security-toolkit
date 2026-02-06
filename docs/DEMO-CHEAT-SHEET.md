@@ -132,6 +132,69 @@ Remove packages installed during scan (ClamAV, Lynis)? [y/N] → y
 
 **Demo talking point:** "Leave no trace" — the toolkit offers to uninstall any packages it installed on the target, returning the system to its pre-scan state. This is critical for production systems where you don't want scanner artifacts left behind.
 
+## Automated Demo (Virtual Camera + One Command)
+
+For live demos where your audience joins a video call, `join-live-demo.sh` automates the entire flow:
+
+1. Installs [screen2cam](https://github.com/brucedombrowski/screen2cam) (streams your desktop as a virtual camera)
+2. Opens your meeting URL in the browser
+3. Launches QuickStart with your pre-built config
+
+### Setup
+
+```bash
+# 1. Copy the example config and fill in your meeting URL + target IP
+cp demo_scanner.conf my-demo.conf
+nano my-demo.conf
+
+# 2. Run (from Kali with X11)
+./scripts/join-live-demo.sh my-demo.conf
+```
+
+### What Happens
+
+```
+Phase 1  Pre-flight checks (Linux, X11, existing processes)
+Phase 2  Clone/build screen2cam, load v4l2loopback kernel module
+Phase 3  Start virtual camera → "Select 'screen2cam' in your video app"
+Phase 4  Open meeting URL in browser → wait for you to join
+Phase 5  Launch QuickStart with config (scans run, audience watches)
+Cleanup  Ctrl+C or script exit stops screen2cam automatically
+```
+
+### Config File (`demo_scanner.conf`)
+
+Single config drives both screen2cam and QuickStart:
+
+```bash
+# Meeting
+MEETING_URL="https://teams.live.com/meet/..."
+
+# Target (same vars as demo_target.conf)
+REMOTE_HOST=10.0.0.244
+REMOTE_USER=payload
+SCAN_TYPE=host
+TARGET_LOCATION=remote
+AUTH_MODE=credentialed
+
+# screen2cam
+SCREEN2CAM_FPS=15
+SCREEN2CAM_DEVICE=/dev/video10
+```
+
+### Requirements
+
+| Item | Requirement |
+|------|-------------|
+| OS | Linux with X11 (tested on Kali) |
+| Internet | For screen2cam clone (first run only) |
+| sudo | For `/opt/screen2cam` install and kernel module |
+| Video app | Must support V4L2 camera selection (Teams, Zoom, Meet) |
+
+### Re-running
+
+The script is idempotent — it detects an existing screen2cam install in `/opt/screen2cam` and offers to restart if already streaming. No need to uninstall between runs.
+
 ## Key Demo Talking Points
 
 | Moment | Point |
