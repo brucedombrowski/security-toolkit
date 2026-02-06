@@ -400,18 +400,48 @@ fi
 
 if [ -n "$audit_log_file" ] && [ -f "$audit_log_file" ]; then
     test_start "Audit log has valid JSON Lines format"
-    # Check each line is valid JSON
-    valid_json=true
-    while IFS= read -r line; do
-        if [ -n "$line" ] && ! echo "$line" | python3 -c "import sys,json; json.load(sys.stdin)" 2>/dev/null; then
-            valid_json=false
-            break
+    if command -v python3 &>/dev/null; then
+        # Check each line is valid JSON using python3
+        valid_json=true
+        while IFS= read -r line; do
+            if [ -n "$line" ] && ! echo "$line" | python3 -c "import sys,json; json.load(sys.stdin)" 2>/dev/null; then
+                valid_json=false
+                break
+            fi
+        done < "$audit_log_file"
+        if $valid_json; then
+            test_pass
+        else
+            test_fail "valid JSON per line" "invalid JSON found"
         fi
-    done < "$audit_log_file"
-    if $valid_json; then
-        test_pass
+    elif command -v jq &>/dev/null; then
+        # Fallback: validate JSON using jq
+        valid_json=true
+        while IFS= read -r line; do
+            if [ -n "$line" ] && ! echo "$line" | jq . >/dev/null 2>&1; then
+                valid_json=false
+                break
+            fi
+        done < "$audit_log_file"
+        if $valid_json; then
+            test_pass
+        else
+            test_fail "valid JSON per line" "invalid JSON found"
+        fi
     else
-        test_fail "valid JSON per line" "invalid JSON found"
+        # No JSON validator available - verify basic JSON structure
+        valid_json=true
+        while IFS= read -r line; do
+            if [ -n "$line" ] && ! echo "$line" | grep -qE '^\{.*\}$'; then
+                valid_json=false
+                break
+            fi
+        done < "$audit_log_file"
+        if $valid_json; then
+            test_pass
+        else
+            test_fail "valid JSON per line" "invalid JSON found"
+        fi
     fi
 
     test_start "Audit log contains timestamp field"

@@ -177,7 +177,8 @@ else
 fi
 
 test_start "init_scanner_output creates directory"
-init_scanner_output "$TEST_DIR" "2026-01-30" > /dev/null 2>&1
+# Pass empty base_dir so the function creates .scans under security_repo_dir
+init_scanner_output "" "2026-01-30" "$TEST_DIR" > /dev/null 2>&1
 if [ -d "$TEST_DIR/.scans" ]; then
     test_pass
 else

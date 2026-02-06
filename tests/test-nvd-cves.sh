@@ -43,6 +43,11 @@ test_fail() {
     echo "    Got: $2"
 }
 
+test_skip() {
+    TESTS_RUN=$((TESTS_RUN - 1))
+    echo -e "${YELLOW}SKIP${NC} ($1)"
+}
+
 section_header() {
     echo ""
     echo -e "${CYAN}--- $1 ---${NC}"
@@ -276,37 +281,46 @@ section_header "CVSS Parsing Tests"
 # Create mock NVD response
 MOCK_NVD_RESPONSE='{"vulnerabilities":[{"cve":{"id":"CVE-2024-1234","descriptions":[{"lang":"en","value":"Test vulnerability description"}],"metrics":{"cvssMetricV31":[{"cvssData":{"baseScore":9.8,"baseSeverity":"CRITICAL"}}]}}}]}'
 
-test_start "extract_cvss_score parses CVSS 3.1 score"
-result=$(SECURITY_REPO_DIR="$REPO_DIR" bash -c "
-    source '$LIB_DIR/api.sh'
-    extract_cvss_score '$MOCK_NVD_RESPONSE'
-")
-if [ "$result" = "9.8" ]; then
-    test_pass
-else
-    test_fail "9.8" "$result"
-fi
+if command -v jq &>/dev/null; then
+    test_start "extract_cvss_score parses CVSS 3.1 score"
+    result=$(SECURITY_REPO_DIR="$REPO_DIR" bash -c "
+        source '$LIB_DIR/api.sh'
+        extract_cvss_score '$MOCK_NVD_RESPONSE'
+    ")
+    if [ "$result" = "9.8" ]; then
+        test_pass
+    else
+        test_fail "9.8" "$result"
+    fi
 
-test_start "extract_severity parses CVSS 3.1 severity"
-result=$(SECURITY_REPO_DIR="$REPO_DIR" bash -c "
-    source '$LIB_DIR/api.sh'
-    extract_severity '$MOCK_NVD_RESPONSE'
-")
-if [ "$result" = "CRITICAL" ]; then
-    test_pass
-else
-    test_fail "CRITICAL" "$result"
-fi
+    test_start "extract_severity parses CVSS 3.1 severity"
+    result=$(SECURITY_REPO_DIR="$REPO_DIR" bash -c "
+        source '$LIB_DIR/api.sh'
+        extract_severity '$MOCK_NVD_RESPONSE'
+    ")
+    if [ "$result" = "CRITICAL" ]; then
+        test_pass
+    else
+        test_fail "CRITICAL" "$result"
+    fi
 
-test_start "extract_cve_description parses description"
-result=$(SECURITY_REPO_DIR="$REPO_DIR" bash -c "
-    source '$LIB_DIR/api.sh'
-    extract_cve_description '$MOCK_NVD_RESPONSE'
-")
-if echo "$result" | grep -q "Test vulnerability description"; then
-    test_pass
+    test_start "extract_cve_description parses description"
+    result=$(SECURITY_REPO_DIR="$REPO_DIR" bash -c "
+        source '$LIB_DIR/api.sh'
+        extract_cve_description '$MOCK_NVD_RESPONSE'
+    ")
+    if echo "$result" | grep -q "Test vulnerability description"; then
+        test_pass
+    else
+        test_fail "Test vulnerability description" "$result"
+    fi
 else
-    test_fail "Test vulnerability description" "$result"
+    test_start "extract_cvss_score parses CVSS 3.1 score"
+    test_skip "jq not installed"
+    test_start "extract_severity parses CVSS 3.1 severity"
+    test_skip "jq not installed"
+    test_start "extract_cve_description parses description"
+    test_skip "jq not installed"
 fi
 
 # =============================================================================
