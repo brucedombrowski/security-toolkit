@@ -42,20 +42,27 @@ nmap --version
 
 ## Target Setup (On Ubuntu)
 
-Before scanning from Kali, prepare the Ubuntu target:
+Connect the Ubuntu target to the internet (WiFi or Ethernet), open a terminal, and run **one command**:
 
 ```bash
-# Install the toolkit
-git clone https://github.com/brucedombrowski/security-toolkit.git
-cd security-toolkit
-
-# Run the target preparation script (sets up SSH, plants findings, installs deps)
-sudo ./scripts/prepare-demo-target.sh
+curl -fsSL https://raw.githubusercontent.com/brucedombrowski/security-toolkit/main/scripts/setup-target.sh | sudo bash
 ```
 
-This runs 8 phases: SSH setup, scan dependencies, open ports, planted findings, EICAR malware samples, outdated software, KEV-trigger packages, and verification manifest. See [DEMO-PLANTED-FINDINGS.md](DEMO-PLANTED-FINDINGS.md) for details on what gets planted.
+This downloads the latest release, installs to `/opt/security-toolkit`, and runs all 8 preparation phases automatically: SSH setup, scan dependencies, open ports, planted findings, EICAR malware samples, outdated software, KEV-trigger packages, and verification manifest.
 
-Note the IP address shown in the summary output — you'll need it for Step 2.
+When complete, the target IP address is displayed in a **large banner** on screen. See [DEMO-PLANTED-FINDINGS.md](DEMO-PLANTED-FINDINGS.md) for details on what gets planted.
+
+All commands are logged to:
+- `/tmp/demo-target-bootstrap.log` — bootstrap/download log
+- `/tmp/demo-target-setup.log` — phase-by-phase setup log
+
+**Manual alternative** (if curl is unavailable):
+
+```bash
+sudo apt-get install -y git
+git clone --depth 1 https://github.com/brucedombrowski/security-toolkit.git /opt/security-toolkit
+sudo /opt/security-toolkit/scripts/prepare-demo-target.sh
+```
 
 ## Demo Flow (On Kali)
 
@@ -167,8 +174,13 @@ Remove packages installed during scan (ClamAV, Lynis)? [y/N] → y
 # On Kali — review/archive scan output
 ls .scans/
 
+# On Ubuntu — run cleanup to revert planted findings
+ssh user@<ubuntu-ip> "sudo /opt/security-toolkit/scripts/prepare-demo-target.sh --cleanup"
+
 # On Ubuntu — verify packages were removed (if cleanup was selected)
 ssh user@<ubuntu-ip> "dpkg -l | grep -E 'clamav|lynis'"
+
+# Or just reboot the live boot — nothing persists
 ```
 
 ## NIST Controls Demonstrated
