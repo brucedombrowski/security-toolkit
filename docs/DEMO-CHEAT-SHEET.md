@@ -14,6 +14,16 @@ Quick reference for demonstrating the Security Verification Toolkit scanning a l
 └──────────────────────┘                       └──────────────────────┘
 ```
 
+## Quick Start: Prepare Ubuntu Target (One-Liner)
+
+On the Ubuntu live boot target, run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/brucedombrowski/security-toolkit/main/scripts/prepare-demo-target.sh | sudo bash
+```
+
+This installs SSH, ClamAV, Lynis, and plants demo findings automatically.
+
 ## Prerequisites
 
 | Item | Requirement |
