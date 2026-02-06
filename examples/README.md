@@ -9,19 +9,6 @@ These examples show the structure and format of toolkit outputs without exposing
 
 ### Scan Output Examples
 
-- `host-inventory-EXAMPLE.txt` - System component inventory
-- `host-security-scan-EXAMPLE.txt` - Host security posture results
-- `mac-address-scan-EXAMPLE.txt` - MAC address scan results
-- `malware-scan-EXAMPLE.txt` - ClamAV malware scan results
-- `nvd-cve-scan-EXAMPLE.txt` - Scan output
-- `pii-scan-EXAMPLE.txt` - PII pattern scan results
-- `secrets-scan-EXAMPLE.txt` - Secrets/credentials scan results
-- `security-scan-report-EXAMPLE.txt` - Consolidated scan report
-
-### PDF Attestation
-
-- `scan-attestation-EXAMPLE.pdf` - Security scan attestation document (NIST control mapping, results summary, verification chain)
-
 
 ## Redaction Rules
 
