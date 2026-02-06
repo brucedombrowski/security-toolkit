@@ -352,6 +352,10 @@ run_ssh_host_scans() {
             local lynis_opts="--quick"
             [ "$LYNIS_MODE" = "full" ] && lynis_opts="" || true
 
+            # Cache sudo credentials first (TTY works here — no pipe)
+            echo "  Authenticating sudo on remote host..."
+            ssh_cmd_sudo "sudo -v" 2>/dev/null || true
+
             {
                 echo "Remote Lynis Security Audit"
                 echo "==========================="
@@ -360,6 +364,7 @@ run_ssh_host_scans() {
                 echo "Started: $timestamp"
                 echo ""
             } > "$lynis_file"
+            # sudo credentials are cached, so no password prompt through the pipe
             ssh_cmd_sudo "sudo lynis audit system $lynis_opts --no-colors 2>&1" 2>/dev/null | tee -a "$lynis_file" || true
 
             # Check for warnings/suggestions
@@ -392,6 +397,10 @@ run_ssh_host_scans() {
                     # Run the audit now
                     local lynis_opts="--quick"
                     [ "$LYNIS_MODE" = "full" ] && lynis_opts="" || true
+
+                    # sudo credentials should be cached from install, but refresh
+                    ssh_cmd_sudo "sudo -v" 2>/dev/null || true
+
                     {
                         echo "Remote Lynis Security Audit"
                         echo "==========================="
@@ -400,9 +409,25 @@ run_ssh_host_scans() {
                         echo "Started: $timestamp"
                         echo ""
                     } > "$lynis_file"
+                    # sudo credentials are cached, so no password prompt through the pipe
                     ssh_cmd_sudo "sudo lynis audit system $lynis_opts --no-colors 2>&1" 2>/dev/null | tee -a "$lynis_file" || true
-                    print_success "Lynis audit complete"
-                    ((_HOST_PASSED++)) || true
+
+                    # Check for warnings/suggestions
+                    local warnings suggestions
+                    warnings=$(grep -c "Warning:" "$lynis_file" 2>/dev/null) || warnings=0
+                    suggestions=$(grep -c "Suggestion:" "$lynis_file" 2>/dev/null) || suggestions=0
+                    if [ "$warnings" -gt 0 ]; then
+                        print_warning "Lynis: $warnings warning(s), $suggestions suggestion(s)"
+                        ((_HOST_FAILED++)) || true
+                    elif grep -q "Hardening index" "$lynis_file" 2>/dev/null; then
+                        local score
+                        score=$(grep "Hardening index" "$lynis_file" | grep -oE '[0-9]+' | head -1) || score=""
+                        print_success "Lynis audit complete${score:+ (score: $score)}"
+                        ((_HOST_PASSED++)) || true
+                    else
+                        print_success "Lynis audit complete"
+                        ((_HOST_PASSED++)) || true
+                    fi
                 else
                     print_error "Lynis installation failed (check sudo access and network)"
                     ((_HOST_SKIPPED++)) || true
