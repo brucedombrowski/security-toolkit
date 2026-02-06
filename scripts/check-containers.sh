@@ -386,12 +386,12 @@ EOF
 if [ -f "$KEV_FILE" ]; then
     for cve in $CVE_LIST; do
         cve_clean=$(echo "$cve" | tr -d ' ')
-        if jq -e --arg id "$cve_clean" '.vulnerabilities[] | select(.cveID == $id)' "$KEV_FILE" &>/dev/null; then
+        if jq -e --arg cve "$cve_clean" '.vulnerabilities[] | select(.cveID == $cve)' "$KEV_FILE" &>/dev/null; then
             KEV_MATCHES=$((KEV_MATCHES + 1))
 
-            vendor=$(jq -r --arg id "$cve_clean" '.vulnerabilities[] | select(.cveID == $id) | .vendorProject' "$KEV_FILE")
-            product=$(jq -r --arg id "$cve_clean" '.vulnerabilities[] | select(.cveID == $id) | .product' "$KEV_FILE")
-            desc=$(jq -r --arg id "$cve_clean" '.vulnerabilities[] | select(.cveID == $id) | .shortDescription' "$KEV_FILE" | head -c 100)
+            vendor=$(jq -r --arg cve "$cve_clean" '.vulnerabilities[] | select(.cveID == $cve) | .vendorProject' "$KEV_FILE")
+            product=$(jq -r --arg cve "$cve_clean" '.vulnerabilities[] | select(.cveID == $cve) | .product' "$KEV_FILE")
+            desc=$(jq -r --arg cve "$cve_clean" '.vulnerabilities[] | select(.cveID == $cve) | .shortDescription' "$KEV_FILE" | head -c 100)
 
             echo -e "  ${RED}[KEV MATCH]${NC} $cve_clean"
             echo "             Vendor: $vendor"

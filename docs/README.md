@@ -8,6 +8,7 @@ Supplementary documentation for the Security Verification Toolkit.
 |----------|-------------|
 | [AIRGAPPED.md](AIRGAPPED.md) | Guide for air-gapped/offline deployments |
 | [ASSESSOR-QUALIFICATIONS.md](ASSESSOR-QUALIFICATIONS.md) | Recommended certifications for security assessors |
+| [BASH-SET-E-PITFALLS.md](BASH-SET-E-PITFALLS.md) | `set -e` and arithmetic pitfalls (required reading for contributors) |
 | [BRANCH-PROTECTION.md](BRANCH-PROTECTION.md) | GitHub branch protection configuration |
 | [COMPLIANCE.md](COMPLIANCE.md) | NIST control mapping and compliance workflow |
 | [DEPENDENCIES.md](DEPENDENCIES.md) | Toolkit dependency requirements and versions |

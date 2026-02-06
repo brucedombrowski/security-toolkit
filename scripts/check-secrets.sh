@@ -307,10 +307,12 @@ run_check() {
 
     # Run grep, capture output (exclude .git, binary files, scan results, and verification scripts)
     # CRITICAL-003: Protection against symlink attacks - use find to exclude symlinks, add per-file timeout
+    # Use process substitution to avoid subshell variable loss
     local results=""
-    # Use process substitution to avoid pipe subshell (variables persist)
-    results=$(while read -r file; do
-        $TIMEOUT_CMD grep -H -n -E "$pattern" "$file" 2>/dev/null || true
+    while read -r file; do
+        local match
+        match=$($TIMEOUT_CMD grep -H -n -E "$pattern" "$file" 2>/dev/null || true)
+        [ -n "$match" ] && results="${results}${match}"$'\n'
     done < <(find "$TARGET_DIR" \
         -type f \
         -not -type l \
@@ -330,7 +332,7 @@ run_check() {
             -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.cs" \
             -o -name "*.yaml" -o -name "*.yml" -o -name "*.json" \
             -o -name "*.env" -o -name "*.conf" -o -name "*.config" -o -name "*.md" -o -name "*.tex" \) \
-        2>/dev/null))
+        2>/dev/null)
 
     local total_count=0
     local new_count=0

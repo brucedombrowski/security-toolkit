@@ -20,21 +20,49 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     exit 1
 fi
 
-# Apply version output filter safely (no eval)
-# Supports: "cat", "head -1", "head -n 1"
-# Unknown filters fall back to "head -1"
-_apply_version_filter() {
-    case "$1" in
-        cat)                    cat ;;
-        "head -1"|"head -n 1") head -1 ;;
-        *)                     head -1 ;;
+# Safe filter dispatcher - validates filter against allowlist before execution
+# Usage: apply_safe_filter "filter_command"
+# Reads from stdin, writes to stdout
+# Returns 1 if filter is not in allowlist
+apply_safe_filter() {
+    local filter="$1"
+
+    # Allowlist of safe filter patterns (exact match or prefix match)
+    case "$filter" in
+        "head -1"|"head -n 1"|"tail -1"|"tail -n 1")
+            eval "$filter"
+            ;;
+        "grep -oE"*|"grep -o"*|"grep -E"*)
+            # grep with pattern extraction - validate no shell metacharacters in pattern
+            if echo "$filter" | grep -qE '[;&|`$()]'; then
+                echo "installed"
+                return 1
+            fi
+            eval "$filter" | head -1
+            ;;
+        "awk"*|"sed"*|"cut"*)
+            # Common text processing - validate no dangerous patterns
+            if echo "$filter" | grep -qE '[;&|`$()]'; then
+                echo "installed"
+                return 1
+            fi
+            eval "$filter"
+            ;;
+        *)
+            # Unknown filter - reject and return safe default
+            echo "installed"
+            return 1
+            ;;
     esac
 }
 
 # Detect CLI tool version
 # Usage: detect_tool "name" "command" ["version_args"] ["version_filter"]
 # Example: detect_tool "Python" "python3" "--version"
-# Example: detect_tool "Perl" "perl" "--version" "head -1"
+# Example: detect_tool "Perl" "perl" "--version" "grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1"
+#
+# Security: filter parameter is validated against an allowlist of safe commands.
+# Only internal collector scripts should call this function.
 detect_tool() {
     local name="$1"
     local cmd="$2"
@@ -43,7 +71,7 @@ detect_tool() {
 
     if command -v "$cmd" >/dev/null 2>&1; then
         local version
-        version=$("$cmd" $args 2>/dev/null | _apply_version_filter "$filter" 2>/dev/null || echo "installed")
+        version=$("$cmd" $args 2>/dev/null | apply_safe_filter "$filter" 2>/dev/null || echo "installed")
         output "  $name: $version"
     else
         output "  $name: not installed"

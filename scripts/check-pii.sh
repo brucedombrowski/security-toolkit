@@ -438,10 +438,12 @@ run_check() {
     exclusions=$(build_exclusions "$TARGET_DIR")
 
     # Build and execute find command with exclusions
-    # Use process substitution to avoid pipe subshell (variables persist)
-    results=$(while read -r file; do
-        $TIMEOUT_CMD grep -H -n -E "$pattern" "$file" 2>/dev/null || true
-    done < <(eval "find \"$TARGET_DIR\" -type f -not -type l $exclusions 2>/dev/null"))
+    # Use process substitution to avoid subshell variable loss
+    while read -r file; do
+        local match
+        match=$($TIMEOUT_CMD grep -H -n -E "$pattern" "$file" 2>/dev/null || true)
+        [ -n "$match" ] && results="${results}${match}"$'\n'
+    done < <(eval "find \"$TARGET_DIR\" -type f -not -type l $exclusions 2>/dev/null")
 
     local total_count=0
     local new_count=0
@@ -532,10 +534,12 @@ run_check_credit_card() {
     exclusions=$(build_exclusions "$TARGET_DIR")
 
     # Build and execute find command with exclusions
-    # Use process substitution to avoid pipe subshell (variables persist)
-    results=$(while read -r file; do
-        $TIMEOUT_CMD grep -H -n -o -E "$pattern" "$file" 2>/dev/null || true
-    done < <(eval "find \"$TARGET_DIR\" -type f -not -type l $exclusions 2>/dev/null"))
+    # Use process substitution to avoid subshell variable loss
+    while read -r file; do
+        local match
+        match=$($TIMEOUT_CMD grep -H -n -o -E "$pattern" "$file" 2>/dev/null || true)
+        [ -n "$match" ] && results="${results}${match}"$'\n'
+    done < <(eval "find \"$TARGET_DIR\" -type f -not -type l $exclusions 2>/dev/null")
 
     local total_count=0
     local valid_count=0

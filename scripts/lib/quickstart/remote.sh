@@ -26,11 +26,10 @@ INSTALLED_CLAMAV=false
 
 # Start SSH control master for connection multiplexing (single password prompt)
 start_ssh_control_master() {
-    # Create control socket in a secure temporary directory
-    local ssh_tmpdir
-    ssh_tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/ssh-quickstart.XXXXXXXXXX")
-    chmod 700 "$ssh_tmpdir"
-    SSH_CONTROL_PATH="$ssh_tmpdir/ctrl"
+    # Create control socket path in secure temp directory
+    local ssh_dir
+    ssh_dir=$(mktemp -d 2>/dev/null) || ssh_dir="/tmp/ssh-qs-$$-$(head -c 8 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+    SSH_CONTROL_PATH="$ssh_dir/control"
     SSH_OPTS="-o ControlPath=$SSH_CONTROL_PATH -o ControlMaster=auto -o ControlPersist=300"
 
     print_step "Establishing SSH connection to $REMOTE_USER@$REMOTE_HOST..."
@@ -43,7 +42,6 @@ start_ssh_control_master() {
         return 0
     else
         print_error "Failed to establish SSH connection"
-        rmdir "$(dirname "$SSH_CONTROL_PATH")" 2>/dev/null || true
         SSH_CONTROL_PATH=""
         SSH_OPTS=""
         return 1
@@ -55,7 +53,10 @@ stop_ssh_control_master() {
     if [ -n "$SSH_CONTROL_PATH" ] && [ -S "$SSH_CONTROL_PATH" ]; then
         ssh -o ControlPath="$SSH_CONTROL_PATH" -O exit "$REMOTE_USER@$REMOTE_HOST" 2>/dev/null || true
         rm -f "$SSH_CONTROL_PATH" 2>/dev/null || true
-        rmdir "$(dirname "$SSH_CONTROL_PATH")" 2>/dev/null || true
+        # Clean up the temp directory created by mktemp
+        local ssh_dir
+        ssh_dir=$(dirname "$SSH_CONTROL_PATH")
+        [ -d "$ssh_dir" ] && rmdir "$ssh_dir" 2>/dev/null || true
     fi
 }
 
