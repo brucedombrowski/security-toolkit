@@ -91,8 +91,8 @@ if [[ "$(uname)" == "Darwin" ]]; then
     # Check for pending security updates
     echo "Checking: Pending Security Updates"
     UPDATE_OUTPUT=$(softwareupdate -l 2>&1 || true)
-    UPDATE_COUNT=$(echo "$UPDATE_OUTPUT" | grep -ci "security" || true)
-    if [ -z "$UPDATE_COUNT" ] || [ "$UPDATE_COUNT" -eq 0 ]; then
+    UPDATE_COUNT=$(echo "$UPDATE_OUTPUT" | grep -ci "security" || echo "0")
+    if [ "$UPDATE_COUNT" -eq 0 ]; then
         echo "  Result: PASS (no security updates pending)"
     else
         echo "  Result: FAIL (security updates available)"
