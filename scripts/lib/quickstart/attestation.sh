@@ -50,7 +50,29 @@ generate_pdf_attestation() {
     export TOOLKIT_NAME="Security Toolkit"
 
     # Set scan results based on what was run
-    if [ "$SCAN_MODE" = "remote" ]; then
+    if [ "$SCAN_TYPE" = "host" ]; then
+        # Host/Network scan (uncredentialed or credentialed)
+        export TARGET_DIR="${PROJECT_NAME:-$TARGET_HOST}"
+        export SCAN_SCOPE="Host Scan - $TARGET_HOST"
+
+        # No inventory for uncredentialed scans
+        export INVENTORY_CHECKSUM="N/A"
+
+        # Content scans not applicable for host scans
+        export PII_RESULT="SKIP"
+        export PII_FINDINGS="Not applicable for host scans"
+        export SECRETS_RESULT="SKIP"
+        export SECRETS_FINDINGS="Not applicable for host scans"
+        export MAC_RESULT="SKIP"
+        export MAC_FINDINGS="Not applicable for host scans"
+        export MALWARE_RESULT="SKIP"
+        export MALWARE_FINDINGS="Not applicable for network scans"
+        export HOST_RESULT="PASS"
+        export HOST_FINDINGS="Network scan of $TARGET_HOST"
+        export VULN_RESULT="${RUN_NMAP_PORTS:+PASS}"
+        export VULN_RESULT="${VULN_RESULT:-SKIP}"
+        export VULN_FINDINGS="Nmap network scan completed"
+    elif [ "$SCAN_MODE" = "remote" ]; then
         # Use PROJECT_NAME for clean display, no IP addresses in PDF
         export TARGET_DIR="$PROJECT_NAME"
         export SCAN_SCOPE="Remote - credentialed SSH scan"

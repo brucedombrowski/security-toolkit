@@ -607,9 +607,11 @@ run_network_host_scans() {
             $nmap_cmd $nmap_args "$TARGET_HOST" 2>&1 || echo "Nmap scan completed with warnings"
         } > "$nmap_file"
 
-        # Check for open ports
-        local open_ports=$(grep -c "open" "$nmap_file" 2>/dev/null || echo "0")
-        if [ "$open_ports" -gt 0 ]; then
+        # Check for open ports (use head -1 and tr to ensure single integer)
+        local open_ports
+        open_ports=$(grep -c "open" "$nmap_file" 2>/dev/null | head -1 | tr -d '[:space:]') || true
+        open_ports=${open_ports:-0}
+        if [ "$open_ports" -gt 0 ] 2>/dev/null; then
             print_success "Nmap found $open_ports open port(s)"
         else
             print_warning "Nmap found no open ports (host may be filtered)"
