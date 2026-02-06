@@ -24,6 +24,25 @@ SSH_OPTS=""
 INSTALLED_LYNIS=false
 INSTALLED_CLAMAV=false
 
+# Remove stale SSH host key and retry connection
+# This is expected for live boot targets that generate new keys each boot.
+resolve_host_key_conflict() {
+    local host="$1"
+
+    print_warning "Host key has changed for $host"
+    echo "  This is normal for live boot targets (new keys each reboot)."
+    echo ""
+    read -rp "  Remove old host key and reconnect? [Y/n] " answer </dev/tty
+    if [ "${answer:-Y}" = "n" ] || [ "${answer:-Y}" = "N" ]; then
+        print_error "Cannot connect — stale host key in known_hosts"
+        return 1
+    fi
+
+    ssh-keygen -R "$host" 2>/dev/null
+    print_success "Removed old host key for $host"
+    return 0
+}
+
 # Start SSH control master for connection multiplexing (single password prompt)
 start_ssh_control_master() {
     # Create control socket path in secure temp directory
@@ -36,16 +55,35 @@ start_ssh_control_master() {
     echo "  (You will only need to enter your password once)"
     echo ""
 
-    # Start the control master connection
-    if ssh -o ConnectTimeout=10 -o ControlMaster=yes -o ControlPath="$SSH_CONTROL_PATH" -o ControlPersist=300 -N -f "$REMOTE_USER@$REMOTE_HOST" 2>/dev/null; then
+    # Start the control master connection — capture stderr for host key diagnostics
+    local ssh_stderr
+    ssh_stderr=$(mktemp 2>/dev/null || echo "/tmp/ssh-stderr-$$")
+    if ssh -o ConnectTimeout=10 -o ControlMaster=yes -o ControlPath="$SSH_CONTROL_PATH" -o ControlPersist=300 -N -f "$REMOTE_USER@$REMOTE_HOST" 2>"$ssh_stderr"; then
+        rm -f "$ssh_stderr"
         print_success "SSH connection established (will be reused for all scans)"
         return 0
-    else
-        print_error "Failed to establish SSH connection"
-        SSH_CONTROL_PATH=""
-        SSH_OPTS=""
-        return 1
     fi
+
+    # Check if failure was due to changed host key (common for live boot targets)
+    if grep -q "REMOTE HOST IDENTIFICATION HAS CHANGED\|Host key verification failed" "$ssh_stderr" 2>/dev/null; then
+        rm -f "$ssh_stderr"
+        if resolve_host_key_conflict "$REMOTE_HOST"; then
+            # Retry connection after removing stale key
+            if ssh -o ConnectTimeout=10 -o ControlMaster=yes -o ControlPath="$SSH_CONTROL_PATH" -o ControlPersist=300 -N -f "$REMOTE_USER@$REMOTE_HOST" 2>/dev/null; then
+                print_success "SSH connection established (will be reused for all scans)"
+                return 0
+            fi
+        fi
+    else
+        # Show the actual error for other failures
+        cat "$ssh_stderr" >&2 2>/dev/null || true
+        rm -f "$ssh_stderr"
+    fi
+
+    print_error "Failed to establish SSH connection"
+    SSH_CONTROL_PATH=""
+    SSH_OPTS=""
+    return 1
 }
 
 # Stop SSH control master (cleanup)
