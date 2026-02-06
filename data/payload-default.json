@@ -1,0 +1,74 @@
+{
+  "payload": {
+    "name": "demo",
+    "description": "Security toolkit demo — Ubuntu live boot target"
+  },
+  "ssh": {
+    "enabled": true,
+    "port": 22,
+    "password_auth": true,
+    "permit_root_login": true,
+    "users": [
+      { "name": "ubuntu", "password": "11111111", "sudo": true },
+      { "name": "payload", "password": "11111111", "sudo": true }
+    ]
+  },
+  "ports": {
+    "listeners": [
+      { "port": "random", "protocol": "tcp", "banner": "Demo HTTP", "service": "http" },
+      { "port": "random", "protocol": "tcp", "banner": "Demo service" },
+      { "port": "random", "protocol": "tcp", "banner": "Demo service" },
+      { "port": "random", "protocol": "tcp", "banner": "Demo service" },
+      { "port": "random", "protocol": "tcp", "banner": "Demo service" }
+    ]
+  },
+  "clamav": {
+    "install": true,
+    "update_definitions": true,
+    "database_source": "database.clamav.net",
+    "database_path": "/var/lib/clamav"
+  },
+  "findings": {
+    "pii": {
+      "enabled": true,
+      "min_records": 3,
+      "max_records": 7
+    },
+    "secrets": {
+      "enabled": true,
+      "aws_keys": true,
+      "api_keys": true,
+      "private_keys": true,
+      "database_urls": true
+    },
+    "malware_samples": {
+      "enabled": true,
+      "min_count": 3,
+      "max_count": 7,
+      "include_zip": true
+    },
+    "mac_addresses": {
+      "enabled": true,
+      "min_count": 3,
+      "max_count": 6
+    },
+    "sql_dumps": {
+      "enabled": true
+    },
+    "cron_jobs": {
+      "enabled": true
+    },
+    "world_writable": {
+      "enabled": true
+    }
+  },
+  "packages": {
+    "browsers": ["firefox", "chromium-browser"],
+    "tools": ["curl", "wget", "openssl", "nmap", "zip"],
+    "kev_triggers": ["apache2", "liblog4j2-java", "imagemagick", "php-common"]
+  },
+  "apache": {
+    "enabled": true,
+    "start": true
+  }
+}

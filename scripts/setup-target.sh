@@ -8,7 +8,8 @@
 # What this does:
 #   1. Downloads the latest release tarball from GitHub
 #   2. Extracts to /opt/security-toolkit
-#   3. Runs prepare-demo-target.sh (8 phases)
+#   3. Runs prepare-payload.sh (JSON-driven, 8 phases)
+#      Falls back to prepare-demo-target.sh if payload script not found
 #   4. Displays target IP in large banner
 #
 # All commands are logged to /tmp/demo-target-bootstrap.log
@@ -175,22 +176,29 @@ main() {
     log_cmd "git clone --depth 1 --branch '$tag' 'https://github.com/$REPO.git' '$INSTALL_DIR'"
     log_ok "Downloaded toolkit ($tag) to $INSTALL_DIR"
 
-    # Verify prepare-demo-target.sh exists
-    if [ ! -f "$INSTALL_DIR/scripts/prepare-demo-target.sh" ]; then
-        log_err "prepare-demo-target.sh not found in release — aborting"
+    # Prefer JSON-driven prepare-payload.sh, fall back to prepare-demo-target.sh
+    local prep_script=""
+    if [ -f "$INSTALL_DIR/scripts/prepare-payload.sh" ]; then
+        prep_script="$INSTALL_DIR/scripts/prepare-payload.sh"
+        log "Found JSON-driven payload script"
+    elif [ -f "$INSTALL_DIR/scripts/prepare-demo-target.sh" ]; then
+        prep_script="$INSTALL_DIR/scripts/prepare-demo-target.sh"
+        log "Using legacy preparation script"
+    else
+        log_err "No preparation script found in release — aborting"
         exit 1
     fi
 
     # Make executable
-    chmod +x "$INSTALL_DIR/scripts/prepare-demo-target.sh"
+    chmod +x "$prep_script"
 
     # Run the preparation script
     log "Running target preparation (8 phases)..."
     echo "" >> "$BOOTSTRAP_LOG"
-    echo "# === prepare-demo-target.sh output ===" >> "$BOOTSTRAP_LOG"
+    echo "# === $(basename "$prep_script") output ===" >> "$BOOTSTRAP_LOG"
 
     # Run and tee output to both terminal and log
-    "$INSTALL_DIR/scripts/prepare-demo-target.sh" 2>&1 | tee -a "$BOOTSTRAP_LOG"
+    "$prep_script" 2>&1 | tee -a "$BOOTSTRAP_LOG"
     local prep_exit=${PIPESTATUS[0]}
 
     if [ "$prep_exit" -ne 0 ]; then
@@ -214,7 +222,7 @@ main() {
     echo ""
     echo -e "  ${BOLD}Logs:${NC}"
     echo -e "    Bootstrap: $BOOTSTRAP_LOG"
-    echo -e "    Setup:     /tmp/demo-target-setup.log"
+    echo -e "    Setup:     /tmp/demo-payload-setup.log"
     echo -e "${BOLD}══════════════════════════════════════════════════${NC}"
     echo ""
 

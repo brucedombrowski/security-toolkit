@@ -21,8 +21,8 @@ Quick reference for demonstrating the Security Verification Toolkit scanning a l
 | Kali | Toolkit cloned to `~/Security` |
 | Kali | `nmap` installed (standard on Kali) |
 | Kali | `pdflatex` installed (for attestation PDF) |
-| Ubuntu | SSH server running (`sudo apt install openssh-server`) |
-| Ubuntu | User account with sudo access |
+| Ubuntu | SSH server running (setup script handles this) |
+| Ubuntu | `payload` user with sudo access (setup script creates this) |
 | Network | Kali can reach Ubuntu over SSH (port 22) |
 
 ## Pre-Demo Checklist
@@ -34,7 +34,8 @@ git status                    # Clean working tree
 ./scripts/lib/toolkit-info.sh # Confirm version
 
 # On Kali — verify connectivity
-ssh user@<ubuntu-ip> "hostname && uname -a"
+ssh payload@<ubuntu-ip> "hostname && uname -a"
+# Password: 11111111
 
 # On Kali — verify nmap
 nmap --version
@@ -48,21 +49,27 @@ Connect the Ubuntu target to the internet (WiFi or Ethernet), open a terminal, a
 wget -qO- https://raw.githubusercontent.com/brucedombrowski/security-toolkit/main/scripts/setup-target.sh | sudo bash
 ```
 
-This downloads the latest release, installs to `/opt/security-toolkit`, and runs all 8 preparation phases automatically: SSH setup, scan dependencies, open ports, planted findings, EICAR malware samples, outdated software, KEV-trigger packages, and verification manifest.
+This single command does **everything** on the target:
+1. Downloads the latest toolkit release to `/opt/security-toolkit`
+2. Creates `payload` user (password: `11111111`) with sudo access
+3. Creates `ubuntu` user (password: `11111111`) with sudo access
+4. Enables SSH with password authentication
+5. Installs ClamAV, Lynis, and scan dependencies
+6. Opens random ports, plants findings (PII, secrets, malware, MAC addresses)
+7. Installs KEV-trigger packages (Apache, Log4j, ImageMagick)
+8. Displays target IP in a **large banner**
 
-When complete, the target IP address is displayed in a **large banner** on screen. See [DEMO-PLANTED-FINDINGS.md](DEMO-PLANTED-FINDINGS.md) for details on what gets planted.
+See [DEMO-PLANTED-FINDINGS.md](DEMO-PLANTED-FINDINGS.md) for details on what gets planted.
+
+**Scanner credentials** (created automatically):
+| Username | Password | Sudo |
+|----------|----------|------|
+| `payload` | `11111111` | Yes |
+| `ubuntu` | `11111111` | Yes |
 
 All commands are logged to:
 - `/tmp/demo-target-bootstrap.log` — bootstrap/download log
-- `/tmp/demo-target-setup.log` — phase-by-phase setup log
-
-**Manual alternative** (if curl is unavailable):
-
-```bash
-sudo apt-get install -y git
-git clone --depth 1 https://github.com/brucedombrowski/security-toolkit.git /opt/security-toolkit
-sudo /opt/security-toolkit/scripts/prepare-demo-target.sh
-```
+- `/tmp/demo-payload-setup.log` — phase-by-phase setup log
 
 ## Demo Flow (On Kali)
 
@@ -80,9 +87,9 @@ Main Menu → Remote Scan → Credentialed (SSH)
 ```
 
 Enter when prompted:
-- **Target IP/hostname**: `<ubuntu-ip>`
-- **SSH username**: `<user>`
-- **SSH password or key**: (authenticate)
+- **Target IP/hostname**: `<ubuntu-ip>` (shown in banner on target)
+- **SSH username**: `payload`
+- **SSH password**: `11111111`
 
 ### Step 3: Select Scan Types
 
@@ -161,8 +168,8 @@ Remove packages installed during scan (ClamAV, Lynis)? [y/N] → y
 
 | Problem | Quick Fix |
 |---------|-----------|
-| SSH connection refused | `sudo systemctl start ssh` on Ubuntu |
-| Permission denied | Verify username/password, check `sudo` access |
+| SSH connection refused | Re-run the one-liner on target |
+| Permission denied | Username: `payload`, Password: `11111111` |
 | Nmap scan slow | Use quick mode if time-constrained |
 | ClamAV database missing | `sudo freshclam` on target (requires internet) |
 | pdflatex not found | `sudo apt install texlive-latex-base` on Kali |
@@ -175,10 +182,8 @@ Remove packages installed during scan (ClamAV, Lynis)? [y/N] → y
 ls .scans/
 
 # On Ubuntu — run cleanup to revert planted findings
-ssh user@<ubuntu-ip> "sudo /opt/security-toolkit/scripts/prepare-demo-target.sh --cleanup"
-
-# On Ubuntu — verify packages were removed (if cleanup was selected)
-ssh user@<ubuntu-ip> "dpkg -l | grep -E 'clamav|lynis'"
+ssh payload@<ubuntu-ip> "sudo /opt/security-toolkit/scripts/prepare-payload.sh --cleanup"
+# Password: 11111111
 
 # Or just reboot the live boot — nothing persists
 ```
