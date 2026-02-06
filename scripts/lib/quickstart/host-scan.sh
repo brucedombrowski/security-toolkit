@@ -350,6 +350,7 @@ run_ssh_host_scans() {
         if ssh_cmd "command -v lynis" &>/dev/null; then
             local lynis_opts="--quick"
             [ "$LYNIS_MODE" = "full" ] && lynis_opts="" || true
+            echo -e "  ${YELLOW}Note:${NC} Lynis requires sudo — you may be prompted for the remote password."
 
             {
                 echo "Remote Lynis Security Audit"

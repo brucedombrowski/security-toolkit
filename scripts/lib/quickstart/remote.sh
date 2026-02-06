@@ -581,6 +581,7 @@ run_remote_ssh_scans() {
             else
                 echo "  Lynis full audit running (~10-15 minutes)..."
             fi
+            echo -e "  ${YELLOW}Note:${NC} Lynis requires sudo — you may be prompted for the remote password."
 
             # Run with TTY for sudo prompt, use tee to show AND save output
             if ssh_cmd_sudo "sudo lynis audit system $lynis_opts" 2>&1 | tee "$lynis_file.raw"; then
