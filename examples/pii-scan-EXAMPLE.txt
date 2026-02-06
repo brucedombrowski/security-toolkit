@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    29b40bed2ed5512c...                                       #
+#  Source SHA256:    0d46cf1f1edef301...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    d42c54e5d15a5782...                                       #
-#  Redacted:         2026-02-06T13:48:18Z                                       #
+#  Redacted:         2026-02-06T13:54:21Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,12 +19,14 @@
 PII Verification Scan
 =====================
 Timestamp: 2026-02-06T[REDACTED]Z
-Toolkit: Security Verification Toolkit v2.7.2 (df1709b)
+Toolkit: Security Verification Toolkit v2.7.3 (c0356aa)
 Target: /home/[REDACTED]
 Repository: security-toolkit
 
 Checking: IPv4 Addresses
 /home/[REDACTED]
+/home/[REDACTED]
+/home/[REDACTED]   Examples: [REDACTED], [REDACTED], myserver.[REDACTED][REDACTED]
 /home/[REDACTED]
 /home/[REDACTED]    read -rp "  Target endpoint (ip:port, e.g. [REDACTED]:51820): " target_endpoint </dev/tty
 /home/[REDACTED]    local scanner_ip="10.200.200.1/24"
@@ -32,10 +34,8 @@ Checking: IPv4 Addresses
 /home/[REDACTED]            ipv4=$(ifconfig "$iface" 2>/dev/null | grep "inet " | grep -v "127.0.0.1" | awk '{print $2}' | head -1)
 /home/[REDACTED]  $script_name [REDACTED]/24            # Scan network range
 /home/[REDACTED]  $script_name -n [REDACTED]               # Nmap only on specific host
-/home/[REDACTED]  $script_name -q [REDACTED]            # Quick scan of specific host
-/home/[REDACTED]    if [ "$TARGET_HOST" = "localhost" ] || [ "$TARGET_HOST" = "127.0.0.1" ]; then
-  Result: REVIEW - 30 new match(es) found
-  ... and 20 more
+  Result: REVIEW - 32 new match(es) found
+  ... and 22 more
   (15 previously allowlisted)
 Checking: US Phone Numbers (dashed)
 /home/[REDACTED]  Test 7: Detect 555-123-4567... [0;32mPASS[0m
