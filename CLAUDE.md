@@ -601,6 +601,9 @@ Host inventory contains Controlled Unclassified Information (MAC addresses, seri
 ### Bash `set -e` and Arithmetic
 Never use `((count++))` — it silently kills scripts under `set -e` when the variable is zero. Use `count=$((count + 1))` instead. See [docs/BASH-SET-E-PITFALLS.md](docs/BASH-SET-E-PITFALLS.md) for the full explanation and safe patterns.
 
+### SSH TTY and Pipes
+Never pipe `ssh -t` output through `tee` or redirect when the remote command needs interactive input (e.g., `sudo`). The pipe breaks TTY passthrough and the password prompt hangs. Instead, pre-cache sudo credentials via a direct `ssh -t host "sudo -v"` (bypassing ControlMaster), then pipe the actual command. For non-interactive commands, write the header to file separately and stream with `tee -a`. See [docs/SSH-TTY-PIPE-PITFALLS.md](docs/SSH-TTY-PIPE-PITFALLS.md) for the full explanation, decision tree, and safe patterns.
+
 ### Known Limitations
 
 1. **False Positives**: Use `.allowlists/` to suppress known-good matches
@@ -658,5 +661,7 @@ When adding a new scan script, always create a corresponding test:
 - [docs/THREAT-INTELLIGENCE.md](docs/THREAT-INTELLIGENCE.md) - CISA KEV integration
 - [docs/FAQ.md](docs/FAQ.md) - Frequently asked questions
 - [docs/PERFORMANCE.md](docs/PERFORMANCE.md) - Performance baselines
+- [docs/SSH-TTY-PIPE-PITFALLS.md](docs/SSH-TTY-PIPE-PITFALLS.md) - SSH TTY + pipe interaction guide
+- [docs/BASH-SET-E-PITFALLS.md](docs/BASH-SET-E-PITFALLS.md) - Bash set -e arithmetic pitfalls
 - [requirements/README.md](requirements/README.md) - Requirements framework and traceability
 - [verification/README.md](verification/README.md) - Verification evidence workflow
