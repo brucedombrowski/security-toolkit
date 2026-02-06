@@ -28,7 +28,7 @@ select_scan_type_cli() {
         echo "                         (PII, secrets, malware, sensitive data)"
         echo ""
         echo -n "Select [1-2]: "
-        read -r choice
+        read -r choice </dev/tty
 
         case "$choice" in
             1) SCAN_TYPE="host"; break ;;

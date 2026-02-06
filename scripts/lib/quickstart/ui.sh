@@ -226,5 +226,5 @@ tui_msgbox() {
     echo ""
     gum style --border normal --padding "1 2" --border-foreground 212 "$title" "" "$message"
     echo ""
-    read -rp "Press Enter to continue..."
+    read -rp "Press Enter to continue..." </dev/tty
 }
