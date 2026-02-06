@@ -155,6 +155,9 @@ run_host_scans() {
     # Network-based scans (always run - don't require SSH)
     run_network_host_scans "$output_dir" "$timestamp"
 
+    # KEV check (runs after nmap so vulnerability data is available)
+    run_kev_check "$output_dir" "$timestamp"
+
     # Update global counters
     SCANS_PASSED=$((SCANS_PASSED + _HOST_PASSED))
     SCANS_FAILED=$((SCANS_FAILED + _HOST_FAILED))
@@ -517,58 +520,6 @@ run_ssh_host_scans() {
         fi
     fi
 
-    # KEV Check (CISA Known Exploited Vulnerabilities)
-    if [ "$RUN_HOST_KEV" = true ]; then
-        print_step "Running KEV check..."
-        local kev_file="$output_dir/host-kev-$timestamp.txt"
-
-        # KEV check requires a vulnerability scan with CVEs
-        # Check if nmap vuln scan was run, otherwise explain
-        local vuln_scan_file=""
-        if [ "$RUN_NMAP_VULN" = true ]; then
-            vuln_scan_file="$output_dir/nmap-ports-$timestamp.txt"
-            [ ! -f "$vuln_scan_file" ] && vuln_scan_file=""
-        fi
-
-        {
-            echo "CISA KEV Check (Known Exploited Vulnerabilities)"
-            echo "================================================"
-            echo "Host: $TARGET_HOST"
-            echo "Checked: $timestamp"
-            echo ""
-
-            if [ -n "$vuln_scan_file" ] && [ -f "$vuln_scan_file" ]; then
-                echo "Checking vulnerability scan against KEV catalog..."
-                echo "Source: $vuln_scan_file"
-                echo ""
-                # Run KEV check with nmap output (strip ANSI codes)
-                "$SCRIPTS_DIR/check-kev.sh" "$vuln_scan_file" 2>&1 | sed 's/\x1b\[[0-9;]*m//g' || true
-            else
-                echo "Note: KEV cross-reference requires vulnerability scan data."
-                echo ""
-                echo "To enable KEV checking:"
-                echo "  1. Enable 'Vulnerability scripts (nmap --script vuln)' scan"
-                echo "  2. Re-run scans to generate CVE data"
-                echo ""
-                echo "The KEV catalog tracks actively exploited CVEs per BOD 22-01."
-            fi
-        } > "$kev_file" 2>&1
-
-        # Check results
-        if grep -q "No known exploited vulnerabilities\|No KEV matches" "$kev_file" 2>/dev/null; then
-            print_success "No known exploited vulnerabilities found"
-            ((_HOST_PASSED++)) || true
-        elif grep -q "KEV cross-reference requires" "$kev_file" 2>/dev/null; then
-            print_warning "KEV check skipped (requires vulnerability scan)"
-            ((_HOST_SKIPPED++)) || true
-        elif grep -q "CVE-" "$kev_file" 2>/dev/null; then
-            print_warning "Potential KEV matches found - review $kev_file"
-            ((_HOST_FAILED++)) || true
-        else
-            print_success "KEV check completed"
-            ((_HOST_PASSED++)) || true
-        fi
-    fi
 }
 
 # Network-based host scans
@@ -620,15 +571,100 @@ run_network_host_scans() {
                 print_warning "Nmap found no open ports (host may be filtered)"
             fi
             ((_HOST_PASSED++)) || true
-        elif grep -q "incorrect password\|sudo.*denied\|Permission denied" "$nmap_file" 2>/dev/null; then
-            # Sudo failed - offer to retry without OS fingerprinting
-            print_error "Nmap scan failed (sudo authentication failed)"
-            echo "  OS fingerprinting (-O) requires root privileges"
-            echo "  Re-run without OS fingerprinting, or use 'sudo ./QuickStart.sh'"
-            ((_HOST_FAILED++)) || true
+        elif grep -q "incorrect password\|sudo.*denied\|Permission denied\|Sorry, try again" "$nmap_file" 2>/dev/null; then
+            # Sudo failed - automatically retry without OS fingerprinting
+            print_warning "Sudo failed — retrying without OS fingerprinting..."
+            local retry_args
+            retry_args=$(echo "$nmap_args" | sed 's/-O//')
+            {
+                echo "Nmap Scan Results (without OS fingerprinting)"
+                echo "============================================="
+                echo "Target: $TARGET_HOST"
+                echo "Options: $retry_args"
+                echo "Started: $timestamp"
+                echo "Note: OS fingerprinting skipped (requires root)"
+                echo ""
+                nmap $retry_args "$TARGET_HOST" 2>&1 || echo "Nmap scan completed with warnings"
+            } > "$nmap_file"
+            if grep -q "Nmap scan report\|PORT.*STATE" "$nmap_file" 2>/dev/null; then
+                local open_ports
+                open_ports=$(grep -c "/.*open" "$nmap_file" 2>/dev/null | head -1 | tr -d '[:space:]') || true
+                open_ports=${open_ports:-0}
+                if [ "$open_ports" -gt 0 ] 2>/dev/null; then
+                    print_success "Nmap found $open_ports open port(s) (no OS fingerprint)"
+                else
+                    print_warning "Nmap found no open ports (host may be filtered)"
+                fi
+                ((_HOST_PASSED++)) || true
+            else
+                print_error "Nmap scan failed"
+                ((_HOST_FAILED++)) || true
+            fi
         else
             print_warning "Nmap scan may have failed - check $nmap_file"
             ((_HOST_FAILED++)) || true
         fi
+    fi
+}
+
+# KEV Check — must run AFTER nmap so vulnerability data exists
+# Updates global counters: _HOST_PASSED, _HOST_FAILED, _HOST_SKIPPED
+run_kev_check() {
+    local output_dir="$1"
+    local timestamp="$2"
+
+    if [ "$RUN_HOST_KEV" != true ]; then
+        return
+    fi
+
+    print_step "Running KEV check..."
+    local kev_file="$output_dir/host-kev-$timestamp.txt"
+
+    # KEV check requires a vulnerability scan with CVEs
+    local vuln_scan_file=""
+    if [ "$RUN_NMAP_VULN" = true ]; then
+        vuln_scan_file="$output_dir/nmap-ports-$timestamp.txt"
+        # Only use the file if it has actual nmap results
+        if [ -f "$vuln_scan_file" ] && ! grep -q "Nmap scan report\|PORT.*STATE" "$vuln_scan_file" 2>/dev/null; then
+            vuln_scan_file=""
+        fi
+    fi
+
+    {
+        echo "CISA KEV Check (Known Exploited Vulnerabilities)"
+        echo "================================================"
+        echo "Host: $TARGET_HOST"
+        echo "Checked: $timestamp"
+        echo ""
+
+        if [ -n "$vuln_scan_file" ] && [ -f "$vuln_scan_file" ]; then
+            echo "Checking vulnerability scan against KEV catalog..."
+            echo "Source: $vuln_scan_file"
+            echo ""
+            "$SCRIPTS_DIR/check-kev.sh" "$vuln_scan_file" 2>&1 | sed 's/\x1b\[[0-9;]*m//g' || true
+        else
+            echo "Note: KEV cross-reference requires vulnerability scan data."
+            echo ""
+            echo "To enable KEV checking:"
+            echo "  1. Enable 'Vulnerability scripts (nmap --script vuln)' scan"
+            echo "  2. Re-run scans to generate CVE data"
+            echo ""
+            echo "The KEV catalog tracks actively exploited CVEs per BOD 22-01."
+        fi
+    } > "$kev_file" 2>&1
+
+    # Check results
+    if grep -q "No known exploited vulnerabilities\|No KEV matches" "$kev_file" 2>/dev/null; then
+        print_success "No known exploited vulnerabilities found"
+        ((_HOST_PASSED++)) || true
+    elif grep -q "KEV cross-reference requires" "$kev_file" 2>/dev/null; then
+        print_warning "KEV check skipped (requires vulnerability scan)"
+        ((_HOST_SKIPPED++)) || true
+    elif grep -q "CVE-" "$kev_file" 2>/dev/null; then
+        print_warning "Potential KEV matches found - review $kev_file"
+        ((_HOST_FAILED++)) || true
+    else
+        print_success "KEV check completed"
+        ((_HOST_PASSED++)) || true
     fi
 }
