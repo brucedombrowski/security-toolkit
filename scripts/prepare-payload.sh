@@ -356,16 +356,29 @@ install_scan_deps() {
         else
             # Download tarball directly — only needs wget + tar (always on Ubuntu)
             log_step "Downloading Lynis from GitHub..."
-            rm -rf /opt/lynis 2>/dev/null || true
-            if wget -qO /tmp/lynis.tar.gz https://github.com/CISOfy/lynis/archive/refs/heads/master.tar.gz 2>/dev/null; then
-                tar xzf /tmp/lynis.tar.gz -C /opt/ 2>/dev/null && \
-                    mv /opt/lynis-master /opt/lynis 2>/dev/null && \
-                    ln -sf /opt/lynis/lynis /usr/local/bin/lynis 2>/dev/null && \
-                    rm -f /tmp/lynis.tar.gz && \
-                    log_success "Lynis installed (/opt/lynis from GitHub tarball)" || \
-                    log_warn "Lynis tarball extract failed"
+            rm -rf /opt/lynis /tmp/lynis.tar.gz 2>/dev/null || true
+            local lynis_url="https://github.com/CISOfy/lynis/archive/refs/heads/master.tar.gz"
+            local lynis_downloaded=false
+            # Try with SSL verification first, then without (live boot may have stale certs)
+            if wget -qO /tmp/lynis.tar.gz "$lynis_url" 2>>"$LOG_FILE"; then
+                lynis_downloaded=true
+            elif wget --no-check-certificate -qO /tmp/lynis.tar.gz "$lynis_url" 2>>"$LOG_FILE"; then
+                lynis_downloaded=true
+                log_warn "Lynis downloaded with --no-check-certificate (stale CA certs on live boot)"
+            fi
+            if [ "$lynis_downloaded" = true ] && [ -s /tmp/lynis.tar.gz ]; then
+                if tar xzf /tmp/lynis.tar.gz -C /opt/ 2>>"$LOG_FILE"; then
+                    mv /opt/lynis-master /opt/lynis 2>/dev/null || true
+                    chmod +x /opt/lynis/lynis
+                    ln -sf /opt/lynis/lynis /usr/local/bin/lynis
+                    rm -f /tmp/lynis.tar.gz
+                    log_success "Lynis installed (/opt/lynis from GitHub tarball)"
+                else
+                    log_warn "Lynis tarball extract failed — check $LOG_FILE"
+                fi
             else
-                log_warn "Could not download Lynis (scanning runs from Kali side)"
+                log_warn "Could not download Lynis from GitHub — check $LOG_FILE"
+                rm -f /tmp/lynis.tar.gz 2>/dev/null || true
             fi
         fi
     else
