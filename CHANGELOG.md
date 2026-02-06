@@ -7,7 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Fix jq injection in container and KEV scripts** (#133)
+  - Replaced string interpolation with `--arg` in `jq` calls in `check-containers.sh` (4 calls) and `check-kev.sh` (1 call)
+  - Prevented potential data exfiltration via crafted package names or CVE IDs
+
+- **Fix eval injection in inventory detection** (#136)
+  - Replaced `eval "$filter"` with safe case-based dispatch function in `detect.sh`
+  - Only accepts known filter values (`cat`, `head -1`); unknown filters fall back safely
+
+- **Fix predictable SSH control socket path** (#135)
+  - Replaced hardcoded `/tmp` socket path with `mktemp -d` in `remote.sh`
+  - Prevents local attacker from hijacking SSH multiplexed connections
+
 ### Fixed
+
+- **Fix pipe subshell variable loss in PII and secrets scans** (#131)
+  - Converted pipe-fed `while` loops to process substitution in `check-pii.sh` and `check-secrets.sh`
+  - Prevents scan counters from being silently reset in subshells
+
+- **Fix -newer logic error in host scan file selection** (#143)
+  - Replaced `find -newer` with direct filename match in `host-scan.sh`
+  - Previous logic referenced a file that hadn't been created yet
+
+- **Fix `((var++))` set -e crash across 6 files** (#132)
+  - Replaced `((count++))` with `count=$((count + 1))` in `check-malware.sh`, `check-power-settings.sh`, `generate-malware-attestation.sh`, `generate-scan-attestation.sh`, `content-scan.sh`, `local.sh`
+  - Arithmetic returning zero caused silent script termination under `set -e`
 
 - **Nmap Scan Failure Detection**
   - Failed nmap scans are now properly detected instead of counting as passed
