@@ -601,6 +601,65 @@ Host inventory contains Controlled Unclassified Information (MAC addresses, seri
 ### Bash `set -e` and Arithmetic
 Never use `((count++))` — it silently kills scripts under `set -e` when the variable is zero. Use `count=$((count + 1))` instead. See [docs/BASH-SET-E-PITFALLS.md](docs/BASH-SET-E-PITFALLS.md) for the full explanation and safe patterns.
 
+### SSH TTY and Pipes
+Never pipe `ssh -t` output through `tee` or redirect when the remote command needs interactive input (e.g., `sudo`). The pipe breaks TTY passthrough and the password prompt hangs. Instead, pre-cache sudo credentials via a direct `ssh -t host "sudo -v"` (bypassing ControlMaster), then pipe the actual command. For non-interactive commands, write the header to file separately and stream with `tee -a`. See [docs/SSH-TTY-PIPE-PITFALLS.md](docs/SSH-TTY-PIPE-PITFALLS.md) for the full explanation, decision tree, and safe patterns.
+
+### Bash Security Patterns
+
+These patterns were established after a security audit of the codebase. All contributors must follow them.
+
+**Never use `eval` with file-derived input.** Build dynamic `find` arguments using Bash arrays instead of string concatenation + eval. Files like `.pii-exclude` are semi-trusted input from the target directory.
+
+```bash
+# BAD — injectable via .pii-exclude contents:
+EXCLUDES=""
+while read -r dir; do EXCLUDES+=" -not -path '*/$dir/*'"; done < .pii-exclude
+eval find "$TARGET" -type f $EXCLUDES
+
+# GOOD — array-based, no eval needed:
+FIND_EXCLUSIONS=()
+while read -r dir; do
+    # Reject lines with shell metacharacters
+    if [[ "$dir" =~ [;\|\&\$\`\(\)\{\}] ]]; then continue; fi
+    FIND_EXCLUSIONS+=(-not -path "*/$dir/*")
+done < .pii-exclude
+find "$TARGET" -type f "${FIND_EXCLUSIONS[@]}"
+```
+
+**Never interpolate variables into inline interpreter scripts.** Use argument passing instead.
+
+```bash
+# BAD — $size could contain Perl code:
+perl -e "print chr(0xFF) x $size" > "$file"
+
+# GOOD — passed as argument, not interpolated:
+perl -e 'print chr(0xFF) x $ARGV[0]' "$size" > "$file"
+```
+
+**Escape all JSON string fields.** When building JSON with `printf`, escape every string field (hostname, username, event type) — not just user-provided "details". Hostnames can contain special characters.
+
+```bash
+local escaped=$(printf '%s' "$value" | sed 's/\\/\\\\/g; s/"/\\"/g')
+```
+
+**Use `find -P` in security-sensitive contexts.** The `-P` flag prevents symlink traversal during recursive operations like secure deletion. Without it, a symlink inside a target directory could cause operations on files outside the intended scope.
+
+**Preserve existing EXIT traps.** When adding cleanup handlers, append to the existing trap instead of replacing it. Overwriting traps can silently disable audit logging or other cleanup.
+
+```bash
+# BAD — overwrites any existing EXIT trap:
+trap 'cleanup' EXIT
+
+# GOOD — appends to existing trap:
+local existing_trap
+existing_trap=$(trap -p EXIT | sed "s/^trap -- '//;s/' EXIT$//" || true)
+if [ -n "$existing_trap" ]; then
+    trap "${existing_trap}; cleanup" EXIT
+else
+    trap 'cleanup' EXIT
+fi
+```
+
 ### Known Limitations
 
 1. **False Positives**: Use `.allowlists/` to suppress known-good matches
@@ -637,7 +696,21 @@ All test scripts use these standard helpers:
 | `test_start "name"` | Announce test, increment counter |
 | `test_pass` | Record pass, print green PASS |
 | `test_fail "expected" "got"` | Record fail, print red FAIL with details |
+| `test_skip "reason"` | Skip test when dependency unavailable (yellow SKIP) |
 | `test_known "description"` | Document known limitation (yellow KNOWN) |
+
+### Graceful Degradation for Optional Dependencies
+
+Tests must not fail when optional tools (python3, jq, nmap, lynis) are absent. Use `test_skip` with a dependency check:
+
+```bash
+if ! command -v jq &>/dev/null; then
+    test_skip "jq not installed"
+    return
+fi
+```
+
+For validation logic, provide a fallback chain (e.g., python3 -> jq -> grep-based structural check) so the test provides value regardless of what's installed.
 
 ### Adding Tests for New Scans
 
