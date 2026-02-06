@@ -2,7 +2,7 @@
 
 **Author:** Windows Developer Agent
 **Created:** 2026-02-02
-**Status:** In Progress (test infrastructure complete)
+**Status:** In Progress (Priorities 1-3, 5 complete)
 
 ## Overview
 
@@ -10,13 +10,13 @@ This document outlines the plan for bringing Windows/PowerShell parity to the Se
 
 ## Priorities
 
-| Priority | Task | Estimated Complexity |
-|----------|------|---------------------|
-| 1 | Create `scripts/lib/init.ps1` | Low |
-| 2 | Port `check-pii.sh` to `Check-PII.ps1` | High |
-| 3 | Port `check-secrets.sh` to `Check-Secrets.ps1` | Medium |
-| 4 | Enhance `Collect-HostInventory.ps1` | Medium |
-| 5 | Create PowerShell test scripts | Low |
+| Priority | Task | Estimated Complexity | Status |
+|----------|------|---------------------|--------|
+| 1 | Create `scripts/lib/init.ps1` | Low | **Complete** |
+| 2 | Port `check-pii.sh` to `Check-PersonalInfo.ps1` | High | **Complete** |
+| 3 | Port `check-secrets.sh` to `Check-Secrets.ps1` | Medium | **Complete** |
+| 4 | Enhance `Collect-HostInventory.ps1` | Medium | Planned |
+| 5 | Create PowerShell test scripts | Low | **Complete** |
 
 ## Design Decisions
 
@@ -707,9 +707,9 @@ Invoke-Pester -Path ./tests/powershell/Check-PII.Tests.ps1 -Output Detailed
 
 | Test File | Tests For | Status |
 |-----------|-----------|--------|
-| Check-PII.Tests.ps1 | Check-PII.ps1 | Template ready |
-| Check-Secrets.Tests.ps1 | Check-Secrets.ps1 | Template ready |
-| Init-Lib.Tests.ps1 | init.ps1 | Planned |
+| Check-PersonalInfo.Tests.ps1 | Check-PersonalInfo.ps1 | **Complete** |
+| Check-Secrets.Tests.ps1 | Check-Secrets.ps1 | **Complete** |
+| Init-Lib.Tests.ps1 | init.ps1 | **Complete** |
 | Collect-HostInventory.Tests.ps1 | Inventory enhancements | Planned |
 
 ### Pester Quick Reference
@@ -814,12 +814,12 @@ Tests that need PowerShell equivalents (for ported scripts):
 
 | Bash Test | PowerShell Test | Script Being Tested | Status |
 |-----------|-----------------|---------------------|--------|
-| test-pii-patterns.sh | Check-PII.Tests.ps1 | Check-PII.ps1 | Template ready |
-| test-secrets-patterns.sh | Check-Secrets.Tests.ps1 | Check-Secrets.ps1 | Template ready |
+| test-pii-patterns.sh | Check-PersonalInfo.Tests.ps1 | Check-PersonalInfo.ps1 | **Complete** |
+| test-secrets-patterns.sh | Check-Secrets.Tests.ps1 | Check-Secrets.ps1 | **Complete** |
 | test-mac-patterns.sh | Check-MAC.Tests.ps1 | (future) | Planned |
 | test-audit-logging.sh | Audit-Log.Tests.ps1 | audit-log.ps1 | Planned |
 | test-timestamps.sh | Timestamps.Tests.ps1 | timestamps.ps1 | Planned |
-| (new) | Init-Lib.Tests.ps1 | init.ps1 | Planned |
+| (new) | Init-Lib.Tests.ps1 | init.ps1 | **Complete** |
 | (new) | Collect-HostInventory.Tests.ps1 | Collect-HostInventory.ps1 | Planned |
 
 Tests that remain Unix-only (no PowerShell equivalent needed):
@@ -854,31 +854,35 @@ Tests that remain Unix-only (no PowerShell equivalent needed):
 
 ## File Deliverables
 
-### Completed (Sprint 2026-02-02)
+### Completed
 
 ```
+scripts/
+├── Check-PersonalInfo.ps1     # DONE - PII detection (Priority 2)
+├── Check-Secrets.ps1          # DONE - Secrets detection (Priority 3)
+├── Collect-HostInventory.ps1  # EXISTS - Windows inventory
+└── lib/
+    └── init.ps1               # DONE - Initialization library (Priority 1)
+
 tests/powershell/
-├── Invoke-AllTests.ps1       # DONE - Test runner
-├── Check-PII.Tests.ps1       # DONE - PII pattern tests (Pester)
-├── Check-Secrets.Tests.ps1   # DONE - Secrets pattern tests (Pester)
-├── README.md                 # DONE - Usage documentation
-└── fixtures/                 # DONE - Test data directory
+├── Invoke-AllTests.ps1            # DONE - Test runner
+├── Init-Lib.Tests.ps1            # DONE - init.ps1 unit tests
+├── Check-PersonalInfo.Tests.ps1  # DONE - PII pattern tests (Pester)
+├── Check-Secrets.Tests.ps1       # DONE - Secrets pattern tests (Pester)
+├── README.md                     # DONE - Usage documentation
+└── fixtures/                     # DONE - Test data directory
 ```
 
 ### Planned (Future Sprints)
 
 ```
 scripts/
-├── Check-PII.ps1              # Priority 2
-├── Check-Secrets.ps1          # Priority 3
 ├── Collect-HostInventory.ps1  # Priority 4 (enhanced security sections)
 └── lib/
-    ├── init.ps1               # Priority 1
     ├── audit-log.ps1          # Optional (for audit integration)
     └── timestamps.ps1         # Optional (for timestamp utilities)
 
 tests/powershell/
-├── Init-Lib.Tests.ps1         # Tests for init.ps1
 └── Collect-HostInventory.Tests.ps1  # Tests for inventory enhancements
 ```
 
@@ -970,11 +974,14 @@ strategy:
 ## Next Steps
 
 1. ~~Prepare PowerShell test infrastructure~~ **Done (Sprint 2026-02-02)**
-2. Add Windows CI runner to GitHub Actions (Issue #6) - see CI Coordination section above
-3. Implement Priority 1 (`init.ps1`) - see Detailed Implementation Plan above
-4. Test on Windows 10 and Windows 11
-5. Proceed with Priority 2-4 in order
-6. Create PR for review
+2. ~~Implement Priority 1 (`init.ps1`)~~ **Done**
+3. ~~Implement Priority 2 (`Check-PersonalInfo.ps1`)~~ **Done**
+4. ~~Implement Priority 3 (`Check-Secrets.ps1`)~~ **Done**
+5. ~~Create Pester tests for init.ps1, Check-PersonalInfo, Check-Secrets~~ **Done**
+6. Add Windows CI runner to GitHub Actions (Issue #6) - see CI Coordination section above
+7. Implement Priority 4 (`Collect-HostInventory.ps1` enhancements)
+8. Test on Windows 10 and Windows 11
+9. Create PR for review
 
 ---
 

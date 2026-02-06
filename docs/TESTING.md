@@ -324,6 +324,10 @@ done
 | `test-check-kev.sh` | CISA KEV catalog checks |
 | `test-kev.sh` | KEV API and caching |
 | `test-nvd-cves.sh` | NVD CVE lookups |
+| `test-containers.sh` | Container scanning (Docker/Podman) |
+| `test-edge-cases.sh` | Boundary conditions, unusual inputs |
+| `test-host-security.sh` | Host security posture checks |
+| `test-malware.sh` | Malware scanning (ClamAV integration) |
 
 ### Integration
 

@@ -61,10 +61,11 @@ Tests follow Pester 5.x conventions:
 
 ```
 tests/powershell/
-+-- Invoke-AllTests.ps1      # Test runner (like run-all-tests.sh)
-+-- Check-PII.Tests.ps1      # PII pattern tests
-+-- Check-Secrets.Tests.ps1  # Secrets pattern tests
-+-- fixtures/                # Test data files
++-- Invoke-AllTests.ps1            # Test runner (like run-all-tests.sh)
++-- Init-Lib.Tests.ps1             # init.ps1 library tests
++-- Check-PersonalInfo.Tests.ps1   # PII pattern tests
++-- Check-Secrets.Tests.ps1        # Secrets pattern tests
++-- fixtures/                      # Test data files
     +-- (generated during tests)
 ```
 
@@ -132,8 +133,9 @@ It 'known limitation' -Skip {
 
 | Bash Test | PowerShell Test | Status |
 |-----------|-----------------|--------|
-| test-pii-patterns.sh | Check-PII.Tests.ps1 | Template ready |
-| test-secrets-patterns.sh | Check-Secrets.Tests.ps1 | Template ready |
+| (init.sh) | Init-Lib.Tests.ps1 | Complete |
+| test-pii-patterns.sh | Check-PersonalInfo.Tests.ps1 | Complete |
+| test-secrets-patterns.sh | Check-Secrets.Tests.ps1 | Complete |
 | test-mac-patterns.sh | Check-MAC.Tests.ps1 | Planned |
 | test-audit-logging.sh | Audit-Log.Tests.ps1 | Planned |
 

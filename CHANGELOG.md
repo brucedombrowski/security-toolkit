@@ -5,6 +5,291 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Nmap Scan Failure Detection**
+  - Failed nmap scans are now properly detected instead of counting as passed
+  - Nmap OS fingerprinting correctly requires sudo
+
+- **Attestation and Host Scan Fixes**
+  - Handle host scans in attestation and fix grep integer error
+
+- **macOS Compatibility**
+  - Remove Bash 4.3+ namerefs for macOS compatibility (Bash 3.2 safe)
+
+- **Bug Fixes (#110-115)**
+  - Address multiple bugs discovered during testing
+
+### Added
+
+- **Spinner Progress Indicators**
+  - All scans now show animated spinner progress during execution
+
+- **Malware/KEV Scans in Host Menu**
+  - Added malware and KEV scans to QuickStart host scan menu
+  - Cleanup after remote scans
+
+- **pdflatex Dependency Check**
+  - Added pdflatex to dependency check with install prompt
+
+### Fixed
+
+- **Interactive Prompt Safety**
+  - Add `</dev/tty` to all interactive prompts in local.sh and remote.sh
+  - Fix Lynis/ClamAV install prompts on remote hosts
+
+## [2.4.0] - 2026-02-05
+
+*Major release - OpenVAS removal and comprehensive stability fixes.*
+
+### Removed
+
+- **OpenVAS/GVM Support** (PR #107)
+  - Removed OpenVAS scanner module (`scripts/lib/scanners/openvas.sh`)
+  - Removed QuickStart OpenVAS integration (`scripts/lib/quickstart/openvas.sh`)
+  - Simplified scanner dependency checks
+  - Nmap and Lynis remain as the supported vulnerability scanners
+
+### Added
+
+- **SSH Troubleshooting Guide** (`docs/SSH-TROUBLESHOOTING.md`)
+  - Comprehensive guide for remote scan SSH connection issues
+  - Platform-specific setup for Kali, Ubuntu, RHEL, macOS, Windows
+  - SSH key-based authentication instructions
+
+- **Power Settings Verification** (`scripts/check-power-settings.sh`)
+  - New script to verify system power settings for security compliance
+
+- **Target Reachability Verification**
+  - Verify target is reachable before starting vulnerability scans
+
+### Fixed
+
+- **set -e Safety Fixes** (Issue #104)
+  - Prevent script exit on conditional assignments
+  - Add `|| true` to all arithmetic increments in remote.sh
+  - Add `|| true` to ALL ssh_cmd calls in compound blocks
+  - Prevent set -e exit from compound command blocks
+
+- **Input Validation** (Issue #105)
+  - Validate f/Q input for scan type selection
+
+- **Windows Credential Prompts** (Issue #94)
+  - Updated Windows credential prompts after OpenVAS removal
+
+- **SSH Connection Handling**
+  - Skip SSH connection when no SSH-based scans selected
+  - Prevent script exit on SSH failure skip counting
+
+- **OpenVAS Progress Protection**
+  - Protect OpenVAS progress indicator from user input (before removal)
+
+## [2.3.0] - 2026-02-05
+
+*QuickStart architecture refactor with modular scan system.*
+
+### Changed
+
+- **QuickStart Architecture Refactor**
+  - Complete rewrite of QuickStart subsystem for modularity
+  - Windows scanning fixes and improvements
+  - Removed dialog/whiptail dependency, use gum or CLI mode only
+
+- **Modular QuickStart System**
+  - Extracted content scanning, host scanning, menus, session management into separate modules
+  - New `scripts/lib/quickstart/scans/lynis.sh` module
+  - New `scripts/lib/quickstart/scans/malware.sh` module
+
+### Fixed
+
+- **OpenVAS Integration** (pre-removal)
+  - OpenVAS polling includes Queued and New statuses
+  - OpenVAS target creation requires port list
+  - OpenVAS Docker and XML parsing issues
+
+- **Configuration**
+  - Remote config prompts before scan selection
+  - Changed all scan selection defaults to No
+
+## [2.2.1] - 2026-02-04
+
+*QuickStart UX improvements and Lynis integration enhancements.*
+
+### Added
+
+- **gum TUI Support**
+  - Added gum-based TUI with dialog/whiptail fallback
+  - Dynamically centered version banner
+
+- **Config File Support**
+  - QuickStart config file support with preserved variables
+  - Config file can specify scans to run
+  - Auto-find config files in `.scans/` directory
+
+- **Lynis Enhancements**
+  - Quick vs full Lynis audit option
+  - Progress indicator for Lynis audit
+  - Lynis privileged mode support
+
+- **Remote Scan Improvements**
+  - Prompt to install missing Lynis/ClamAV on remote host
+  - Real-time progress during remote package install
+  - SSH TTY allocation for sudo commands
+  - Actual inventory checksum for remote scans
+
+### Fixed
+
+- **Lynis Execution**
+  - Use tee for lynis output (show AND save)
+  - Run lynis with TTY for sudo, capture output directly
+  - Separate sudo auth from Lynis scan execution
+  - Revert to simple synchronous Lynis audit
+  - Use background process for Lynis progress indicator
+
+- **ClamAV**
+  - Skip freshclam if service already running
+
+## [2.2.0] - 2026-02-04
+
+*Remote scanning and PDF attestation enhancements.*
+
+### Added
+
+- **Remote ClamAV Scanning**
+  - Remote ClamAV scanning and PDF field cleanup
+
+- **PDF Attestation in QuickStart**
+  - PDF attestation generation integrated into QuickStart workflow
+  - PDF appendices with detailed findings
+
+- **SSH Connection Multiplexing**
+  - SSH connection multiplexing for faster remote scan execution
+
+- **Unique Scan Sessions**
+  - Each scan session now gets a unique folder (`Scan<timestamp>`)
+
+### Fixed
+
+- **Nmap**
+  - Add `-Pn` to nmap to skip host discovery
+
+- **Security**
+  - Remove IP addresses from filenames
+
+- **SSH**
+  - Remove default username for remote SSH scans
+
+## [2.1.9] - 2026-02-04
+
+### Added
+
+- **Remote Scan Execution**
+  - Complete remote scan execution logic for QuickStart
+
+## [2.1.8] - 2026-02-04
+
+### Changed
+
+- **QuickStart Menu Refactor** (Issue #59)
+  - Improved menu structure and navigation
+
+## [2.1.7] - 2026-02-04
+
+### Added
+
+- **Lynis Privileged Mode**
+  - Added Lynis privileged mode option to QuickStart
+
+## [2.1.6] - 2026-02-03
+
+### Added
+
+- **ClamAV Progress Display**
+  - Compact ClamAV progress display during scans
+
+- **Dependency Management**
+  - QuickStart prompts to install missing dependencies
+
+### Fixed
+
+- **ClamAV Warning Capture**
+  - Capture ClamAV warnings in verification report
+
+## [2.1.5] - 2026-02-03
+
+### Fixed
+
+- **Malware Scan False Positive**
+  - Fixed malware scan false positive when ClamAV has minor errors
+
+## [2.1.4] - 2026-02-03
+
+*Sprint 2.1.3 stabilization release - airgapped systems and malware scanning improvements.*
+
+### Added
+
+- **ClamAV Bundling for Air-Gapped Systems** (Issue #50)
+  - Air-gap bundle creator for offline malware scanning
+  - ClamAV bundling for systems without internet access
+
+- **Full-System Malware Scan** (Issue #45)
+  - Added full-system malware scan option to QuickStart
+
+### Fixed
+
+- **QuickStart Reliability**
+  - QuickStart scan reliability and TUI support improvements
+  - Capture exit code before if-test in QuickStart
+  - Resolve ClamAV hanging in QuickStart (Issue #47)
+
+- **ClamAV Compatibility**
+  - Make ClamAV JSON features optional for older versions
+  - Check for `--json-store-extra-hashes` support separately
+
+- **Build System**
+  - Make build-release.sh compatible with Bash 3.2
+
+- **Sprint 2.1.3 Bug Fixes**
+  - Multiple bug fixes and enhancements from sprint testing
+
+## [2.1.3] - 2026-02-03
+
+*Windows PowerShell scanning and QuickStart introduction.*
+
+### Added
+
+- **PowerShell Scanning Scripts**
+  - `Check-PersonalInfo.ps1` - PII scanning for Windows (PR #24)
+  - `Check-Secrets.ps1` - Secrets scanning for Windows (PR #42)
+
+- **QuickStart** (PR #34, Issues #28, #29)
+  - New QuickStart scripts for guided scan setup
+  - Sprint issue templates for project management
+
+- **Executive Brief** (`docs/EXECUTIVE-BRIEF.md`, PR #40)
+  - High-level overview document for stakeholders
+
+### Fixed
+
+- **ClamAV Test Robustness** (PR #48)
+  - Improved ClamAV test robustness in CI environment
+
+- **File Naming**
+  - Rename false-positives-macos.md to UPPERCASE convention
+
+### Changed
+
+- **Documentation**
+  - Add Windows troubleshooting section (PR #21, #41)
+  - Add Windows instructions to INSTALLATION.md (PR #38)
+  - Broaden malware scanner documentation (PR #37, Issue #15)
+  - Add PowerShell command equivalents to CLAUDE.md (PR #36)
+
+- **Tests**
+  - Add integration test for check-malware.sh (PR #25)
+
 ## [2.1.2] - 2026-02-03
 
 *Sprint review release - Windows CI and expanded test coverage.*
@@ -1075,7 +1360,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 199 (Standards for Security Categorization)
 - FIPS 200 (Minimum Security Requirements)
 
-[2.1.0]: https://github.com/brucedombrowski/Security/releases/tag/v2.1.0
+[Unreleased]: https://github.com/brucedombrowski/security-toolkit/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.4.0
+[2.3.0]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.3.0
+[2.2.1]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.2.1
+[2.2.0]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.2.0
+[2.1.9]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.1.9
+[2.1.8]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.1.8
+[2.1.7]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.1.7
+[2.1.6]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.1.6
+[2.1.5]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.1.5
+[2.1.4]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.1.4
+[2.1.3]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.1.3
+[2.1.2]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.1.2
+[2.1.1]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.1.1
+[2.1.0]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.1.0
 [2.0.6]: https://github.com/brucedombrowski/Security/releases/tag/v2.0.6
 [2.0.5]: https://github.com/brucedombrowski/Security/releases/tag/v2.0.5
 [2.0.4]: https://github.com/brucedombrowski/Security/releases/tag/v2.0.4

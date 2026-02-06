@@ -22,7 +22,7 @@ The Security Verification Toolkit automates security scanning aligned with feder
 - **PII Detection** - Finds personal data (SSNs, credit cards, phone numbers)
 - **Secrets Detection** - Finds API keys, passwords, private keys
 - **Malware Scanning** - Uses ClamAV to detect malicious files
-- **Vulnerability Assessment** - Nmap, Lynis, OpenVAS integration
+- **Vulnerability Assessment** - Nmap and Lynis integration
 - **System Inventory** - Collects hardware and software inventory
 
 All scans map to NIST SP 800-53 and NIST SP 800-171 controls.
@@ -365,7 +365,7 @@ This is required by NIST SP 800-171 control 3.1.22 (Security Awareness).
 
 ### Where to report bugs?
 
-Open an issue at: https://github.com/brucedombrowski/Security/issues
+Open an issue at: https://github.com/brucedombrowski/security-toolkit/issues
 
 ### Where to request features?
 

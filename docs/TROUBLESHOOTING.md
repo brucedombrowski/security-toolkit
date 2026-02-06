@@ -576,7 +576,7 @@ Or in Windows Terminal settings, configure profiles with distinct names and colo
 
 ---
 
-## Network Scanning Issues (Nmap/OpenVAS)
+## Network Scanning Issues (Nmap)
 
 ### Nmap requires root for SYN scan
 
@@ -587,15 +587,13 @@ Or in Windows Terminal settings, configure profiles with distinct names and colo
 sudo ./scripts/scan-vulnerabilities.sh --nmap-only localhost
 ```
 
-### OpenVAS not responding
+### Nmap OS fingerprinting requires sudo
 
-**Diagnostic:**
+**Symptom:** OS detection results are missing or incomplete.
+
+**Fix:** Nmap OS fingerprinting requires elevated privileges:
 ```bash
-# Check GVM services
-systemctl status gvmd ospd-openvas
-
-# Test OMP/GMP connection
-gvm-cli --gmp-username admin socket --xml "<get_version/>"
+sudo ./scripts/scan-vulnerabilities.sh localhost
 ```
 
 ---

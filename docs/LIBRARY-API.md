@@ -4,7 +4,7 @@ This document describes the shell library modules in `scripts/lib/` for contribu
 
 ## Overview
 
-The toolkit provides 27 shell library modules organized into 4 subsystems:
+The toolkit provides shell library modules organized into 4 subsystems:
 
 | Subsystem | Location | Purpose |
 |-----------|----------|---------|
@@ -33,7 +33,7 @@ The toolkit provides 27 shell library modules organized into 4 subsystems:
 ┌────────────────────────────┐    ┌────────────────────────────────────────────┐
 │  INVENTORY SUBSYSTEM       │    │           SCANNER SUBSYSTEM                │
 │  lib/inventory/            │    │           lib/scanners/                    │
-│  ┌─────────────────────┐   │    │  common.sh → nmap.sh / lynis.sh / openvas  │
+│  ┌─────────────────────┐   │    │  common.sh → nmap.sh / lynis.sh            │
 │  │ 13 collectors for   │   │    │              ↓                             │
 │  │ OS, network, pkgs,  │   │    │         report.sh                          │
 │  │ browsers, DBs, etc. │   │    └────────────────────────────────────────────┘
@@ -67,6 +67,27 @@ source "$SCRIPT_DIR/lib/progress.sh"
 ---
 
 ## Core Utilities
+
+### init.sh
+
+Centralized boilerplate for script initialization. Reduces ~20 lines of boilerplate per script.
+
+| Function / Variable | Description |
+|---------------------|-------------|
+| `SCRIPT_DIR` | Auto-detected script directory |
+| `TIMESTAMP` | Current ISO 8601 UTC timestamp |
+| `TOOLKIT_VERSION` | Toolkit version (from git tag) |
+| `TOOLKIT_COMMIT` | Short commit hash |
+| `AUDIT_AVAILABLE` | `true` if audit-log.sh loaded |
+| `TIMESTAMPS_AVAILABLE` | `true` if timestamps.sh loaded |
+| `PROGRESS_AVAILABLE` | `true` if progress.sh loaded |
+| `TOOLKIT_AVAILABLE` | `true` if toolkit-info.sh loaded |
+
+**Example:**
+```bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/init.sh"
+```
 
 ### audit-log.sh
 
@@ -235,7 +256,7 @@ Shared scanner utilities for logging and dependency checking.
 | `log_warning` | Log warning message (yellow `[WARN]`) |
 | `log_error` | Log error message (red `[FAIL]`) |
 | `check_root` | Check if running as root |
-| `check_scanner_deps` | Verify scanner dependencies (nmap, openvas, lynis) |
+| `check_scanner_deps` | Verify scanner dependencies (nmap, lynis) |
 | `init_scanner_output` | Initialize output directory and report file |
 | `print_scanner_section` | Print section divider with title |
 
@@ -265,16 +286,6 @@ Lynis security auditing integration.
 |----------|-------------|
 | `run_lynis_audit` | Execute Lynis audit |
 | `summarize_lynis_results` | Parse and summarize Lynis output |
-
-### lib/scanners/openvas.sh
-
-OpenVAS/GVM vulnerability scanner integration.
-
-| Function | Description |
-|----------|-------------|
-| `run_openvas_scan` | Execute OpenVAS scan |
-| `run_gvm_scan` | Execute GVM scan |
-| `run_omp_scan` | Execute OMP protocol scan |
 
 ### lib/scanners/report.sh
 

@@ -212,7 +212,7 @@ If the target is behind a router:
 
 If SSH isn't available on a Windows target, use **uncredentialed mode** instead:
 - Select option 2 (Uncredentialed) in the auth menu
-- OpenVAS can still scan the target using network protocols
+- Nmap can still scan the target using network protocols
 
 ### SSH Multiplexing Issues
 

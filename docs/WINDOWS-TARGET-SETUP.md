@@ -47,16 +47,16 @@ net localgroup administrators scanuser /add
 - Dedicated credentials for scanning
 - Won't affect your daily-use account
 - Easy to disable/remove after scanning
-- Works with SSH, SMB, and OpenVAS
+- Works with SSH and remote scanning tools
 
 ## Enabling Remote Access
 
-### For OpenVAS Network Scanning
+### For Network Scanning (Nmap)
 
-OpenVAS uses SMB/WMI protocols. Ensure:
+Nmap performs host discovery, port scanning, and service detection. Ensure:
 
 1. **Windows Firewall** allows incoming connections (or create exceptions for scanner IP)
-2. **File and Printer Sharing** is enabled:
+2. **File and Printer Sharing** is enabled (for SMB service detection):
    - Settings → Network & Internet → Advanced sharing settings
    - Turn on file and printer sharing
 
@@ -100,10 +100,10 @@ If you only have a Windows Hello PIN configured:
 - Check firewall allows port 22
 - Verify the account has a password (not just a PIN)
 
-### OpenVAS can't authenticate
-- Use a local account, not a Microsoft account
-- Ensure SMB is enabled on the target
-- Check the credentials are correct
+### Nmap scan shows filtered ports
+- Ensure Windows Firewall allows connections from the scanner IP
+- Check that target services are running
+- Try running Nmap with `--unprivileged` if not scanning as root
 
 ## Security Considerations
 
@@ -122,5 +122,5 @@ After scanning:
 
 ## Related Issues
 
-- SSH failure on Windows targets will show a warning but allow network-based scans (OpenVAS) to proceed
+- SSH failure on Windows targets will show a warning but allow network-based scans (Nmap) to proceed
 - Windows Defender may flag scanning activity - consider adding exceptions for the scanner IP

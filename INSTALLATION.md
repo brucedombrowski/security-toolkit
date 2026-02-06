@@ -569,5 +569,5 @@ After successful installation:
 
 ---
 
-**Last Updated:** February 3, 2026
+**Last Updated:** February 5, 2026
 **Tested On:** macOS 13+, Ubuntu 20.04+, CentOS 7+, Windows 10/11, Windows Server 2019+

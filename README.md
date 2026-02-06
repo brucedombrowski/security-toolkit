@@ -60,7 +60,7 @@ This toolkit provides automated security verification scripts aligned with feder
 | `check-host-security.sh` | CM-6 | Host OS security posture verification |
 | `check-kev.sh` | RA-5, SI-5 | Cross-reference CVEs against CISA KEV catalog |
 | `check-mac-addresses.sh` | SC-8 | IEEE 802.3 MAC address detection |
-| `check-malware.sh` | SI-3 | Malware scanning (ClamAV, future: Windows Defender) |
+| `check-malware.sh` | SI-3 | Malware scanning (ClamAV) |
 | `check-nvd-cves.sh` | RA-5, SI-2 | Cross-reference installed software against NVD |
 | `check-pii.sh` | SI-12 | Scan for PII patterns (SSN, phone, IP, credit card) |
 | `check-secrets.sh` | SA-11 | Detect hardcoded credentials and API keys |
@@ -75,9 +75,10 @@ This toolkit provides automated security verification scripts aligned with feder
 | `redact-examples.sh` | - | Strip sensitive data for public examples |
 | `release.sh` | - | Release workflow (maintainers only) |
 | `run-all-scans.sh` | - | Run all scans with consolidated report |
-| `scan-vulnerabilities.sh` | RA-5, SI-2 | Comprehensive vulnerability scanning (Nmap/OpenVAS/Lynis) |
+| `scan-vulnerabilities.sh` | RA-5, SI-2 | Comprehensive vulnerability scanning (Nmap/Lynis) |
 | `secure-delete.sh` | SP 800-88 | Securely delete files (NIST Clear method) |
 | `tui.sh` | - | Interactive TUI for scan selection |
+| `check-power-settings.sh` | CM-6 | Verify system power settings for security |
 | `upgrade.sh` | - | Upgrade toolkit to latest version |
 
 ### Security Validation Scripts
@@ -286,12 +287,6 @@ When installed via Homebrew, these commands are available:
   sudo apt install lynis
   ```
 
-- **OpenVAS/GVM** - Optional for comprehensive vulnerability assessment
-  ```bash
-  # See: https://greenbone.github.io/docs/latest/
-  # OpenVAS requires dedicated setup and daemon configuration
-  ```
-
 ## Exit Codes
 
 All scripts follow standard exit code conventions:
@@ -304,12 +299,16 @@ Scan results are saved to `<target_project>/.scans/` for submittal purposes:
 
 ```
 .scans/
-├── security-scan-report-2026-01-14.txt  # Consolidated report
-├── pii-scan-2026-01-14.txt              # PII pattern scan
-├── malware-scan-2026-01-14.txt          # Malware scan
-├── secrets-scan-2026-01-14.txt          # Secrets/credentials scan
-├── mac-address-scan-2026-01-14.txt      # MAC address scan
-└── host-security-scan-2026-01-14.txt    # Host security scan
+├── security-scan-report-YYYY-MM-DD.txt  # Consolidated report
+├── pii-scan-YYYY-MM-DD.txt              # PII pattern scan
+├── malware-scan-YYYY-MM-DD.txt          # Malware scan
+├── secrets-scan-YYYY-MM-DD.txt          # Secrets/credentials scan
+├── mac-address-scan-YYYY-MM-DD.txt      # MAC address scan
+├── nvd-cve-scan-YYYY-MM-DD.txt          # NVD CVE vulnerability scan
+├── host-security-scan-YYYY-MM-DD.txt    # Host security scan
+├── host-inventory-YYYY-MM-DD.txt        # System inventory (CUI)
+├── scan-attestation-YYYY-MM-DD.pdf      # PDF attestation
+└── checksums.md                         # SHA256 integrity checksums
 ```
 
 Add `.scans/` to your project's `.gitignore`:

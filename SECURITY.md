@@ -6,7 +6,7 @@ If you discover a security vulnerability in the Security Verification Toolkit,
 please **DO NOT** open a public GitHub issue or discussion.
 
 Instead, please report via GitHub Security Advisories:
-https://github.com/brucedombrowski/Security/security/advisories/new
+https://github.com/brucedombrowski/security-toolkit/security/advisories/new
 
 ## What to Include
 
@@ -111,7 +111,7 @@ you're welcome to publish details, blog posts, or conference presentations.
 
 ## Security Contact
 
-- **GitHub Security Advisories:** https://github.com/brucedombrowski/Security/security/advisories/new
+- **GitHub Security Advisories:** https://github.com/brucedombrowski/security-toolkit/security/advisories/new
 
 ## Related Documents
 
@@ -121,4 +121,4 @@ you're welcome to publish details, blog posts, or conference presentations.
 
 ---
 
-Last Updated: January 30, 2026
+Last Updated: February 5, 2026

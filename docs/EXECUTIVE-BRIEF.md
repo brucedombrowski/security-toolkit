@@ -122,4 +122,4 @@ One command. Instant results. Audit-ready output.
 
 **Contact:** Repository SECURITY.md for questions and vulnerability reporting.
 
-**Version:** 2.1.2 | **Date:** February 2026
+**Version:** 2.4.0 | **Date:** February 2026

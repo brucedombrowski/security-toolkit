@@ -352,8 +352,8 @@ Following [Semantic Versioning](https://semver.org/):
 ## Contacts and Escalation
 
 ### Repository
-- GitHub: https://github.com/brucedombrowski/Security
-- Issues: https://github.com/brucedombrowski/Security/issues
+- GitHub: https://github.com/brucedombrowski/security-toolkit
+- Issues: https://github.com/brucedombrowski/security-toolkit/issues
 
 ### Security Vulnerabilities
 - Report via: SECURITY.md process
