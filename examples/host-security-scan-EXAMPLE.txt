@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    292236449a333d87...                                       #
+#  Source SHA256:    1c3da1472c30aeaa...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    d42c54e5d15a5782...                                       #
-#  Redacted:         2026-02-06T06:24:19Z                                       #
+#  Redacted:         2026-02-06T06:46:11Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,26 +19,18 @@
 Host OS Security Verification
 ==============================
 Timestamp: 2026-02-06T[REDACTED]Z
-Host: [REDACTED]
-Toolkit: Security Verification Toolkit v2.5.0 (bb8edcb)
+Host: payload
+Toolkit: Security Verification Toolkit v2.5.1 (9b9a097)
 Source: https://[REDACTED]/brucedombrowski/Security
 
 Running security configuration checks...
 
-Checking: System Integrity Protection (SIP)
-  Result: PASS
-Checking: FileVault Disk Encryption
-  Result: PASS
-Checking: macOS Application Firewall
-  Result: PASS
-Checking: Gatekeeper
-  Result: PASS
-Checking: XProtect Malware Definitions
-  Result: PASS
-Checking: Pending Security Updates
-/Users/[REDACTED] line 95: [: 0
-0: integer expression expected
-  Result: FAIL (security updates available)
+Checking: Firewall (ufw/iptables)
+  Result: FAIL
+Checking: Automatic Security Updates
+  Result: FAIL
+Checking: Mandatory Access Control
+  Result: FAIL
 Checking: SSH Agent
   Result: PASS
 
@@ -48,9 +40,9 @@ Host Inventory Reference:
 -------------------------
   Host inventory is collected separately by collect-host-inventory.sh
   This keeps sensitive data (MAC addresses, serial numbers) in a dedicated file.
-  Run: /Users/[REDACTED] [output_file]
+  Run: /home/[REDACTED] [output_file]
 
 ==============================
 
-OVERALL RESULT: FAIL (1 check(s) failed)
+OVERALL RESULT: FAIL (3 check(s) failed)
 Remediate issues and re-run verification.

@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    f3f355da6c1ab96a...                                       #
+#  Source SHA256:    b20e96c289187af2...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    d42c54e5d15a5782...                                       #
-#  Redacted:         2026-02-06T06:24:19Z                                       #
+#  Redacted:         2026-02-06T06:46:11Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -27,7 +27,7 @@ Host System Inventory
 =====================
 Generated: [REDACTED]
 Hostname: [REDACTED]
-Toolkit: Security Verification Toolkit v2.5.0 (bb8edcb)
+Toolkit: Security Verification Toolkit v2.5.1 (9b9a097)
 Source: https://[REDACTED]/brucedombrowski/Security
 
 HANDLING NOTICE:
@@ -41,8 +41,9 @@ HANDLING NOTICE:
 Operating System Information:
 -----------------------------
   Platform: [REDACTED]
-  OS Version: [REDACTED]
-  Build: [REDACTED]
+  Distribution: Kali GNU/Linux
+  Version: [REDACTED]
+  Version ID: [REDACTED]
   Kernel: [REDACTED]
   Architecture: [REDACTED]
   Hardware Model: [REDACTED]
@@ -50,40 +51,126 @@ Operating System Information:
 
 Network Interfaces:
 -------------------
-  anpi2:
+  eth0:
     MAC Address: [REDACTED]
-    Status: inactive
-    Media: none
-  anpi1:
+    State: DOWN
+    Driver: e1000e
+  eth1:
     MAC Address: [REDACTED]
-    Status: inactive
-    Media: none
-  anpi0:
+    State: DOWN
+    Driver: r8169
+  wlan0:
     MAC Address: [REDACTED]
-    Status: inactive
-    Media: none
+    IPv4: [REDACTED]/24
+    IPv6: [REDACTED]/128
+    State: UP
+    Driver: iwlwifi
 
-  ... (list truncated for example)
 Installed Software Packages:
 ----------------------------
-  Homebrew Packages:
-    abseil 20260107.0 20250814.1
-    aom [REDACTED]
-    aribb24 [REDACTED]
+  Debian/Ubuntu Packages (dpkg):
+    7zip: 25.01+dfsg-4
+    accountsservice: [REDACTED]
+    acl: 2.3.2-2+b1
+    adduser: [REDACTED]
+    adw-gtk3-kali: [REDACTED]
+    adwaita-icon-theme: [REDACTED]
+    aha: [REDACTED]
+    aircrack-ng: 1:1.7+git20230807.4bf83f1a-2+b1
+    alsa-topology-conf: [REDACTED]-3
+    alsa-ucm-conf: [REDACTED]
+    amass: 5.0.1-0kali4
+    amd64-microcode: [REDACTED]
+    apache2: 2.4.65-3+b1
+    apache2-bin: 2.4.65-3+b1
+    apache2-data: [REDACTED]
+    apache2-utils: 2.4.65-3+b1
+    apparmor: [REDACTED]
+    appstream: [REDACTED]
+    apt: 3.1.12+kali1
+    apt-config-icons: [REDACTED]
+    apt-config-icons-hidpi: [REDACTED]
+    apt-config-icons-large: [REDACTED]
+    apt-config-icons-large-hidpi: [REDACTED]
+    apt-file: [REDACTED]
+    apt-utils: 3.1.12+kali1
+    arj: [REDACTED]
+    ark: 4: [REDACTED]
+    arp-scan: 1.10.0-2+b1
+    arping: 2.26-1+b1
+    aspell: [REDACTED]-6
+    aspell-en: 2020.12.07-0-1.1
+    aspnetcore-runtime-6.0: [REDACTED]
+    aspnetcore-targeting-pack-6.0: [REDACTED]
+    at-spi2-common: [REDACTED]
+    at-spi2-core: [REDACTED]
+    atftpd: [REDACTED]
+    atril: [REDACTED]
+    atril-common: [REDACTED]
+    autopsy: 2.24-6kali1
+    avahi-daemon: [REDACTED]
+    avahi-utils: [REDACTED]
+    axel: [REDACTED]
+    baloo6: [REDACTED]
+    base-files: 1: [REDACTED]
+    base-passwd: [REDACTED]
+    base58: [REDACTED]
+    bash: [REDACTED]
+    bash-completion: 1: [REDACTED]
+    bind9-dnsutils: 1: [REDACTED]
+    bind9-host: 1: [REDACTED]
+    bind9-libs: 1: [REDACTED]
+    binutils: [REDACTED]
+    binutils-common: [REDACTED]
+    binutils-mingw-w64-i686: 2.45-7+12.1
+    binutils-mingw-w64-x86-64: 2.45-7+12.1
+    binutils-x86-64-linux-gnu: [REDACTED]
+    binwalk: 2.4.3+dfsg1-2
+    binwalk3: 3.1.0-0kali3
+    bloodhound.py: 1.9.0-0kali1
+    blt: 2.5.3+dfsg-8
+    bluedevil: 4: [REDACTED]
+    blueman: [REDACTED]
+    bluez: [REDACTED]
+    bluez-firmware: [REDACTED]
+    bluez-hcidump: [REDACTED]
+    bluez-obexd: [REDACTED]
+    bolt: [REDACTED]
+    breeze: 4: [REDACTED]
+    breeze-cursor-theme: 4: [REDACTED]
+    breeze-gtk-theme: [REDACTED]
+    breeze-icon-theme: 4: [REDACTED]
+    breeze-wallpaper: 4: [REDACTED]
+    bsdextrautils: [REDACTED]
+    bsdutils: 1: [REDACTED]
+    bubblewrap: [REDACTED]
+    build-essential: [REDACTED]
+    bulk-extractor: 2.1.1-0kali2+b1
+    bully: 1.4.00-2+b1
+    bundler: [REDACTED]
+    bup: 0.33.9-1.2
+    bup-doc: 0.33.9-1.2
+    burpsuite: 2025.10.6-0kali1
+    busybox: 1: [REDACTED]
+    bzip2: [REDACTED]
+    ca-certificates: 20250419
+    ca-certificates-java: 20240118
+    cadaver: 0.28+dfsg-1
+    catdoc: 1: [REDACTED]
+    catfish: [REDACTED]
+    certipy-ad: 5.0.3-0kali1
+    cewl: [REDACTED]
+    cgpt: 0~R106-15054.B+dfsg-0.1
+    cherrytree: 1.2.0+dfsg-1+b1
+    chntpw: 140201-1.2
+    chromium: [REDACTED]
+    chromium-common: [REDACTED]
+    chromium-sandbox: [REDACTED]
+    cifs-utils: 2: [REDACTED]
+    clamav: 1.4.3+dfsg-2+b1
+    clamav-base: 1.4.3+dfsg-2
+    ... and 3640 more packages (total: 3740)
 
-    ... (list truncated for example)
-  Homebrew Casks:
-    basictex [REDACTED]
-    ngrok 3.35.0,6S1r8a6kUrQ,a
-    powershell [REDACTED]
-
-    ... (list truncated for example)
-  Applications (/Applications):
-    Audacity: [REDACTED]
-    Backup and Sync from Google 2: [REDACTED]
-    Backup and Sync: [REDACTED]
-
-    ... (list truncated for example)
 Security Tools:
 ---------------
   ClamAV: [REDACTED]
@@ -124,61 +211,52 @@ installed
 
 Development Tools / IDEs:
 -------------------------
-  VS Code: [REDACTED]
-  Visual Studio: not installed
-  Xcode: [REDACTED]
+  VS Code: not installed
   IntelliJ IDEA: not installed
   PyCharm: not installed
   WebStorm: not installed
   GoLand: not installed
   Rider: not installed
   CLion: not installed
-  DataGrip: not installed
   Eclipse: not installed
   Sublime Text: not installed
   Atom: not installed
+  Notepadqq: not installed
   Android Studio: not installed
 
 Web Browsers:
 -------------
-  Chrome: [REDACTED]
+  Chrome/Chromium: [REDACTED]
   Firefox: [REDACTED]
-  Safari: [REDACTED]
   Edge: [REDACTED]
   Brave: [REDACTED]
-  Opera: not installed
+  Opera: [REDACTED]
   Vivaldi: not installed
 
 Backup and Restore Software:
 ----------------------------
-  Time Machine: [REDACTED]
-  Arq Backup: [REDACTED]
-  Carbon Copy Cloner: [REDACTED]
-  SuperDuper!: [REDACTED]
-  Backblaze: [REDACTED]
+  rsync: [REDACTED]
+  Borg Backup: [REDACTED]
+  Restic: [REDACTED]
+  Duplicity: [REDACTED]
+  Timeshift: [REDACTED]
 
 Remote Desktop / Control Software:
 -----------------------------------
-  Screen Sharing (built-in): enabled
-  Apple Remote Desktop: [REDACTED]
+  SSH Server: [REDACTED]
+inactive
+unknown
+  VNC Server: [REDACTED]
+  xrdp: [REDACTED]
   TeamViewer: [REDACTED]
   AnyDesk: [REDACTED]
-  Zoom: [REDACTED]
-  Microsoft Remote Desktop: [REDACTED]
-  VNC Viewer: [REDACTED]
+  RustDesk: [REDACTED]
 
 Productivity Software:
 ----------------------
-  Microsoft Word: [REDACTED]
-  Microsoft Excel: [REDACTED]
-  Microsoft PowerPoint: [REDACTED]
-  Microsoft Outlook: [REDACTED]
-  Microsoft Teams: [REDACTED]
-  Apple Pages: [REDACTED]
-  Apple Numbers: [REDACTED]
-  Apple Keynote: [REDACTED]
   LibreOffice: [REDACTED]
   Slack: [REDACTED]
+  Microsoft Teams: [REDACTED]
   Cisco Webex: [REDACTED]
   Discord: [REDACTED]
   Skype: [REDACTED]
@@ -187,36 +265,19 @@ Containers and Virtualization:
 ------------------------------
   Docker: [REDACTED]
   Podman: [REDACTED]
-    Client:        Podman Engine
-    Version: [REDACTED]
-    API Version: [REDACTED]
-    Go Version:    go1.25.5
-    Built:         Tue Dec  9 [REDACTED] 2025
-    Build Origin:  brew
-    OS/Arch:       darwin/arm64
-    
-    Server:       Podman Engine
-    Version: [REDACTED]
-    API Version: [REDACTED]
-    Go Version:   go1.25.4 X:nodwarf5
-    Git Commit:   f845d14e941889ba4c071f35233d09b29d363c75
-    Built:        Mon Dec  8 [REDACTED] 2025
-    OS/Arch:      linux/arm64
-    Running Containers: 0
-    Networks:
-      - podman (bridge)
   kubectl: [REDACTED]
   Minikube: [REDACTED]
   Helm: [REDACTED]
   Vagrant: [REDACTED]
-installed
   VirtualBox: [REDACTED]
-  VMware Fusion: [REDACTED]
-  Parallels Desktop: [REDACTED]
+  VMware Workstation: [REDACTED]
+  QEMU: [REDACTED]
+  libvirt: [REDACTED]
+  LXC/LXD: [REDACTED]
 
 Web Servers:
 ------------
-  Apache (httpd): [REDACTED]
+  Apache: [REDACTED]
   Nginx: [REDACTED]
   Caddy: [REDACTED]
   Lighttpd: [REDACTED]
@@ -225,11 +286,14 @@ Web Servers:
 Database Servers:
 -----------------
   PostgreSQL: [REDACTED]
+installed
   MySQL: [REDACTED]
+installed
   SQLite: [REDACTED]
 installed
   MongoDB: [REDACTED]
   Redis: [REDACTED]
+installed
 
 
 =====================

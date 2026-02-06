@@ -6,10 +6,10 @@
 #  Sensitive data (IP addresses, MAC addresses, hostnames, versions, etc.)     #
 #  has been replaced with [REDACTED] placeholders.                             #
 #                                                                              #
-#  Source SHA256:    e5f2707c376e632a...                                       #
+#  Source SHA256:    a230f0a1ecca8471...                                       #
 #  Redaction Script: scripts/redact-examples.sh                                #
 #  Script SHA256:    d42c54e5d15a5782...                                       #
-#  Redacted:         2026-02-06T06:24:19Z                                       #
+#  Redacted:         2026-02-06T06:46:11Z                                       #
 #                                                                              #
 ################################################################################
 
@@ -19,59 +19,61 @@
 PII Verification Scan
 =====================
 Timestamp: 2026-02-06T[REDACTED]Z
-Toolkit: Security Verification Toolkit v2.5.0 (bb8edcb)
-Target: /Users/[REDACTED]
-Repository: Security
+Toolkit: Security Verification Toolkit v2.5.1 (9b9a097)
+Target: /home/[REDACTED]
+Repository: security-toolkit
 
 Checking: IPv4 Addresses
-/Users/[REDACTED]  Test 1: Detect standard IPv4 (192.168.1.1)... [0;32mPASS[0m
-/Users/[REDACTED]  Test 2: Detect private IP (10.0.0.1)... [0;32mPASS[0m
-/Users/[REDACTED]  Test 3: Detect public IP (8.8.8.8)... [0;32mPASS[0m
-/Users/[REDACTED]  Test 4: Detect localhost (127.0.0.1)... [0;32mPASS[0m
-/Users/[REDACTED]  Test 16: Reject X.509 OID (1.3.6.1.5.5.7.3.4)... [0;32mPASS[0m
-/Users/[REDACTED]  Test 17: Reject version number (6.0.0.0)... [1;33mKNOWN[0m (allowlist handles)
-/Users/[REDACTED]  Test 17: Reject version number (1.2.3.4.5.6)... [0;32mPASS[0m
-/Users/[REDACTED]      "Bash(export TARGET_DIR=\"10.0.0.223\" export FILE_TIMESTAMP=\"2026-02-04T213548Z\" export TIMESTAMP=\"2026-02-04T[REDACTED]Z\" export DATE_STAMP=\"2026-02-04\" export INVENTORY_CHECKSUM=\"N/A\" export TOOLKIT_VERSION=\"$TOOLKIT_VERSION:-2.1.9\" export TOOLKIT_COMMIT=\"$TOOLKIT_COMMIT:-unknown\" export OVERALL_STATUS=\"PASS\" export PASS_COUNT=\"3\" export FAIL_COUNT=\"0\" export PII_RESULT=\"SKIP\" export PII_FINDINGS=\"Remote scan\" export MALWARE_RESULT=\"SKIP\" export MALWARE_FINDINGS=\"Remote scan\" export SECRETS_RESULT=\"SKIP\" export SECRETS_FINDINGS=\"Remote scan\" export MAC_RESULT=\"SKIP\" export MAC_FINDINGS=\"Remote scan\" export HOST_RESULT=\"PASS\" export HOST_FINDINGS=\"Remote check\" export VULN_RESULT=\"PASS\" export VULN_FINDINGS=\"Nmap scan\")",
-/Users/[REDACTED]      "Bash(TARGET_DIR=\"10.0.0.223\" FILE_TIMESTAMP=\"2026-02-04T213548Z\" TIMESTAMP=\"2026-02-04T[REDACTED]Z\" DATE_STAMP=\"2026-02-04\" INVENTORY_CHECKSUM=\"Remote-scan\" TOOLKIT_VERSION=\"2.1.9\" TOOLKIT_COMMIT=\"unknown\" OVERALL_STATUS=\"PASS\" PASS_COUNT=\"3\" FAIL_COUNT=\"0\" PII_RESULT=\"SKIP\" PII_FINDINGS=\"Remote\" MALWARE_RESULT=\"SKIP\" MALWARE_FINDINGS=\"Remote\" SECRETS_RESULT=\"SKIP\" SECRETS_FINDINGS=\"Remote\" MAC_RESULT=\"SKIP\" MAC_FINDINGS=\"Remote\" HOST_RESULT=\"PASS\" HOST_FINDINGS=\"Remote\" VULN_RESULT=\"PASS\" VULN_FINDINGS=\"Nmap\" bash ./scripts/generate-scan-attestation.sh .scans/Scan20260204213548)",
-/Users/[REDACTED]      "Bash(sshpass -p '1234' ssh -o StrictHostKeyChecking=no payload@10.0.0.223:*)",
+/home/[REDACTED]            ipv4=$(ifconfig "$iface" 2>/dev/null | grep "inet " | grep -v "127.0.0.1" | awk '{print $2}' | head -1)
+/home/[REDACTED]  $script_name [REDACTED]/24            # Scan network range
+/home/[REDACTED]  $script_name -n [REDACTED]               # Nmap only on specific host
+/home/[REDACTED]  $script_name -q [REDACTED]            # Quick scan of specific host
+/home/[REDACTED]    if [ "$TARGET_HOST" = "localhost" ] || [ "$TARGET_HOST" = "127.0.0.1" ]; then
+/home/[REDACTED]        Write-Host "    This is localhost (127.0.0.1) - the loopback address." -ForegroundColor Gray
+/home/[REDACTED]            "notes": "https:\/\/fw.[REDACTED].tw\/Vigor2960\/Firmware\/v1.5.1.5\/DrayTek_Vigor2960_V1.5.1.5_01release-note.pdf ; https:\/\/fw.[REDACTED].tw\/Vigor300B\/Firmware\/v1.5.1.5\/DrayTek_Vigor300B_V1.5.1.5_01release-note.pdf ; https:\/\/fw.[REDACTED].tw\/Vigor3900\/Firmware\/v1.5.1.5\/DrayTek_Vigor3900_V1.5.1.5_01release-note.pdf ; https:\/\/nvd.nist.gov\/vuln\/detail\/CVE-2024-12987",
+/home/[REDACTED]            "notes": "https:\/\/www.[REDACTED]\/prtg\/history\/prtg-18#18.2.41.1652 ; https:\/\/nvd.nist.gov\/vuln\/detail\/CVE-2018-19410",
+/home/[REDACTED]            "shortDescription": "dnslookup.cgi on NETGEAR DGN2200 devices with firmware through [REDACTED] allows remote authenticated users to execute arbitrary OS commands",
+/home/[REDACTED]            "shortDescription": "The ExceptionDelegator component in Apache Struts 2 before [REDACTED] contains an improper input validation vulnerability that allows for remote code execution.",
   Result: REVIEW - 21 new match(es) found
   ... and 11 more
   (15 previously allowlisted)
 Checking: US Phone Numbers (dashed)
-/Users/[REDACTED]  Test 7: Detect 555-123-4567... [0;32mPASS[0m
+/home/[REDACTED]  Test 7: Detect 555-123-4567... [0;32mPASS[0m
   Result: REVIEW - 1 new match(es) found
 Checking: US Phone Numbers (dotted)
-/Users/[REDACTED]  Test 8: Detect 555.123.4567... [0;32mPASS[0m
+/home/[REDACTED]  Test 8: Detect 555.123.4567... [0;32mPASS[0m
   Result: REVIEW - 1 new match(es) found
 Checking: US Phone Numbers (parenthetical)
-/Users/[REDACTED]  Test 6: Detect (555) 123-4567... [0;32mPASS[0m
+/home/[REDACTED]  Test 6: Detect (555) 123-4567... [0;32mPASS[0m
   Result: REVIEW - 1 new match(es) found
 Checking: International Phone Numbers
   Result: PASS (0 matches)
 Checking: Social Security Numbers
-/Users/[REDACTED]  Test 10: Detect valid SSN format (123-45-6789)... [0;32mPASS[0m
-/Users/[REDACTED]  Test 11: Detect SSN in text (SSN: 123-45-6789)... [0;32mPASS[0m
-/Users/[REDACTED] 'admin@[REDACTED]', '$2b$12$EXAMPLEHASHnotreal', '078-05-1120'),
-/Users/[REDACTED] 'user@[REDACTED]', '$2b$12$ANOTHEREXAMPLEhash', '219-09-9999');
-  Result: REVIEW - 4 new match(es) found
+/home/[REDACTED] 'admin@[REDACTED]', '$2b$12$EXAMPLEHASHnotreal', '078-05-1120'),
+/home/[REDACTED] 'user@[REDACTED]', '$2b$12$ANOTHEREXAMPLEhash', '219-09-9999');
+/home/[REDACTED] 'admin@[REDACTED]', '$2b$12$EXAMPLEHASHnotreal', '078-05-1120'),
+/home/[REDACTED] 'user@[REDACTED]', '$2b$12$ANOTHEREXAMPLEhash', '219-09-9999');
+/home/[REDACTED]  Test 10: Detect valid SSN format (123-45-6789)... [0;32mPASS[0m
+/home/[REDACTED]  Test 11: Detect SSN in text (SSN: 123-45-6789)... [0;32mPASS[0m
+  Result: REVIEW - 6 new match(es) found
 Checking: Credit Card Numbers (Luhn validated)
-  /Users/[REDACTED] 4111-1111-1111-1111 (Luhn valid)
-  /Users/[REDACTED] 5500 0000 0000 0004 (Luhn valid)
-  /Users/[REDACTED] 4111111111111111 (Luhn valid)
-  /Users/[REDACTED] 0000000000000000 (Luhn valid)
-  /Users/[REDACTED] 0000000000000000 (Luhn valid)
-  /Users/[REDACTED] 0000000000000000 (Luhn valid)
-  /Users/[REDACTED] 0000000000000000 (Luhn valid)
-  /Users/[REDACTED] 5500000000000004 (Luhn valid)
-  /Users/[REDACTED] 0000000000000000 (Luhn valid)
-  /Users/[REDACTED] 0000000000000000 (Luhn valid)
+  /home/[REDACTED] 0000000000000000 (Luhn valid)
+  /home/[REDACTED] 0000000000000000 (Luhn valid)
+  /home/[REDACTED] 0000000000000000 (Luhn valid)
+  /home/[REDACTED] 0000000000000000 (Luhn valid)
+  /home/[REDACTED] 0000000000000000 (Luhn valid)
+  /home/[REDACTED] 0000000000000000 (Luhn valid)
+  /home/[REDACTED] 0000000000000000 (Luhn valid)
+  /home/[REDACTED] 0000000000000000 (Luhn valid)
+  /home/[REDACTED] 0000000000000000 (Luhn valid)
+  /home/[REDACTED] 0000000000000000 (Luhn valid)
   Result: REVIEW - 38 valid card(s) found (7 filtered by Luhn)
 
 =====================
-Allowlist: /Users/[REDACTED] (74 entries)
+Allowlist: /home/[REDACTED] (74 entries)
 
 OVERALL RESULT: REVIEW REQUIRED
 Potential PII patterns detected. Manual review required.
 
 Run with -i flag for interactive review:
-  /Users/[REDACTED] -i /Users/[REDACTED]
+  /home/[REDACTED] -i /home/[REDACTED]
