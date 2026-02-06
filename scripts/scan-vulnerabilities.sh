@@ -3,7 +3,7 @@
 # Vulnerability Scanning Script
 #
 # Purpose: Comprehensive vulnerability assessment using open-source security tools
-# Tools: Nmap (network scanning), OpenVAS (vulnerability assessment), Lynis (system audit)
+# Tools: Nmap (network scanning), Lynis (system audit)
 #
 # ============================================================================
 # NIST SP 800-53 Rev 5 Control Mapping
@@ -16,9 +16,9 @@
 # | CA-2    | Assessment, Authorization     | Control Assessments                  | All      |
 # | CA-7    | Assessment, Authorization     | Continuous Monitoring                | All      |
 # | RA-3    | Risk Assessment               | Risk Assessment                      | All      |
-# | RA-5    | Risk Assessment               | Vulnerability Monitoring and Scanning| Nmap/OVS |
+# | RA-5    | Risk Assessment               | Vulnerability Monitoring and Scanning| Nmap     |
 # | SA-11   | System & Services Acquisition | Developer Testing and Evaluation     | All      |
-# | SI-2    | System & Info Integrity       | Flaw Remediation                     | OpenVAS  |
+# | SI-2    | System & Info Integrity       | Flaw Remediation                     | Lynis    |
 # | SI-4    | System & Info Integrity       | System Monitoring                    | Nmap     |
 # | SI-7    | System & Info Integrity       | Software, Firmware, Info Integrity   | Lynis    |
 # | CM-6    | Configuration Management      | Configuration Settings               | Lynis    |
@@ -33,10 +33,10 @@
 # |-----------|------------------------------------------------|----------|
 # | 3.11.1    | Periodically assess risk                       | All      |
 # | 3.11.2    | Scan for vulnerabilities periodically          | All      |
-# | 3.11.3    | Remediate vulnerabilities per risk assessments | OpenVAS  |
+# | 3.11.3    | Remediate vulnerabilities per risk assessments | Lynis    |
 # | 3.12.1    | Assess security controls periodically          | All      |
 # | 3.12.3    | Monitor security controls on ongoing basis     | All      |
-# | 3.14.1    | Identify, report, correct system flaws         | OpenVAS  |
+# | 3.14.1    | Identify, report, correct system flaws         | Lynis    |
 # | 3.14.6    | Monitor system to detect attacks               | Nmap     |
 # | 3.14.7    | Identify unauthorized use of systems           | Nmap     |
 #

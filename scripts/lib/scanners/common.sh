@@ -115,9 +115,6 @@ check_scanner_deps() {
         echo "    macOS:  brew install lynis"
         echo "    Linux:  sudo apt install lynis"
         echo ""
-        echo "  OpenVAS/GVM (vulnerability assessment):"
-        echo "    See: https://greenbone.github.io/docs/latest/"
-        echo ""
         return 2
     fi
 

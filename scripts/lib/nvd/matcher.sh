@@ -33,7 +33,6 @@ get_cpe_mapping() {
         wireshark|tshark) echo "wireshark:wireshark" ;;
         fail2ban)         echo "fail2ban:fail2ban" ;;
         lynis)            echo "cisofy:lynis" ;;
-        openvas|gvm)      echo "greenbone:openvas" ;;
         snort)            echo "snort:snort" ;;
         suricata)         echo "oisf:suricata" ;;
         ossec)            echo "ossec:ossec" ;;

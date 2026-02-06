@@ -449,7 +449,7 @@ else
 fi
 
 test_start "generate_compliance_report shows tool status"
-if grep -q "\[X\] Nmap" "$report_file" && grep -q "\[ \] OpenVAS" "$report_file"; then
+if grep -q "\[X\] Nmap" "$report_file"; then
     test_pass
 else
     test_fail "tool status markers" "not found"
@@ -668,26 +668,7 @@ else
 fi
 
 # =============================================================================
-# SECTION 6: OpenVAS Module Tests
-# =============================================================================
-section_header "OpenVAS Module (openvas.sh)"
-
-test_start "openvas.sh can be sourced"
-if source "$LIB_DIR/openvas.sh" 2>/dev/null; then
-    test_pass
-else
-    test_fail "successful source" "source failed"
-fi
-
-test_start "run_openvas_scan function exists"
-if type run_openvas_scan &>/dev/null; then
-    test_pass
-else
-    test_fail "function defined" "not found"
-fi
-
-# =============================================================================
-# SECTION 7: Integration Tests
+# SECTION 6: Integration Tests
 # =============================================================================
 section_header "Integration Tests"
 
@@ -697,7 +678,6 @@ if bash -c "
     source '$LIB_DIR/nist-controls.sh'
     source '$LIB_DIR/report.sh'
     source '$LIB_DIR/nmap.sh'
-    source '$LIB_DIR/openvas.sh'
     source '$LIB_DIR/lynis.sh'
 " 2>/dev/null; then
     test_pass

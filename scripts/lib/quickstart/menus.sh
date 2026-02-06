@@ -169,7 +169,7 @@ select_host_auth_cli() {
             echo "                      (host inventory, security config, Lynis)"
             echo ""
             echo "  2) Uncredentialed - Network-only scan (no login required)"
-            echo "                      (port scan, service detection, OpenVAS)"
+            echo "                      (port scan, service detection, CVE lookup)"
             echo ""
             echo -e "  ${GRAY}Tip: Windows targets often don't have SSH - use option 2 for network scan${NC}"
         fi

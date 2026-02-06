@@ -7,7 +7,6 @@
 #
 # Scan types:
 #   - Nmap (ports, services, OS, vuln scripts)
-#   - OpenVAS (CVE vulnerability scanning)
 #   - Lynis (security auditing)
 #   - Host inventory (system info, packages)
 #   - Security configuration checks
