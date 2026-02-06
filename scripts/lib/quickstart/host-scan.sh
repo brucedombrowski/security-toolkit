@@ -360,7 +360,8 @@ run_ssh_host_scans() {
             } > "$lynis_file" 2>&1
 
             # Check for warnings/suggestions
-            local warnings=$(grep -c "Warning:" "$lynis_file" 2>/dev/null || echo "0")
+            local warnings
+            warnings=$(grep -c "Warning:" "$lynis_file" 2>/dev/null) || warnings=0
             if [ "$warnings" -gt 0 ]; then
                 print_warning "Lynis found $warnings warnings"
                 ((_HOST_FAILED++)) || true
