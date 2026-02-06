@@ -142,6 +142,89 @@ Connected Machine                    Airgapped System
                                      5. Verify with --status
 ```
 
+## Shared ClamAV Database (NAS/Network Storage)
+
+For teams with multiple airgapped systems or constrained bandwidth, a shared ClamAV database on NAS or network storage avoids downloading and transferring definitions to each machine individually.
+
+### How It Works
+
+The toolkit supports the `CLAMAV_DB_PATH` environment variable to point ClamAV at a custom database location. The QuickStart dependency check looks there first, then falls back to standard system paths.
+
+### Setup
+
+#### 1. Designate a Central Database Location
+
+Choose a shared path accessible to all scanning machines:
+
+```
+/Volumes/NAS/clamav/          # macOS NAS mount
+/mnt/nas/clamav/              # Linux NFS/SMB mount
+\\server\share\clamav\        # Windows UNC path
+```
+
+#### 2. Populate the Database
+
+On a connected machine, download current definitions and copy them to the shared location:
+
+```bash
+# Download fresh definitions
+sudo freshclam
+
+# Copy to NAS (adjust source path for your platform)
+cp /var/lib/clamav/main.cvd   /Volumes/NAS/clamav/
+cp /var/lib/clamav/daily.cvd  /Volumes/NAS/clamav/
+cp /var/lib/clamav/bytecode.cvd /Volumes/NAS/clamav/
+```
+
+Or use the offline update script:
+
+```bash
+./scripts/update-clamav-offline.sh --download
+tar -xzf clamav-db-update-*.tar.gz -C /Volumes/NAS/clamav/
+```
+
+#### 3. Configure Scanning Machines
+
+Set the environment variable before running scans:
+
+```bash
+export CLAMAV_DB_PATH="/Volumes/NAS/clamav"
+./QuickStart.sh
+```
+
+Or add it to your shell profile for persistence:
+
+```bash
+echo 'export CLAMAV_DB_PATH="/Volumes/NAS/clamav"' >> ~/.bashrc
+```
+
+### Workflow Diagram
+
+```
+Connected Machine              NAS/Shared Storage         Airgapped Scanners
+─────────────────              ──────────────────         ──────────────────
+1. sudo freshclam
+2. Copy .cvd files ──────────► 3. Stores main.cvd
+                                  daily.cvd
+                                  bytecode.cvd
+                                                    ◄──── 4. CLAMAV_DB_PATH
+                                                             points here
+                                                          5. Run scans
+```
+
+### Benefits
+
+- **Single update point**: Update definitions once, all scanners use them
+- **Bandwidth savings**: Only one machine downloads ~112 MB of definitions
+- **Consistent definitions**: All scanners use the same database version
+- **No per-machine storage**: Saves ~150 MB per scanner
+
+### Limitations
+
+- Requires network connectivity between scanners and NAS (even if airgapped from internet)
+- NAS must be available during scans (no offline fallback unless definitions are also cached locally)
+- Currently supported in QuickStart dependency checks; `check-malware.sh` uses standard ClamAV path resolution
+
 ## Security Considerations
 
 ### Chain of Custody
