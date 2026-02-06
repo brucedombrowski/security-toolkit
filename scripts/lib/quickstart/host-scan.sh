@@ -307,9 +307,11 @@ run_ssh_host_scans() {
                 local idle_delay
                 idle_delay=$(ssh_cmd "gsettings get org.gnome.desktop.session idle-delay 2>/dev/null" 2>/dev/null) || true
                 if [ -n "$idle_delay" ]; then
-                    # Parse "uint32 300" format
+                    # Parse "uint32 300" format — extract last field (the value)
                     local seconds
-                    seconds=$(echo "$idle_delay" | grep -oE '[0-9]+' || echo "0")
+                    seconds=$(echo "$idle_delay" | awk '{print $NF}')
+                    seconds="${seconds//[!0-9]/}"
+                    seconds="${seconds:-0}"
                     if [ "$seconds" -gt 0 ]; then
                         local minutes=$((seconds / 60))
                         echo "  Lock after idle: $minutes minutes ($seconds seconds)"
