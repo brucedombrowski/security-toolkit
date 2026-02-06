@@ -209,7 +209,7 @@ secure_delete_file() {
             # Pass 2: Zeros
             dd if=/dev/zero of="$file" bs=1 count="$size" conv=notrunc 2>/dev/null || true
             # Pass 3: Ones (0xFF)
-            perl -e "print chr(0xFF) x $size" > "$file" 2>/dev/null || true
+            perl -e 'print chr(0xFF) x $ARGV[0]' "$size" > "$file" 2>/dev/null || true
             # Final pass: Zeros
             dd if=/dev/zero of="$file" bs=1 count="$size" conv=notrunc 2>/dev/null || true
         fi
@@ -231,11 +231,11 @@ elif [ -d "$TARGET" ]; then
     while IFS= read -r -d '' file; do
         secure_delete_file "$file"
         deleted=$((deleted + 1))
-    done < <(find "$TARGET" -type f -print0 2>/dev/null)
+    done < <(find -P "$TARGET" -type f -print0 2>/dev/null)
 
     if [ "$DRY_RUN" = false ]; then
-        # Remove empty directories
-        find "$TARGET" -type d -empty -delete 2>/dev/null || true
+        # Remove empty directories (never follow symlinks)
+        find -P "$TARGET" -type d -empty -delete 2>/dev/null || true
         # Remove the target directory if it still exists and is empty
         rmdir "$TARGET" 2>/dev/null || rm -rf "$TARGET" 2>/dev/null || true
         echo "Securely deleted $deleted files from: $TARGET"
