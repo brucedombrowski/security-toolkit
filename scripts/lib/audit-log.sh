@@ -108,19 +108,23 @@ audit_log() {
     local username=$(whoami 2>/dev/null || echo "unknown")
     local process_id=$$
 
-    # Escape special characters in details for JSON
-    # Replace backslashes first, then quotes, then newlines
+    # Escape all string fields for JSON safety
+    # Replace backslashes first, then quotes, then control characters
+    local escaped_hostname=$(printf '%s' "$hostname" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    local escaped_username=$(printf '%s' "$username" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    local escaped_scan_type=$(printf '%s' "$AUDIT_LOG_SCAN_TYPE" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    local escaped_event=$(printf '%s' "$event_type" | sed 's/\\/\\\\/g; s/"/\\"/g')
     local escaped_details=$(printf '%s' "$details" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
 
     # Write JSON Lines format entry
     # Using printf for reliable JSON formatting
     printf '{"timestamp":"%s","host":"%s","user":"%s","pid":%d,"scan_type":"%s","event":"%s","details":"%s"}\n' \
         "$timestamp" \
-        "$hostname" \
-        "$username" \
+        "$escaped_hostname" \
+        "$escaped_username" \
         "$process_id" \
-        "$AUDIT_LOG_SCAN_TYPE" \
-        "$event_type" \
+        "$escaped_scan_type" \
+        "$escaped_event" \
         "$escaped_details" \
         >> "$AUDIT_LOG_FILE" 2>/dev/null
 
