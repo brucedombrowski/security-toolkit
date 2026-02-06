@@ -40,7 +40,24 @@ ssh user@<ubuntu-ip> "hostname && uname -a"
 nmap --version
 ```
 
-## Demo Flow
+## Target Setup (On Ubuntu)
+
+Before scanning from Kali, prepare the Ubuntu target:
+
+```bash
+# Install the toolkit
+git clone https://github.com/brucedombrowski/security-toolkit.git
+cd security-toolkit
+
+# Run the target preparation script (sets up SSH, plants findings, installs deps)
+sudo ./scripts/prepare-demo-target.sh
+```
+
+This runs 8 phases: SSH setup, scan dependencies, open ports, planted findings, EICAR malware samples, outdated software, KEV-trigger packages, and verification manifest. See [DEMO-PLANTED-FINDINGS.md](DEMO-PLANTED-FINDINGS.md) for details on what gets planted.
+
+Note the IP address shown in the summary output — you'll need it for Step 2.
+
+## Demo Flow (On Kali)
 
 ### Step 1: Launch QuickStart
 
