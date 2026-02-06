@@ -463,14 +463,14 @@ run_ssh_host_scans() {
                 ssh_cmd "clamscan --version" 2>/dev/null || echo "(version unavailable)"
                 echo ""
                 echo "--- Scan Results ---"
-                ssh_cmd "clamscan --recursive --infected \
-                    --exclude-dir='^/proc' \
-                    --exclude-dir='^/sys' \
-                    --exclude-dir='^/dev' \
-                    --exclude-dir='^/run' \
-                    --exclude-dir='^/snap' \
-                    / 2>&1" 2>/dev/null || echo "(scan completed)"
-            } > "$malware_file" 2>&1
+            } > "$malware_file"
+            ssh_cmd "clamscan --recursive --infected \
+                --exclude-dir='^/proc' \
+                --exclude-dir='^/sys' \
+                --exclude-dir='^/dev' \
+                --exclude-dir='^/run' \
+                --exclude-dir='^/snap' \
+                / 2>&1" 2>/dev/null | tee -a "$malware_file" || true
 
             # Check for errors first (no database, etc.)
             if grep -q "No supported database files found\|cli_loaddbdir" "$malware_file" 2>/dev/null; then
@@ -514,14 +514,14 @@ run_ssh_host_scans() {
                         ssh_cmd "clamscan --version" 2>/dev/null || echo "(version unavailable)"
                         echo ""
                         echo "--- Scan Results ---"
-                        ssh_cmd "clamscan --recursive --infected \
-                            --exclude-dir='^/proc' \
-                            --exclude-dir='^/sys' \
-                            --exclude-dir='^/dev' \
-                            --exclude-dir='^/run' \
-                            --exclude-dir='^/snap' \
-                            / 2>&1" 2>/dev/null || echo "(scan completed)"
-                    } > "$malware_file" 2>&1
+                    } > "$malware_file"
+                    ssh_cmd "clamscan --recursive --infected \
+                        --exclude-dir='^/proc' \
+                        --exclude-dir='^/sys' \
+                        --exclude-dir='^/dev' \
+                        --exclude-dir='^/run' \
+                        --exclude-dir='^/snap' \
+                        / 2>&1" 2>/dev/null | tee -a "$malware_file" || true
 
                     # Check for errors first (no database, etc.)
                     if grep -q "No supported database files found\|cli_loaddbdir" "$malware_file" 2>/dev/null; then
