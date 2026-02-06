@@ -186,18 +186,31 @@ check_dependencies() {
 
     # Check ClamAV database if ClamAV is installed
     if command -v clamscan &>/dev/null; then
-        if ! clamscan --version 2>&1 | grep -qi "bytecode\|signatures"; then
-            # Double-check by looking for database files
-            local db_found=false
+        local db_found=false
+
+        # Check custom path first (NAS, network storage, etc.)
+        if [ -n "${CLAMAV_DB_PATH:-}" ]; then
+            if [ -f "$CLAMAV_DB_PATH/main.cvd" ] || [ -f "$CLAMAV_DB_PATH/main.cld" ]; then
+                db_found=true
+                print_success "ClamAV database found at $CLAMAV_DB_PATH"
+            else
+                print_warning "CLAMAV_DB_PATH set but no database found at: $CLAMAV_DB_PATH"
+            fi
+        fi
+
+        # Check standard locations if no custom path or custom path empty
+        if [ "$db_found" = false ]; then
             for db_path in /var/lib/clamav /opt/homebrew/var/lib/clamav /usr/local/var/lib/clamav; do
                 if [ -f "$db_path/main.cvd" ] || [ -f "$db_path/main.cld" ]; then
                     db_found=true
                     break
                 fi
             done
-            if [ "$db_found" = false ]; then
-                print_warning "ClamAV database missing - run 'sudo freshclam' to download"
-            fi
+        fi
+
+        if [ "$db_found" = false ]; then
+            print_warning "ClamAV database missing"
+            echo "         Run 'sudo freshclam' to download, or set CLAMAV_DB_PATH for NAS/network storage"
         fi
     fi
     echo ""
