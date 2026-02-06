@@ -226,7 +226,7 @@ extract_cves() {
 # Check single CVE against KEV
 check_cve_in_kev() {
     local cve="$1"
-    jq -r ".vulnerabilities[] | select(.cveID == \"$cve\")" "$KEV_CACHE_FILE"
+    jq -r --arg id "$cve" '.vulnerabilities[] | select(.cveID == $id)' "$KEV_CACHE_FILE"
 }
 
 # Main
