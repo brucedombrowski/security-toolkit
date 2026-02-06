@@ -193,9 +193,17 @@ install_scan_deps() {
     systemctl start clamav-freshclam 2>/dev/null || true
     log_success "Virus definitions updated"
 
-    # Lynis
+    # Lynis (not in default Ubuntu repos - add CISOfy repo)
     if ! command -v lynis &>/dev/null; then
-        apt-get install -y -qq lynis
+        # Try default repos first
+        if ! apt-get install -y -qq lynis 2>/dev/null; then
+            log_step "Adding CISOfy repository for Lynis..."
+            apt-get install -y -qq apt-transport-https ca-certificates curl gnupg
+            curl -fsSL https://packages.cisofy.com/keys/cisofy-software-public.key | gpg --dearmor -o /usr/share/keyrings/cisofy-archive-keyring.gpg
+            echo "deb [signed-by=/usr/share/keyrings/cisofy-archive-keyring.gpg] https://packages.cisofy.com/community/lynis/deb/ stable main" > /etc/apt/sources.list.d/cisofy-lynis.list
+            apt-get update -qq
+            apt-get install -y -qq lynis
+        fi
         log_success "Lynis installed"
     else
         log_success "Lynis already installed"
