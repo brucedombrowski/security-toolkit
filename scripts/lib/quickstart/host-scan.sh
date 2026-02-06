@@ -526,7 +526,8 @@ run_ssh_host_scans() {
         # Check if nmap vuln scan was run, otherwise explain
         local vuln_scan_file=""
         if [ "$RUN_NMAP_VULN" = true ]; then
-            vuln_scan_file=$(find "$output_dir" -name "nmap-*.txt" -newer "$kev_file" 2>/dev/null | head -1)
+            vuln_scan_file="$output_dir/nmap-ports-$timestamp.txt"
+            [ ! -f "$vuln_scan_file" ] && vuln_scan_file=""
         fi
 
         {
