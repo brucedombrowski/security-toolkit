@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.1] - 2026-02-06
+
+### Fixed
+
+- **Fix Lynis scan hanging due to sudo prompt through pipe** — Pre-cache sudo credentials via direct `ssh -t` (bypassing ControlMaster) before piped commands; prevents indefinite hang when `tee` breaks TTY passthrough
+- **Fix sudo password rejected on multiplexed SSH connections** — `sudo -v` now uses a direct SSH connection instead of the ControlMaster socket, which doesn't reliably support TTY allocation for interactive prompts
+- **Fix Lynis output not streaming to terminal** — Replaced block redirect (`{ ... } > file`) with `tee -a` so operators see real-time Lynis progress during remote audits
+- **Fix ClamAV output not streaming to terminal** — Same `tee` fix applied to remote ClamAV scans; operators now see scan progress during full-disk scans
+- **Fix remote ClamAV only scanning home directory** — Changed scan target from `~/` to `/` with exclusions for virtual filesystems (`/proc`, `/sys`, `/dev`, `/run`, `/snap`)
+- **Fix remote Lynis using non-TTY SSH** — Changed `ssh_cmd` to `ssh_cmd_sudo` for Lynis so the sudo password prompt has a TTY
+- **Fix nmap silently skipping OS fingerprinting** — Now uses `sudo nmap` when not root instead of quietly stripping the `-O` flag
+- **Auto-resolve stale SSH host keys for live boot targets** — Detects "REMOTE HOST IDENTIFICATION HAS CHANGED" during SSH setup, explains it's expected for live boot targets, and offers to remove the stale key and reconnect
+
+### Added
+
+- **`demo_target.conf`** — QuickStart config file for full-coverage demo target scanning (all scans enabled, full mode)
+- **`docs/SSH-TTY-PIPE-PITFALLS.md`** — Guide documenting SSH TTY + pipe interaction pitfalls, safe patterns, decision tree, and cleanup procedures
+
 ## [2.7.0] - 2026-02-06
 
 ### Added
@@ -1425,6 +1443,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIPS 200 (Minimum Security Requirements)
 
 [Unreleased]: https://github.com/brucedombrowski/security-toolkit/compare/v2.7.0...HEAD
+[2.7.1]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.7.1
 [2.7.0]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.7.0
 [2.4.0]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.4.0
 [2.3.0]: https://github.com/brucedombrowski/security-toolkit/releases/tag/v2.3.0
