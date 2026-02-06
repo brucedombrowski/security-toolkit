@@ -1141,9 +1141,19 @@ main() {
     echo -e "  ${BOLD}Config:${NC}           $(basename "$CONFIG_FILE")"
     echo -e "  ${BOLD}Target IP:${NC}        $ip"
     if cfg_bool ".ssh.enabled"; then
-        local summary_users
-        summary_users=$(jq -r '.ssh.users // [] | .[].name' "$CONFIG_FILE" 2>/dev/null | tr '\n' ',' | sed 's/,$//')
-        echo -e "  ${BOLD}SSH:${NC}              Port $(cfg_num ".ssh.port" 22) (users: ${summary_users:-root})"
+        echo -e "  ${BOLD}SSH:${NC}              Port $(cfg_num ".ssh.port" 22)"
+        echo ""
+        echo -e "  ${BOLD}Scanner Credentials:${NC}"
+        local u=0
+        local ssh_user_count
+        ssh_user_count=$(jq '.ssh.users | length' "$CONFIG_FILE" 2>/dev/null)
+        while [ "$u" -lt "${ssh_user_count:-0}" ]; do
+            local uname upass
+            uname=$(jq -r ".ssh.users[$u].name" "$CONFIG_FILE")
+            upass=$(jq -r ".ssh.users[$u].password // \"(no password)\"" "$CONFIG_FILE")
+            echo -e "    ${GREEN}→${NC} Username: ${BOLD}${uname}${NC}  Password: ${BOLD}${upass}${NC}"
+            u=$((u + 1))
+        done
     fi
     if cfg_bool ".apache.enabled" && command -v apache2 &>/dev/null; then
         echo -e "  ${BOLD}Apache:${NC}           Port 80 (KEV trigger)"
