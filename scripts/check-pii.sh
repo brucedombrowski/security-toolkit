@@ -33,10 +33,12 @@ source "$SCRIPT_DIR/lib/init.sh"
 PII_EXCLUDE_FILE=""
 
 # Build find exclusion arguments from .pii-exclude file
+# Populates global FIND_EXCLUSIONS array to avoid eval
+FIND_EXCLUSIONS=()
 build_exclusions() {
     local target_dir="$1"
     local exclude_file="$target_dir/.pii-exclude"
-    local exclusions=""
+    FIND_EXCLUSIONS=()
 
     if [ -f "$exclude_file" ]; then
         PII_EXCLUDE_FILE="$exclude_file"
@@ -49,24 +51,28 @@ build_exclusions() {
             line="${line#"${line%%[![:space:]]*}"}"
             line="${line%"${line##*[![:space:]]}"}"
 
+            # Reject lines with shell metacharacters to prevent injection
+            if [[ "$line" =~ [\;\|\&\$\`\(\)\{\}] ]]; then
+                echo "Warning: Skipping unsafe pattern in .pii-exclude: $line" >&2
+                continue
+            fi
+
             # Directory patterns (end with /)
             if [[ "$line" == */ ]]; then
                 local dir="${line%/}"
-                exclusions="$exclusions -not -path \"*/$dir/*\""
+                FIND_EXCLUSIONS+=(-not -path "*/$dir/*")
             # File patterns (contain *)
             elif [[ "$line" == *"*"* ]]; then
-                exclusions="$exclusions -not -name \"$line\""
+                FIND_EXCLUSIONS+=(-not -name "$line")
             # Plain names (could be file or dir)
             else
-                exclusions="$exclusions -not -path \"*/$line/*\" -not -name \"$line\""
+                FIND_EXCLUSIONS+=(-not -path "*/$line/*" -not -name "$line")
             fi
         done < "$exclude_file"
     else
         # Fallback defaults if no config file
-        exclusions="-not -path \"*/.git/*\" -not -path \"*/.scans/*\""
+        FIND_EXCLUSIONS=(-not -path "*/.git/*" -not -path "*/.scans/*")
     fi
-
-    echo "$exclusions"
 }
 
 # Help function
@@ -434,16 +440,15 @@ run_check() {
     # CRITICAL-003: Protection against symlink attacks - use find to exclude symlinks, add per-file timeout
     # Exclusions loaded from .pii-exclude config file
     local results=""
-    local exclusions
-    exclusions=$(build_exclusions "$TARGET_DIR")
+    build_exclusions "$TARGET_DIR"
 
-    # Build and execute find command with exclusions
+    # Build and execute find command with exclusions (array avoids eval)
     # Use process substitution to avoid subshell variable loss
     while read -r file; do
         local match
         match=$($TIMEOUT_CMD grep -H -n -E "$pattern" "$file" 2>/dev/null || true)
         [ -n "$match" ] && results="${results}${match}"$'\n'
-    done < <(eval "find \"$TARGET_DIR\" -type f -not -type l $exclusions 2>/dev/null")
+    done < <(find "$TARGET_DIR" -type f -not -type l "${FIND_EXCLUSIONS[@]}" 2>/dev/null)
 
     local total_count=0
     local new_count=0
