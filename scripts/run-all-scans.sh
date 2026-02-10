@@ -77,6 +77,7 @@ SCANS PERFORMED:
   - Secrets Detection     API keys, passwords, tokens (NIST SA-11)
   - MAC Address Scan      IEEE 802.3 identifiers (NIST SC-8)
   - Host Security         OS configuration audit (NIST CM-6)
+  - Application Security  EOL/deprecated software audit (NIST CM-7, CM-11, SI-2)
   - Vulnerability Scan    Nmap/Lynis assessment (NIST RA-5)
 
 OUTPUT:
@@ -341,6 +342,8 @@ MAC_RESULT="PASS"
 MAC_FINDINGS="No MAC addresses detected"
 HOST_RESULT="PASS"
 HOST_FINDINGS="All checks passed"
+APPS_RESULT="PASS"
+APPS_FINDINGS="All checks passed"
 VULN_RESULT="SKIP"
 VULN_FINDINGS="Not run"
 
@@ -435,8 +438,8 @@ run_scan() {
 }
 
 # Run all scans with NIST control references
-# Total scans: 7 (5 standard + 1 NVD CVE + 1 vulnerability)
-TOTAL_SCANS=7
+# Total scans: 8 (5 standard + 1 NVD CVE + 1 vulnerability + 1 applications)
+TOTAL_SCANS=8
 CURRENT_SCAN=0
 
 # Start overall progress tracking
@@ -494,6 +497,14 @@ run_scan "Host Security Configuration" \
     "NIST 800-53: CM-6 (Configuration Settings)" \
     "host-security-scan-$FILE_TIMESTAMP.txt" \
     "HOST_RESULT" "HOST_FINDINGS"
+
+CURRENT_SCAN=$((CURRENT_SCAN + 1))
+[ "$PROGRESS_AVAILABLE" -eq 1 ] && progress_step $CURRENT_SCAN $TOTAL_SCANS "Application Security Audit"
+run_scan "Application Security Audit" \
+    "$SCRIPT_DIR/check-applications.sh" \
+    "NIST 800-53: CM-7 (Least Functionality), CM-11 (User-Installed Software), SI-2 (Flaw Remediation)" \
+    "application-security-scan-$FILE_TIMESTAMP.txt" \
+    "APPS_RESULT" "APPS_FINDINGS"
 
 # Run vulnerability scan (quick mode, scans localhost)
 # Note: This scans the HOST system, not the codebase - uses different invocation
@@ -638,7 +649,8 @@ export TARGET_DIR FILE_TIMESTAMP TIMESTAMP DATE_STAMP INVENTORY_CHECKSUM
 export TOOLKIT_NAME TOOLKIT_VERSION TOOLKIT_COMMIT TOOLKIT_SOURCE
 export PII_RESULT PII_FINDINGS MALWARE_RESULT MALWARE_FINDINGS
 export SECRETS_RESULT SECRETS_FINDINGS MAC_RESULT MAC_FINDINGS
-export HOST_RESULT HOST_FINDINGS VULN_RESULT VULN_FINDINGS
+export HOST_RESULT HOST_FINDINGS APPS_RESULT APPS_FINDINGS
+export VULN_RESULT VULN_FINDINGS
 export OVERALL_STATUS PASS_COUNT FAIL_COUNT SKIP_COUNT
 
 ATTESTATION_SCRIPT="$SCRIPT_DIR/generate-scan-attestation.sh"
