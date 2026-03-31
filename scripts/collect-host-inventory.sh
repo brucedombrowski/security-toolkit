@@ -72,6 +72,7 @@ source "$SCRIPT_DIR/lib/inventory/collectors/productivity.sh"
 source "$SCRIPT_DIR/lib/inventory/collectors/containers.sh"
 source "$SCRIPT_DIR/lib/inventory/collectors/web-servers.sh"
 source "$SCRIPT_DIR/lib/inventory/collectors/databases.sh"
+source "$SCRIPT_DIR/lib/inventory/collectors/ai-software.sh"
 
 # ============================================================================
 # INITIALIZATION
@@ -115,6 +116,7 @@ collect_productivity
 collect_containers
 collect_web_servers
 collect_databases
+collect_ai_software
 
 # ============================================================================
 # CUI FOOTER
