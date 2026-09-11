@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Fix `check-nvd-cves.sh` reporting "Vulnerabilities: 0" / PASS after printing findings** — The per-CVE loop ran in a `jq | while` pipeline subshell, so `VULNERABILITIES_FOUND` and the severity counters never reached the summary or exit code. Loop now uses process substitution (see `docs/BASH-SET-E-PITFALLS.md`)
+- **Fix `check-nvd-cves.sh` flagging CVEs already fixed in the installed version** — NVD `configurations` CPE version ranges (`versionStartIncluding/Excluding`, `versionEndIncluding/Excluding`, exact CPE versions) are now applied per CVE. Example: CVE-2025-68973 ("In GnuPG before 2.4.9") no longer matches installed gnupg 2.4.9. Excluded CVEs are counted as "Not Affected" (listed with `-v`, audit-logged as `FINDING_EXCLUDED`); CVEs with no CPE data for the product are still reported, annotated "Version: unverified"
+
+### Added
+
+- `cve_affects_version`, `cpe_range_matches`, `version_lt/gt/lte` in `scripts/lib/nvd/matcher.sh`
+- Regression tests for both fixes in `tests/test-nvd-cves.sh` (mock NVD cache; skip without `jq`)
+
 ## [2.7.1] - 2026-02-06
 
 ### Fixed
