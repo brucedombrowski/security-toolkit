@@ -1085,7 +1085,8 @@ generate_manifest() {
         echo "----------------------------------------------"
         if cfg_bool ".findings.pii.enabled"; then
             echo "  File: $DEMO_DIR/customer-records.csv"
-            grep -c 'SSN\|[0-9]\{3\}-[0-9]\{2\}-[0-9]\{4\}' "$DEMO_DIR/customer-records.csv" 2>/dev/null || echo "  0"
+            demo_count=$(grep -c 'SSN\|[0-9]\{3\}-[0-9]\{2\}-[0-9]\{4\}' "$DEMO_DIR/customer-records.csv" 2>/dev/null || true)
+            echo "  ${demo_count:-0}"
             echo "  ^ SSN patterns"
             grep -oE '555-[0-9]{3}-[0-9]{4}' "$DEMO_DIR/customer-records.csv" 2>/dev/null | wc -l | tr -d ' '
             echo "  ^ Phone patterns"
@@ -1138,7 +1139,8 @@ generate_manifest() {
         echo "----------------------------------------------"
         if cfg_bool ".findings.mac_addresses.enabled"; then
             echo "  File: $DEMO_DIR/network-inventory.txt"
-            grep -cE '([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}' "$DEMO_DIR/network-inventory.txt" 2>/dev/null || echo "  0"
+            demo_count=$(grep -cE '([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}' "$DEMO_DIR/network-inventory.txt" 2>/dev/null || true)
+            echo "  ${demo_count:-0}"
             echo "  ^ MAC address patterns"
         else
             echo "  (disabled)"

@@ -161,12 +161,14 @@ else
     HARDENING_INDEX=$(echo "$CLEAN_SCAN" | grep -E "Hardening index" | head -1 | sed -E 's/.*: *([0-9]+).*/\1/' | tr -d '[:space:]' || echo "0")
 
     # Extract warnings count - count actual [ WARNING ] occurrences
-    WARNINGS_COUNT=$(echo "$CLEAN_SCAN" | grep -c "\[ WARNING \]" 2>/dev/null || echo "0")
+    WARNINGS_COUNT=$(echo "$CLEAN_SCAN" | grep -c "\[ WARNING \]" 2>/dev/null || true)
+    WARNINGS_COUNT=${WARNINGS_COUNT:-0}
 
     # Extract suggestions count - Lynis format: "Suggestions (N):" or count [ SUGGESTION ]
     SUGGESTIONS_COUNT=$(echo "$CLEAN_SCAN" | grep -E "Suggestions \([0-9]+\)" | head -1 | sed -E 's/.*Suggestions \(([0-9]+)\).*/\1/' | tr -d '[:space:]')
     if [ -z "$SUGGESTIONS_COUNT" ]; then
-        SUGGESTIONS_COUNT=$(echo "$CLEAN_SCAN" | grep -c "\[ SUGGESTION \]" 2>/dev/null || echo "0")
+        SUGGESTIONS_COUNT=$(echo "$CLEAN_SCAN" | grep -c "\[ SUGGESTION \]" 2>/dev/null || true)
+        SUGGESTIONS_COUNT=${SUGGESTIONS_COUNT:-0}
     fi
 
     # Extract tests performed

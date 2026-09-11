@@ -601,6 +601,8 @@ Host inventory contains Controlled Unclassified Information (MAC addresses, seri
 ### Bash `set -e` and Arithmetic
 Never use `((count++))` — it silently kills scripts under `set -e` when the variable is zero. Use `count=$((count + 1))` instead. See [docs/BASH-SET-E-PITFALLS.md](docs/BASH-SET-E-PITFALLS.md) for the full explanation and safe patterns.
 
+Never use `COUNT=$(grep -c ... || echo "0")`. On zero matches `grep -c` prints `0` **and** exits 1, so the fallback yields `"0\n0"` and later `[ "$COUNT" -eq 0 ]` fails with "integer expression expected". Use `COUNT=$(grep -c ... || true); COUNT=${COUNT:-0}` instead (the `:-0` covers a missing file, where grep prints nothing).
+
 ### SSH TTY and Pipes
 Never pipe `ssh -t` output through `tee` or redirect when the remote command needs interactive input (e.g., `sudo`). The pipe breaks TTY passthrough and the password prompt hangs. Instead, pre-cache sudo credentials via a direct `ssh -t host "sudo -v"` (bypassing ControlMaster), then pipe the actual command. For non-interactive commands, write the header to file separately and stream with `tee -a`. See [docs/SSH-TTY-PIPE-PITFALLS.md](docs/SSH-TTY-PIPE-PITFALLS.md) for the full explanation, decision tree, and safe patterns.
 

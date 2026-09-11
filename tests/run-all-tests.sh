@@ -135,6 +135,7 @@ run_test_suite "Malware Scanner" "$SCRIPT_DIR/test-malware.sh"
 run_test_suite "Edge Cases" "$SCRIPT_DIR/test-edge-cases.sh"
 run_test_suite "Integration Tests" "$SCRIPT_DIR/test-integration.sh"
 run_test_suite "NVD CVE Lookup" "$SCRIPT_DIR/test-nvd-cves.sh"
+run_test_suite "Host Security" "$SCRIPT_DIR/test-host-security.sh"
 
 # -----------------------------------------------------------------------------
 # 3. Critical Security Tests (Optional)

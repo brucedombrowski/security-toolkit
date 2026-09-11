@@ -208,9 +208,12 @@ fi
 
 # Parse test results
 if [ -f "$TEST_OUTPUT" ]; then
-    TEST_SUITES=$(grep -c "Suite PASSED\|Suite FAILED" "$TEST_OUTPUT" 2>/dev/null || echo "0")
-    TEST_PASSED=$(grep -c "Suite PASSED" "$TEST_OUTPUT" 2>/dev/null || echo "0")
-    TEST_FAILED=$(grep -c "Suite FAILED" "$TEST_OUTPUT" 2>/dev/null || echo "0")
+    TEST_SUITES=$(grep -c "Suite PASSED\|Suite FAILED" "$TEST_OUTPUT" 2>/dev/null || true)
+    TEST_SUITES=${TEST_SUITES:-0}
+    TEST_PASSED=$(grep -c "Suite PASSED" "$TEST_OUTPUT" 2>/dev/null || true)
+    TEST_PASSED=${TEST_PASSED:-0}
+    TEST_FAILED=$(grep -c "Suite FAILED" "$TEST_OUTPUT" 2>/dev/null || true)
+    TEST_FAILED=${TEST_FAILED:-0}
 fi
 
 echo "  Test Suites: $TEST_SUITES ($TEST_PASSED passed, $TEST_FAILED failed)"

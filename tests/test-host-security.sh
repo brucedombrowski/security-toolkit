@@ -137,7 +137,8 @@ echo ""
 echo "--- Security Check Execution ---"
 
 test_start "Script runs security checks"
-CHECK_COUNT=$(echo "$OUTPUT" | grep -c "Checking:" || echo "0")
+CHECK_COUNT=$(echo "$OUTPUT" | grep -c "Checking:" || true)
+CHECK_COUNT=${CHECK_COUNT:-0}
 if [ "$CHECK_COUNT" -gt 0 ]; then
     test_pass
 else
@@ -145,7 +146,8 @@ else
 fi
 
 test_start "Script reports check results"
-RESULT_COUNT=$(echo "$OUTPUT" | grep -c "Result:" || echo "0")
+RESULT_COUNT=$(echo "$OUTPUT" | grep -c "Result:" || true)
+RESULT_COUNT=${RESULT_COUNT:-0}
 if [ "$RESULT_COUNT" -gt 0 ]; then
     test_pass
 else
@@ -157,6 +159,69 @@ if echo "$OUTPUT" | grep -qE "Result: (PASS|FAIL)"; then
     test_pass
 else
     test_fail "PASS or FAIL results" "unknown result format"
+fi
+
+echo ""
+
+# --- Pending Security Updates (zero-match regression) ---
+# Regression for: grep -c prints "0" AND exits 1 on zero matches, so the old
+# `|| echo "0"` fallback produced "0\n0" and `[ ... -eq 0 ]` failed with
+# "integer expression expected", falling through to FAIL. Observed on macOS
+# when softwareupdate -l listed only Command Line Tools (no "security" lines).
+echo "--- Pending Security Updates ---"
+
+if [ "$PLATFORM" = "Darwin" ]; then
+    FAKE_BIN=$(mktemp -d "${TMPDIR:-/tmp}/host-sec-fake-bin.XXXXXX")
+    trap 'rm -rf "$FAKE_BIN"' EXIT
+
+    # Fake softwareupdate: no lines containing "security"
+    cat > "$FAKE_BIN/softwareupdate" <<'EOF'
+#!/bin/bash
+echo "Software Update Tool"
+echo ""
+echo "Finding available software"
+echo "Software Update found the following new or updated software:"
+echo "* Label: Command Line Tools for Xcode-16.4"
+echo "	Title: Command Line Tools for Xcode, Version: 16.4, Size: 800000KiB, Recommended: YES,"
+EOF
+    chmod +x "$FAKE_BIN/softwareupdate"
+
+    test_start "Zero security updates reports PASS (no grep -c double-zero)"
+    ZERO_OUTPUT=$(PATH="$FAKE_BIN:$PATH" "$HOST_SECURITY_SCRIPT" 2>&1 || true)
+    ZERO_LINE=$(echo "$ZERO_OUTPUT" | grep -A1 "Checking: Pending Security Updates" | tail -1)
+    if echo "$ZERO_LINE" | grep -q "Result: PASS"; then
+        test_pass
+    else
+        test_fail "Result: PASS (no security updates pending)" "$ZERO_LINE"
+    fi
+
+    test_start "Zero security updates produces no integer expression error"
+    if echo "$ZERO_OUTPUT" | grep -q "integer expression expected"; then
+        test_fail "no shell error" "integer expression expected"
+    else
+        test_pass
+    fi
+
+    # Fake softwareupdate: one pending Security Update
+    cat > "$FAKE_BIN/softwareupdate" <<'EOF'
+#!/bin/bash
+echo "Software Update Tool"
+echo ""
+echo "Software Update found the following new or updated software:"
+echo "* Label: Security Update 2026-001"
+echo "	Title: Security Update 2026-001, Version: 1.0, Size: 12345KiB, Recommended: YES,"
+EOF
+
+    test_start "Pending security update reports FAIL"
+    ONE_OUTPUT=$(PATH="$FAKE_BIN:$PATH" "$HOST_SECURITY_SCRIPT" 2>&1 || true)
+    ONE_LINE=$(echo "$ONE_OUTPUT" | grep -A1 "Checking: Pending Security Updates" | tail -1)
+    if echo "$ONE_LINE" | grep -q "Result: FAIL"; then
+        test_pass
+    else
+        test_fail "Result: FAIL (security updates available)" "$ONE_LINE"
+    fi
+else
+    test_skip "Pending Security Updates" "macOS-only check (platform: $PLATFORM)"
 fi
 
 echo ""
