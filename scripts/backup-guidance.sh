@@ -162,7 +162,8 @@ check_backup_status() {
         if command -v timeshift >/dev/null 2>&1; then
             echo -e "  Timeshift: ${GREEN}Installed${NC}"
             # Try to get snapshot info
-            snapshots=$(timeshift --list 2>/dev/null | grep -c "^[0-9]" || echo "0")
+            snapshots=$(timeshift --list 2>/dev/null | grep -c "^[0-9]" || true)
+            snapshots=${snapshots:-0}
             echo "    Snapshots: $snapshots"
         else
             echo -e "  Timeshift: ${YELLOW}Not installed${NC}"

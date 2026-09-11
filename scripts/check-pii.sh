@@ -664,11 +664,13 @@ if [ "$INTERACTIVE" -eq 1 ]; then
 fi
 
 if [ -f "$ALLOWLIST_FILE" ]; then
-    ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$ALLOWLIST_FILE" 2>/dev/null || echo "0")
+    ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$ALLOWLIST_FILE" 2>/dev/null || true)
+    ALLOWLIST_COUNT=${ALLOWLIST_COUNT:-0}
     echo "Allowlist: $ALLOWLIST_FILE ($ALLOWLIST_COUNT entries)"
 fi
 if [ -n "$PII_EXCLUDE_FILE" ] && [ -f "$PII_EXCLUDE_FILE" ]; then
-    EXCLUDE_COUNT=$(grep -cvE "^[[:space:]]*#|^[[:space:]]*$" "$PII_EXCLUDE_FILE" 2>/dev/null || echo "0")
+    EXCLUDE_COUNT=$(grep -cvE "^[[:space:]]*#|^[[:space:]]*$" "$PII_EXCLUDE_FILE" 2>/dev/null || true)
+    EXCLUDE_COUNT=${EXCLUDE_COUNT:-0}
     echo "Exclusions: $PII_EXCLUDE_FILE ($EXCLUDE_COUNT patterns)"
 fi
 echo ""

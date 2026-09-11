@@ -230,11 +230,13 @@ echo "Parsing installed packages from inventory..." | tee -a "$OUTPUT_FILE"
 
 # Parse packages from inventory
 PACKAGES=$(parse_inventory_packages "$INVENTORY_FILE")
-TOTAL_PACKAGES=$(echo "$PACKAGES" | grep -c ":" || echo "0")
+TOTAL_PACKAGES=$(echo "$PACKAGES" | grep -c ":" || true)
+TOTAL_PACKAGES=${TOTAL_PACKAGES:-0}
 
 if [ "$PRIORITY_ONLY" -eq 1 ]; then
     PACKAGES=$(echo "$PACKAGES" | filter_known_packages)
-    TOTAL_PACKAGES=$(echo "$PACKAGES" | grep -c ":" || echo "0")
+    TOTAL_PACKAGES=$(echo "$PACKAGES" | grep -c ":" || true)
+    TOTAL_PACKAGES=${TOTAL_PACKAGES:-0}
     echo "Scanning $TOTAL_PACKAGES priority packages (--priority-only mode)" | tee -a "$OUTPUT_FILE"
 else
     echo "Found $TOTAL_PACKAGES packages to check" | tee -a "$OUTPUT_FILE"

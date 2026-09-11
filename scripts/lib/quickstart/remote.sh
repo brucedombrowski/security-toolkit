@@ -470,7 +470,8 @@ run_nmap_scan() {
             echo "    $line"
         done
         local port_count
-        port_count=$(grep -cE "^[0-9]+/(tcp|udp).*open" "$nmap_file" 2>/dev/null || echo "0")
+        port_count=$(grep -cE "^[0-9]+/(tcp|udp).*open" "$nmap_file" 2>/dev/null || true)
+        port_count=${port_count:-0}
         echo "  Total: $port_count open ports"
         return 0
     else

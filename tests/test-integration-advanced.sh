@@ -269,7 +269,8 @@ fi
 test_start "Audit log captures all scan events"
 audit_log=$(ls "$TEST_DIR/project/.scans/"audit-log*.jsonl 2>/dev/null | head -1 || echo "")
 if [ -n "$audit_log" ] && [ -f "$audit_log" ]; then
-    event_count=$(grep -c '"event":' "$audit_log" 2>/dev/null || echo "0")
+    event_count=$(grep -c '"event":' "$audit_log" 2>/dev/null || true)
+    event_count=${event_count:-0}
     if [ "$event_count" -ge 2 ]; then
         test_pass
     else

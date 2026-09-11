@@ -466,7 +466,8 @@ if [ "$INTERACTIVE" -eq 1 ]; then
 fi
 
 if [ -f "$ALLOWLIST_FILE" ]; then
-    ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$ALLOWLIST_FILE" 2>/dev/null || echo "0")
+    ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$ALLOWLIST_FILE" 2>/dev/null || true)
+    ALLOWLIST_COUNT=${ALLOWLIST_COUNT:-0}
     echo "Allowlist: $ALLOWLIST_FILE ($ALLOWLIST_COUNT entries)"
     echo ""
 fi

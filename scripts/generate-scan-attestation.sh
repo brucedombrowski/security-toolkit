@@ -159,7 +159,8 @@ PII_ALLOWLIST_FILE="$TARGET_DIR/.allowlists/pii-allowlist"
 PII_ALLOWLIST_COUNT=0
 PII_ALLOWLIST_CHECKSUM="N/A"
 if [ -f "$PII_ALLOWLIST_FILE" ]; then
-    PII_ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$PII_ALLOWLIST_FILE" 2>/dev/null || echo "0")
+    PII_ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$PII_ALLOWLIST_FILE" 2>/dev/null || true)
+    PII_ALLOWLIST_COUNT=${PII_ALLOWLIST_COUNT:-0}
     PII_ALLOWLIST_CHECKSUM=$(shasum -a 256 "$PII_ALLOWLIST_FILE" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
     # Mark PII scan as EXCEPT (pass with exceptions) if there are reviewed exceptions
     if [ "$PII_ALLOWLIST_COUNT" -gt 0 ]; then
@@ -173,7 +174,8 @@ SECRETS_ALLOWLIST_FILE="$TARGET_DIR/.allowlists/secrets-allowlist"
 SECRETS_ALLOWLIST_COUNT=0
 SECRETS_ALLOWLIST_CHECKSUM="N/A"
 if [ -f "$SECRETS_ALLOWLIST_FILE" ]; then
-    SECRETS_ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$SECRETS_ALLOWLIST_FILE" 2>/dev/null || echo "0")
+    SECRETS_ALLOWLIST_COUNT=$(grep -c "^[a-f0-9]" "$SECRETS_ALLOWLIST_FILE" 2>/dev/null || true)
+    SECRETS_ALLOWLIST_COUNT=${SECRETS_ALLOWLIST_COUNT:-0}
     SECRETS_ALLOWLIST_CHECKSUM=$(shasum -a 256 "$SECRETS_ALLOWLIST_FILE" 2>/dev/null | awk '{print substr($1,1,16)}' || echo "N/A")
     # Mark secrets scan as EXCEPT if there are reviewed exceptions
     if [ "$SECRETS_ALLOWLIST_COUNT" -gt 0 ]; then

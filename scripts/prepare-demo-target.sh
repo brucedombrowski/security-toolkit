@@ -583,7 +583,8 @@ generate_manifest() {
         echo "  PII FINDINGS (check-pii.sh should find these)"
         echo "----------------------------------------------"
         echo "  File: $DEMO_DIR/customer-records.csv"
-        grep -c 'SSN\|[0-9]\{3\}-[0-9]\{2\}-[0-9]\{4\}' "$DEMO_DIR/customer-records.csv" 2>/dev/null || echo "  0"
+        demo_count=$(grep -c 'SSN\|[0-9]\{3\}-[0-9]\{2\}-[0-9]\{4\}' "$DEMO_DIR/customer-records.csv" 2>/dev/null || true)
+        echo "  ${demo_count:-0}"
         echo "  ^ SSN patterns"
         grep -oE '555-[0-9]{3}-[0-9]{4}' "$DEMO_DIR/customer-records.csv" | wc -l | tr -d ' '
         echo "  ^ Phone patterns"
@@ -622,7 +623,8 @@ generate_manifest() {
         echo "  MAC ADDRESSES (check-mac-addresses.sh)"
         echo "----------------------------------------------"
         echo "  File: $DEMO_DIR/network-inventory.txt"
-        grep -cE '([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}' "$DEMO_DIR/network-inventory.txt" 2>/dev/null || echo "  0"
+        demo_count=$(grep -cE '([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}' "$DEMO_DIR/network-inventory.txt" 2>/dev/null || true)
+        echo "  ${demo_count:-0}"
         echo "  ^ MAC address patterns"
         echo ""
         echo "----------------------------------------------"

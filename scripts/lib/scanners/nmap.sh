@@ -112,8 +112,10 @@ summarize_nmap_results() {
 
     # Count open ports
     local open_ports filtered_ports
-    open_ports=$(grep -c "^[0-9].*open" "$nmap_output" 2>/dev/null || echo "0")
-    filtered_ports=$(grep -c "^[0-9].*filtered" "$nmap_output" 2>/dev/null || echo "0")
+    open_ports=$(grep -c "^[0-9].*open" "$nmap_output" 2>/dev/null || true)
+    open_ports=${open_ports:-0}
+    filtered_ports=$(grep -c "^[0-9].*filtered" "$nmap_output" 2>/dev/null || true)
+    filtered_ports=${filtered_ports:-0}
 
     echo "Open ports found: $open_ports"
     echo "Filtered ports: $filtered_ports"
