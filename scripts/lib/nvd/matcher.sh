@@ -403,6 +403,110 @@ version_gte() {
     fi
 }
 
+# Strict comparison helpers built on version_gte
+# Usage: version_gt "3.0.10" "3.0.5"   (0 if v1 > v2)
+#        version_lt "3.0.5" "3.0.10"   (0 if v1 < v2)
+#        version_lte "3.0.5" "3.0.5"   (0 if v1 <= v2)
+version_gt() {
+    [ "$1" != "$2" ] && version_gte "$1" "$2"
+}
+
+version_lt() {
+    ! version_gte "$1" "$2"
+}
+
+version_lte() {
+    [ "$1" = "$2" ] || version_lt "$1" "$2"
+}
+
+# Check whether an installed version falls inside one NVD cpeMatch range.
+#
+# NVD expresses affected versions either as an exact version in the CPE
+# criteria string (cpe:2.3:a:vendor:product:2.4.8:...) or as a wildcard
+# version (:*:) qualified by range fields:
+#   versionStartIncluding / versionStartExcluding
+#   versionEndIncluding   / versionEndExcluding
+#
+# Usage: cpe_range_matches "installed" "cpe_version" "start_incl" "start_excl" "end_incl" "end_excl"
+# Returns: 0 = installed version is inside the range, 1 = outside
+cpe_range_matches() {
+    local installed="$1"
+    local cpe_version="$2"
+    local start_incl="$3"
+    local start_excl="$4"
+    local end_incl="$5"
+    local end_excl="$6"
+
+    # Exact version in CPE criteria (not a wildcard)
+    if [ -n "$cpe_version" ] && [ "$cpe_version" != "*" ] && [ "$cpe_version" != "-" ]; then
+        local cpe_parsed
+        cpe_parsed=$(parse_version "$cpe_version")
+        [ "$installed" = "${cpe_parsed:-$cpe_version}" ] && return 0
+        return 1
+    fi
+
+    [ -n "$start_incl" ] && ! version_gte "$installed" "$start_incl" && return 1
+    [ -n "$start_excl" ] && ! version_gt  "$installed" "$start_excl" && return 1
+    [ -n "$end_incl" ]   && ! version_lte "$installed" "$end_incl"   && return 1
+    [ -n "$end_excl" ]   && ! version_lt  "$installed" "$end_excl"   && return 1
+
+    return 0
+}
+
+# Determine whether a single NVD vulnerability record affects an installed version.
+#
+# Inspects .cve.configurations[].nodes[].cpeMatch[] for entries whose
+# vendor/product match the package (vendor "*" matches any vendor) and
+# applies the CPE version + range fields via cpe_range_matches.
+#
+# Usage: cve_affects_version "$vuln_json" "vendor" "product" "installed_version"
+# Returns:
+#   0 = affected (at least one vulnerable cpeMatch covers the installed version)
+#   1 = not affected (cpeMatch entries exist for this product, none cover the version)
+#   2 = undetermined (no cpeMatch entries for this product, jq missing, or
+#       installed version unparseable) - caller should report conservatively
+cve_affects_version() {
+    local vuln_json="$1"
+    local vendor="$2"
+    local product="$3"
+    local installed_raw="$4"
+
+    command -v jq >/dev/null 2>&1 || return 2
+
+    local installed
+    installed=$(parse_version "$installed_raw")
+    [ -z "$installed" ] && return 2
+
+    # One line per vulnerable cpeMatch for this product:
+    #   cpe_version|startIncl|startExcl|endIncl|endExcl
+    local ranges
+    ranges=$(printf '%s' "$vuln_json" | jq -r --arg vendor "$vendor" --arg product "$product" '
+        [ .cve.configurations[]?.nodes[]?.cpeMatch[]?
+          | select(.vulnerable == true)
+          | (.criteria | split(":")) as $c
+          | select($c[4] == $product and ($vendor == "*" or $c[3] == $vendor))
+          | [ ($c[5] // "*"),
+              (.versionStartIncluding // ""),
+              (.versionStartExcluding // ""),
+              (.versionEndIncluding // ""),
+              (.versionEndExcluding // "") ]
+          | join("|")
+        ] | .[]
+    ' 2>/dev/null) || return 2
+
+    [ -z "$ranges" ] && return 2
+
+    local line cpe_version start_incl start_excl end_incl end_excl
+    while IFS='|' read -r cpe_version start_incl start_excl end_incl end_excl; do
+        if cpe_range_matches "$installed" "$cpe_version" \
+            "$start_incl" "$start_excl" "$end_incl" "$end_excl"; then
+            return 0
+        fi
+    done <<< "$ranges"
+
+    return 1
+}
+
 # Parse host inventory file and extract packages with versions
 # Usage: parse_inventory_packages "/path/to/host-inventory.txt"
 parse_inventory_packages() {
