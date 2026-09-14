@@ -61,6 +61,8 @@ CRITICAL_COUNT=0
 HIGH_COUNT=0
 MEDIUM_COUNT=0
 LOW_COUNT=0
+NOT_AFFECTED_COUNT=0   # CVEs whose NVD version range excludes the installed version
+UNVERIFIED_COUNT=0     # CVEs reported without CPE version data to confirm the match
 
 show_help() {
     cat << EOF
@@ -261,6 +263,8 @@ while IFS=: read -r package version; do
 
     # Convert to CPE and query NVD
     cpe=$(package_to_cpe "$package" "$version")
+    cpe_vendor=$(get_cpe_vendor "$package")
+    cpe_product=$(get_cpe_product "$package")
 
     # Query NVD (skip if offline and not cached)
     response=""
@@ -284,8 +288,13 @@ while IFS=: read -r package version; do
     vuln_count=$(echo "$response" | jq '.totalResults // 0' 2>/dev/null || echo "0")
 
     if [ "$vuln_count" -gt 0 ]; then
-        # Process each vulnerability
-        echo "$response" | jq -r '.vulnerabilities[]? | @base64' 2>/dev/null | while read -r vuln_b64; do
+        # Process each vulnerability.
+        # NOTE: Use process substitution, not `jq ... | while`. A piped while
+        # loop runs in a subshell, so counter increments inside it are lost and
+        # the summary/exit code would report zero findings.
+        # See docs/BASH-SET-E-PITFALLS.md.
+        while read -r vuln_b64; do
+            [ -z "$vuln_b64" ] && continue
             vuln=$(echo "$vuln_b64" | base64 -d 2>/dev/null || echo "$vuln_b64" | base64 -D 2>/dev/null)
 
             cve_id=$(echo "$vuln" | jq -r '.cve.id // "UNKNOWN"')
@@ -307,6 +316,31 @@ while IFS=: read -r package version; do
                 continue
             fi
 
+            # Apply NVD CPE version ranges (versionStartIncluding/Excluding,
+            # versionEndIncluding/Excluding). A keyword search returns every
+            # CVE mentioning the product, including ones already fixed in the
+            # installed version (e.g. "before 2.4.9" when 2.4.9 is installed).
+            version_note=""
+            affects_rc=0
+            cve_affects_version "$vuln" "$cpe_vendor" "$cpe_product" "$version" || affects_rc=$?
+            case "$affects_rc" in
+                1)
+                    NOT_AFFECTED_COUNT=$((NOT_AFFECTED_COUNT + 1))
+                    if [ "$VERBOSE" -eq 1 ]; then
+                        echo "" | tee -a "$OUTPUT_FILE"
+                        echo "  [NOT AFFECTED] $cve_id: installed $package $version is outside the NVD affected version range" | tee -a "$OUTPUT_FILE"
+                    fi
+                    if [ "${AUDIT_AVAILABLE:-1}" -eq 1 ]; then
+                        audit_log "FINDING_EXCLUDED" "cve=$cve_id package=$package version=$version reason=version_not_in_range" 2>/dev/null || true
+                    fi
+                    continue
+                    ;;
+                2)
+                    UNVERIFIED_COUNT=$((UNVERIFIED_COUNT + 1))
+                    version_note="unverified (no CPE version data for $cpe_product in NVD record)"
+                    ;;
+            esac
+
             VULNERABILITIES_FOUND=$((VULNERABILITIES_FOUND + 1))
 
             # Count by severity
@@ -323,6 +357,7 @@ while IFS=: read -r package version; do
                 echo -e "${RED}[VULNERABILITY]${NC} $cve_id"
                 echo "  Package:  $package $version"
                 echo "  CVSS:     $cvss_score ($severity)"
+                [ -n "$version_note" ] && echo "  Version:  $version_note"
                 echo "  Summary:  ${description}..."
                 echo "  Link:     https://nvd.nist.gov/vuln/detail/$cve_id"
             } | tee -a "$OUTPUT_FILE"
@@ -331,7 +366,7 @@ while IFS=: read -r package version; do
             if [ "${AUDIT_AVAILABLE:-1}" -eq 1 ]; then
                 audit_log "FINDING_DETECTED" "cve=$cve_id package=$package version=$version cvss=$cvss_score severity=$severity" 2>/dev/null || true
             fi
-        done
+        done < <(echo "$response" | jq -r '.vulnerabilities[]? | @base64' 2>/dev/null)
 
         [ "$VERBOSE" -eq 1 ] && echo -e "${RED}$vuln_count CVE(s)${NC}"
     else
@@ -346,6 +381,8 @@ echo "NVD CVE Scan Summary" | tee -a "$OUTPUT_FILE"
 echo "========================================" | tee -a "$OUTPUT_FILE"
 echo "  Packages Scanned:  $PACKAGES_CHECKED" | tee -a "$OUTPUT_FILE"
 echo "  Vulnerabilities:   $VULNERABILITIES_FOUND" | tee -a "$OUTPUT_FILE"
+[ "$NOT_AFFECTED_COUNT" -gt 0 ] && echo "  Not Affected:      $NOT_AFFECTED_COUNT (installed version outside NVD range; -v to list)" | tee -a "$OUTPUT_FILE"
+[ "$UNVERIFIED_COUNT" -gt 0 ] && echo "  Unverified:        $UNVERIFIED_COUNT (no CPE version data; review manually)" | tee -a "$OUTPUT_FILE"
 
 if [ "$VULNERABILITIES_FOUND" -gt 0 ]; then
     echo "" | tee -a "$OUTPUT_FILE"
